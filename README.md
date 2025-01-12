@@ -203,3 +203,6 @@ Passing switches as parameters uses this syntax: `-SwitchParam:$SwitchParam`.
 - [VirtualizationHowTo.com: PSScriptAnalyzer the ultimate Powershell script analyzer & linter](https://www.virtualizationhowto.com/2024/03/psscriptanalyzer-the-ultimate-powershell-script-analyzer-and-linter/)
 - [SumTips: Powershell Beautifier free tool to prettify `.ps1` scripts](https://sumtips.com/software/powershell-beautifier-free-tool-to-pretty-print-ps1-script-files/)
 - [Powershell Magazine](https://powershellmagazine.com)
+- [Microsoft Learn: Using PSScriptAnalyzer](https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer?view=ps-modules)
+- [Microsoft Learn: Invoke-ScriptAnalyzer](https://learn.microsoft.com/en-us/powershell/module/psscriptanalyzer/invoke-scriptanalyzer?view=ps-modules)
+- [PowershellIsFun.com: Using PSScriptAnalyzer to optimize your Powershell scripts](https://powershellisfun.com/2022/10/17/using-psscriptanalyzer-to-optimize-your-powershell-scripts/)
