@@ -108,6 +108,7 @@ function main () {
     Install-PowershellBeautifierModule
 
     Start-BeautifyScriptsInPath -ScanPath .\scripts
+    Start-BeautifyScriptsInPath -ScanPath .\Profiles
 }
 
 main
