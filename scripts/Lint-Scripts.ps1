@@ -8,8 +8,18 @@
 #>
 param(
     [switch]$Verbose,
-    [switch]$Debug
+    [switch]$Debug,
+    [switch]$Lint,
+    [switch]$Analyze
 )
+
+if ( ( -Not $Lint ) -And ( -Not $Analyze ) ) {
+    Write-Output "You must pass one or both of -Lint / -Analyze."
+    Write-Output "  [-Lint]: will scan scripts in the repository for formatting errors (double space instead of four, tabs instead of spaces, etc)."
+    Write-Output "  [-Analyze]: will analyze script files with the PSScriptAnalyzer tool."
+
+    exit 0
+}
 
 if ($Debug) {
     $DebugPreference = "Continue"
@@ -62,12 +72,12 @@ function Start-BeatifySingleScript () {
 
     if (-not ($TargetScript)) {
         Write-Error "-TargetScript must not be `$null or empty."
-        return $false
+        return
     }
 
     if (-not (Test-Path "$($TargetScript)")) {
         Write-Error "Could not find file to beautify: $($TargetScript)"
-        return $false
+        return
     }
 
     Write-Output "Beautifying file: $($TargetScript)"
@@ -75,10 +85,10 @@ function Start-BeatifySingleScript () {
         Edit-DTWBeautifyScript "$($TargetScript)"
         Write-Output "Finished linting file: $($TargetScript)"
 
-        return $true
+        return
     } catch {
         Write-Error "Error linting file '$($TargetScript)'. Details: $($_.Exception.Message)"
-        return $false
+        return
     }
 }
 
@@ -89,27 +99,32 @@ function Start-BeautifyScriptsInPath () {
 
     if (-not (Test-Path -Path $ScanPath)) {
         Write-Error "Failed to beautify scripts, could not find path: $($ScanPath)."
-        return $false
+        return
     }
 
     Write-Output "Beautifying script files in path: $($ScanPath)"
     try {
         Get-ChildItem -Path "$($ScanPath)" -Recurse -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript -IndentType FourSpaces
         Write-Output "Finished beautifying scripts in path: $($ScanPath)"
-        return $true
+        return
     } catch {
         Write-Error "Failed to beautify scripts in path: $($ScanPath). Details: $($_.Exception.Message)"
-        return $false
+        return
     }
 }
 
 function main () {
-    Install-PSScriptAnalyzerModule
-    Install-PowershellBeautifierModule
+    If ( $Analyze ) {
+        Install-PSScriptAnalyzerModule
+    }
+    
+    If ( $Lint ) {
+        Install-PowershellBeautifierModule
 
-    Start-BeautifyScriptsInPath -ScanPath .\scripts
-    Start-BeautifyScriptsInPath -ScanPath .\Profiles
-    Start-BeautifyScriptsInPath -ScanPath .\ProfileModule
+        Start-BeautifyScriptsInPath -ScanPath .\scripts
+        Start-BeautifyScriptsInPath -ScanPath .\Profiles
+        Start-BeautifyScriptsInPath -ScanPath .\ProfileModule
+    }
 }
 
 main
