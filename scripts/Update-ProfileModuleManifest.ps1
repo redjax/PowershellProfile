@@ -13,10 +13,14 @@ param(
 
 If ( $Debug ) {
     $DebugPreference = "Continue"
+} else {
+    $DebugPreference = "SilentlyContinue"
 }
 
 If ( $Verbose ) {
     $VerbosePreference = "Continue"
+} else {
+    $VerbosePreference = "SilentlyContinue"
 }
 
 Write-Verbose "Author string: $Author"
@@ -84,13 +88,18 @@ function Get-FunctionsFromScript {
     )
 
     $Functions = @()
+    # $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
     $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
     $SearchMatches = $functionRegex.Matches($scriptContent)
     
     ForEach ($match in $SearchMatches) {
         ## Check if function is uncommented
         if ( -Not ( $match.Value -match '^\s*#' ) ) {
-            $Functions += $match.Groups[1].Value
+            # $Functions += $match.Groups[1].Value
+
+            # Remove any parentheses from the function name
+            $functionName = $match.Groups[1].Value -replace '\(\)', ''
+            $Functions += $functionName
         }
     }
 

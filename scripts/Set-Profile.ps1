@@ -42,7 +42,7 @@ else {
 
 ## Check if PSProfile.ps1 exists
 if ( Test-Path $RepoProfilePath ) {
-    Write-Host "Install Powershell profile from repository"
+    Write-Host "Install Powershell profile from repository" -ForegroundColor Cyan
     Write-Debug "Copy '$($RepoProfilePath)' to '$($ProfilePath)'"
 
     Copy-Item -Path $RepoProfilePath -Destination $ProfilePath -Force
