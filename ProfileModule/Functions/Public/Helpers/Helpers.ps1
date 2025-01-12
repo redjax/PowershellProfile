@@ -44,7 +44,7 @@ function Get-PowershellVersion() {
     ## Print Powershell version string
     $PowershellVersion = $PSVersionTable.PSVersion.ToString()
 
-    Write-Host "Powershell version: $PowershellVersion"
+    Write-Output "Powershell version: $PowershellVersion"
 }
 
 function Start-StarshipShell() {
@@ -76,7 +76,7 @@ function Get-CommandInfo {
 }
 
 function Write-PSVersionTable {
-    Write-Host 'Powershell Version Info' -ForegroundColor Green
+    Write-Output 'Powershell Version Info' -ForegroundColor Green
     $PSVersionTable
 }
 
@@ -85,8 +85,8 @@ function Show-TermColors {
 
     $colors = [enum]::GetValues([System.ConsoleColor])
     Foreach ($bgcolor in $colors) {
-        Foreach ($fgcolor in $colors) { Write-Host "$fgcolor|"  -ForegroundColor $fgcolor -BackgroundColor $bgcolor -NoNewline }
-        Write-Host " on $bgcolor"
+        Foreach ($fgcolor in $colors) { Write-Output "$fgcolor|"  -ForegroundColor $fgcolor -BackgroundColor $bgcolor -NoNewline }
+        Write-Output " on $bgcolor"
     }
 }
 

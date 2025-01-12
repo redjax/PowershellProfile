@@ -13,7 +13,7 @@ function Set-EnvVar {
 
         Example:
             Set-EnvVar -Name "EXAMPLE_VAR" -Value "example value"
-            Write-Host $env:EXAMPLE_VAR
+            Write-Output $env:EXAMPLE_VAR
     #>
     param (
         [string]$Name,
@@ -22,7 +22,7 @@ function Set-EnvVar {
         [string]$Target = 'User'
     )
 
-    Write-Host "Setting [$Target] environment variable "$Name"."
+    Write-Output "Setting [$Target] environment variable "$Name"."
 
     If ( $Target -eq 'Process' ) {
         Write-Warning "Environment variable [$Target] will not persist between sessions."
@@ -53,7 +53,7 @@ function Remove-EnvVar {
 
         Example:
             Remove-EnvVar -Name "EXAMPLE_VAR"
-            Write-Host $env:EXAMPLE_VAR
+            Write-Output $env:EXAMPLE_VAR
     #>
     param (
         [string]$Name,

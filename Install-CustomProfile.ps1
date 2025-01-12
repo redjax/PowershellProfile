@@ -57,7 +57,7 @@ function Start-ModuleManifestUpdate() {
         $Debug = $False,
         $Verbose = $False,
         $GUIDFilePath = $GUIDFilePath,
-        $Author = $Author,
+        $Author = $ModuleAuthor,
         $AuthorFilePath = $AuthorFilePath,
         $VersionFilePath = $VersionFilePath,
         $ManifestPath = $ManifestPath,
@@ -70,7 +70,7 @@ function Start-ModuleManifestUpdate() {
     $Verbose = $Verbose -eq $True
 
     $UpdateManifestScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Update-ProfileModuleManifest.ps1"
-    
+
     Write-Debug "Calling script: $UpdateManifestScriptPath"
     Write-Debug "Debug: $($Debug), Verbose: $($Verbose)"
 
@@ -105,7 +105,7 @@ function Start-ModuleInstall() {
     $Verbose = $Verbose -eq $True
 
     $InstallModuleScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Install-ProfileModule.ps1"
-    
+
     Write-Debug "Calling script: $InstallModuleScriptPath"
     Write-Debug "Debug: $($Debug), Verbose: $($Verbose)"
 
@@ -117,7 +117,8 @@ function Start-ModuleInstall() {
             -RepositoryPath $RepositoryPath `
             -SourcePath $ModuleSource `
             -TargetPath $ProfileModulePath
-    } catch {
+    }
+    catch {
         Write-Error "Error running ProfileModule install script. Details: $($_.Exception.Message)"
         exit 1
     }
@@ -147,19 +148,20 @@ function Start-ProfileInstall() {
             -Verbose:$Verbose `
             -ProfilePath $ProfilePath `
             -PSModulesPath $PSModulesPath
-    } catch {
+    }
+    catch {
         Write-Error "Error installing custom profile. Details: $($_.Exception.Message)"
         exit 1
     }
 }
 
 function main() {
-    Write-Host "`n[ Update Powershell module's .psd1 manifest file ]" -ForegroundColor Blue
+    Write-Output "`n[ Update Powershell module's .psd1 manifest file ]" -ForegroundColor Blue
 
     try {
         Start-ModuleManifestUpdate `
             -GUIDFilePath $GUIDFilePath `
-            -Author $Author `
+            -Author $ModuleAuthor `
             -AuthorFilePath $AuthorFilePath `
             -VersionFilePath $VersionFilePath `
             -ManifestPath $ManifestPath `
@@ -172,7 +174,7 @@ function main() {
         Write-Error "Error creating/updating module manifest. Details: $($_.Exception.Message)"
     }
 
-    Write-Host "`n[ Install ProfileModule in path: $($PSModulesPath) ]" -ForegroundColor Blue
+    Write-Output "`n[ Install ProfileModule in path: $($PSModulesPath) ]" -ForegroundColor Blue
     try {
         Start-ModuleInstall `
             -Debug:$Debug `
@@ -182,13 +184,14 @@ function main() {
         Write-Error "Failed to install ProfileModule Powershell module. Details: $($_.Exception.Message)"
     }
 
-    Write-Host "`n[ Install custom `$PROFILE ]" -ForegroundColor Blue
+    Write-Output "`n[ Install custom `$PROFILE ]" -ForegroundColor Blue
 
     try {
         Start-ProfileInstall `
             -Debug:$Debug `
             -Verbose:$Verbose
-    } catch {
+    }
+    catch {
         Write-Error "Error installing custom profile. Details: $($_.Exception.Message)"
         exit 1
     }

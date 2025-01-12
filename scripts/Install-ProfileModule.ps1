@@ -20,7 +20,7 @@ Write-Verbose "Target path: $TargetPath"
 ## Check if the target path exists
 If ( Test-Path -Path $TargetPath ) {
     Write-Debug "Target path '$($TargetPath)' exists. Removing before installing profile module."
-    Write-Host "Replacing existing module at $TargetPath." -ForegroundColor Magenta
+    Write-Output "Replacing existing module at $TargetPath." -ForegroundColor Magenta
     
     try {
         Remove-Item -Recurse -Force $TargetPath
@@ -31,10 +31,10 @@ If ( Test-Path -Path $TargetPath ) {
 }
 
 ## Copy the module to the Modules directory
-Write-Host "Installing ProfileModule to $TargetPath." -ForegroundColor Cyan
+Write-Output "Installing ProfileModule to $TargetPath." -ForegroundColor Cyan
 try {
     Copy-Item -Recurse -Path $SourcePath -Destination $TargetPath
-    Write-Host "[SUCCESS] Powershell profile module installed at path: $TargetPath" -ForegroundColor Green
+    Write-Output "[SUCCESS] Powershell profile module installed at path: $TargetPath" -ForegroundColor Green
     exit 0
 } catch {
     Write-Error "[ERROR] Failed to install/update Powershell profile module. Details: $($_.Exception.Message)"
