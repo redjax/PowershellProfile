@@ -1,10 +1,10 @@
 function Get-ParentPath {
     ## Return the parent directory for a given path.
-    Param(
+    param(
         [string]$Path
     )
 
-    If ( -Not ( $Path ) ) {
+    if (-not ($Path)) {
         Write-Warning "-Path is empty."
         return
     }
@@ -18,24 +18,24 @@ function Edit-Profile {
     <#
         Open current profile.ps1 in PowerShell ISE
     #>
-    Param(
+    param(
         [string]$Editor = "notepad"
     )
     $ProfilePath = $($PROFILE)
     Write-Debug "Editor: $Editor, Profile: $($ProfilePath)"
 
-    If ($host.Name -match 'ise') {
+    if ($host.Name -match 'ise') {
         ## Edit in PowerShell ISE, if available
         $psISE.CurrentPowerShellTab.Files.Add($ProfilePath)
     }
-    Else {
+    else {
         ## Edit in Notepad if no PowerShell ISE found
         & $Editor $ProfilePath
     }
 }
 
 function New-SymLink {
-    <#
+<#
         .SYNOPSIS
         Create a new junction/symbolic link.
 
@@ -51,27 +51,27 @@ function New-SymLink {
         .EXAMPLE
         New-SymLink -SrcPath c:\path\to\src -DestPath c:\path\to\destination [-Overwrite]
     #>
-    Param(
+    param(
         [string]$SrcPath,
         [string]$DestPath,
         [switch]$Overwrite
     )
 
-    If ( Test-Path -Path $DestPath ) {
+    if (Test-Path -Path $DestPath) {
         ## Config already exists, check if it's a directory or junction
         $Item = Get-Item $DestPath
 
         ## Check if path is a junction
-        If ( $Item.Attributes -band [System.IO.FileAttributes]::ReparsePoint ) {
+        if ($Item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
             Write-Output "Path is already a junction/symlink: $($DestPath)"
             return
         }
 
         ## Path is a regular directory
         Write-Warning "Path already exists and is not a junction: $($DestPath)."
-        If ( $Overwrite ) {
+        if ($Overwrite) {
             Write-Output "-Overwrite detected. Moving path '$($DestPath)' to '$($DestPath).bak' and creating junction."
-            If ( Test-Path "$($DestPath).bak" ) {
+            if (Test-Path "$($DestPath).bak") {
                 Write-Warning "$($DestPath).bak already exists, overwriting."
                 Remove-Item "$($DestPath).bak" -Recurse -Force
             }
@@ -90,7 +90,7 @@ function New-SymLink {
     Write-Output "Creating symlink from '$($SrcPath)' to '$($DestPath)'."
     $SymlinkCommand = "New-Item -Path $($SrcPath) -ItemType SymbolicLink -Target $($DestPath)"
 
-    If ( -Not ( Test-IsAdmin ) ) {
+    if (-not (Test-IsAdmin)) {
         Write-Warning "Script is not running as an administrator. Creating symbolic links on Windows requires administrator rights, elevating command."
         try {
             Start-AsAdmin -Command "$($SymlinkCommand)"

@@ -15,16 +15,16 @@ function Set-EnvVar {
             Set-EnvVar -Name "EXAMPLE_VAR" -Value "example value"
             Write-Output $env:EXAMPLE_VAR
     #>
-    param (
+    param(
         [string]$Name,
         [string]$Value,
-        [ValidateSet('Machine', 'User', 'Process')]
+        [ValidateSet('Machine','User','Process')]
         [string]$Target = 'User'
     )
 
-    Write-Output "Setting [$Target] environment variable "$Name"."
+    Write-Output "Setting [$Target] environment variable " $Name"."
 
-    If ( $Target -eq 'Process' ) {
+    if ($Target -eq 'Process') {
         Write-Warning "Environment variable [$Target] will not persist between sessions."
     }
     else {
@@ -32,7 +32,7 @@ function Set-EnvVar {
     }
 
     try {
-        [System.Environment]::SetEnvironmentVariable($Name, $Value, [System.EnvironmentVariableTarget]::$Target)
+        [System.Environment]::SetEnvironmentVariable($Name,$Value,[System.EnvironmentVariableTarget]::$Target)
     }
     catch {
         Write-Error "Unhandled exception setting environment variable. Details: $($_.Exception.Message)"
@@ -55,14 +55,14 @@ function Remove-EnvVar {
             Remove-EnvVar -Name "EXAMPLE_VAR"
             Write-Output $env:EXAMPLE_VAR
     #>
-    param (
+    param(
         [string]$Name,
-        [ValidateSet('Machine', 'User', 'Process')]
+        [ValidateSet('Machine','User','Process')]
         [string]$Target = 'User'
     )
-    
+
     try {
-        [System.Environment]::SetEnvironmentVariable($Name, $null, [System.EnvironmentVariableTarget]::$Target)
+        [System.Environment]::SetEnvironmentVariable($Name,$null,[System.EnvironmentVariableTarget]::$Target)
     }
     catch {
         Write-Error "Unhandled exception removing environment variable. Details: $($_.Exception.Message)"
