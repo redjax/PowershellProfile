@@ -2,7 +2,8 @@ Param(
     [switch]$Debug,
     [switch]$Verbose,
     [string]$ProfilePath = $PROFILE,
-    [string]$PSModulesPath = "$(Split-Path $ProfilePath -Parent)\Modules"
+    [string]$PSModulesPath = "$(Split-Path $ProfilePath -Parent)\Modules",
+    [string]$ProfileName = "DefaultProfile"
 )
 
 If ( $Debug ) {
@@ -16,8 +17,8 @@ If ( $Verbose ) {
 Write-Verbose "Powershell profile path: $($ProfilePath)"
 Write-Verbose "Powershell modules path: $($PSModulesPath)"
 
-## Define the source path for PSProfile.ps1 (in the root of the git repository)
-$RepoProfilePath = Join-Path (Get-Location) "PSProfile.ps1"
+## Define the source path for ProfileName.ps1 (in the root of the git repository)
+$RepoProfilePath = Join-Path (Get-Location) "$($ProfileName).ps1"
 Write-Verbose "Repository Profile path: $($RepoProfilePath)"
 
 ## Check if the profile exists
@@ -36,18 +37,18 @@ if ( Test-Path $ProfilePath ) {
 }
 else {
 
-    ## If no profile exists, create one by copying PSProfile.ps1 to the correct path
+    ## If no profile exists, create one by copying ProfileName.ps1 to the correct path
     Write-Host "No profile found. Creating a new profile." -ForegroundColor Cyan
 }
 
-## Check if PSProfile.ps1 exists
+## Check if ProfileName.ps1 exists
 if ( Test-Path $RepoProfilePath ) {
     Write-Host "Install Powershell profile from repository" -ForegroundColor Cyan
     Write-Debug "Copy '$($RepoProfilePath)' to '$($ProfilePath)'"
 
     Copy-Item -Path $RepoProfilePath -Destination $ProfilePath -Force
-    Write-Host "New profile created from PSProfile.ps1." -ForegroundColor Green
+    Write-Host "New profile created from $($ProfileName).ps1." -ForegroundColor Green
 }
 else {
-    Write-Host "PSProfile.ps1 not found at the repository root."
+    Write-Host "$($ProfileName).ps1 not found at the repository root."
 }
