@@ -8,6 +8,9 @@ $ModuleName = $PSScriptRoot.Split($DirectorySeparator)[-1]
 $PublicFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Functions' + $DirectorySeparator + 'Public' + $DirectorySeparator
 $PrivateFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Functions' + $DirectorySeparator + 'Private' + $DirectorySeparator
 
+## Path to Aliases.ps1
+$AliasesFilePath = $PSScriptRoot + $DirectorySeparator + 'Aliases.ps1'
+
 ## Regular expression to match function definitions
 $functionRegex = 'function\s+([^\s{]+)\s*\{'
 
@@ -47,6 +50,18 @@ foreach ($script in $PublicFunctions) {
 ## Export each public function individually
 $PublicFunctionNames | ForEach-Object {
     Export-ModuleMember -Function $_
+}
+
+# Source the Aliases.ps1 file if it exists
+if (Test-Path -Path $AliasesFilePath) {
+    . $AliasesFilePath
+
+    ## Export aliases after sourcing the Aliases.ps1
+    $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
+
+    $Aliases | ForEach-Object {
+        Export-ModuleMember -Alias $_.Name
+    }
 }
 
 # Write-Host "Module loaded and functions exported."
