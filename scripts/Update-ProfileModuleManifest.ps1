@@ -11,13 +11,13 @@ param(
     [switch]$Verbose
 )
 
-If ( $Debug ) {
+if ($Debug) {
     $DebugPreference = "Continue"
 } else {
     $DebugPreference = "SilentlyContinue"
 }
 
-If ( $Verbose ) {
+if ($Verbose) {
     $VerbosePreference = "Continue"
 } else {
     $VerbosePreference = "SilentlyContinue"
@@ -33,7 +33,7 @@ Write-Verbose "Module author file path: $($AuthorFilePath)"
 Write-Verbose "Module version file path: $($VersionFilePath)"
 
 ## Generate GUID if it doesn't exist
-if ( -Not ( Test-Path -Path $GUIDFilePath ) ) {
+if (-not (Test-Path -Path $GUIDFilePath)) {
     Write-Debug "GUID file '$($GUIDFilePath)' does not exist. Generating GUID and saving to file."
     $guid = [guid]::NewGuid().ToString()
     Set-Content -Path $GUIDFilePath -Value $guid
@@ -43,10 +43,10 @@ if ( -Not ( Test-Path -Path $GUIDFilePath ) ) {
 }
 
 ## Save author if provided
-if ( $Author ) {
+if ($Author) {
     Write-Debug "Saving author '$Author' to path: $($AuthorFilePath)"
     Set-Content -Path $AuthorFilePath -Value $Author
-} elseif ( -Not (Test-Path -Path $AuthorFilePath)) {
+} elseif (-not (Test-Path -Path $AuthorFilePath)) {
     Write-Error "Author not provided and author.txt does not exist."
     exit 1
 } else {
@@ -55,7 +55,7 @@ if ( $Author ) {
 }
 
 ## Set version if it doesn't exist
-if ( -Not ( Test-Path -Path $VersionFilePath ) ) {
+if (-not (Test-Path -Path $VersionFilePath)) {
     Write-Debug "Version file not found at path '$($VersionFilePath)'. Saving version '0.1.0' to version file."
     $version = "0.1.0"
     Set-Content -Path $VersionFilePath -Value $version
@@ -65,25 +65,25 @@ if ( -Not ( Test-Path -Path $VersionFilePath ) ) {
 }
 
 ## Import existing module manifest if it exists
-if ( Test-Path -Path $ManifestPath ) {
+if (Test-Path -Path $ManifestPath) {
     Write-Debug "Loading module manifest contents from path '$($ManifestPath)'"
     $manifest = Import-PowerShellDataFile -Path $ManifestPath
 } else {
     Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
     $manifest = @{
-        RootModule          = ".\ProfileModule.psm1"
-        ModuleVersion       = $version
-        GUID                = $guid
-        Author              = $Author
-        FunctionsToExport   = @()
-        AliasesToExport     = @()
-        CmdletsToExport     = @()
-        VariablesToExport   = @()
+        RootModule = ".\ProfileModule.psm1"
+        ModuleVersion = $version
+        GUID = $guid
+        Author = $Author
+        FunctionsToExport = @()
+        AliasesToExport = @()
+        CmdletsToExport = @()
+        VariablesToExport = @()
     }
 }
 
 function Get-FunctionsFromScript {
-    Param(
+    param(
         $scriptContent
     )
 
@@ -91,14 +91,14 @@ function Get-FunctionsFromScript {
     # $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
     $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
     $SearchMatches = $functionRegex.Matches($scriptContent)
-    
-    ForEach ($match in $SearchMatches) {
+
+    foreach ($match in $SearchMatches) {
         ## Check if function is uncommented
-        if ( -Not ( $match.Value -match '^\s*#' ) ) {
+        if (-not ($match.Value -match '^\s*#')) {
             # $Functions += $match.Groups[1].Value
 
             # Remove any parentheses from the function name
-            $functionName = $match.Groups[1].Value -replace '\(\)', ''
+            $functionName = $match.Groups[1].Value -replace '\(\)',''
             $Functions += $functionName
         }
     }
@@ -108,7 +108,7 @@ function Get-FunctionsFromScript {
 
 # Helper function to extract aliases from script content
 function Get-AliasesFromScript {
-    Param(
+    param(
         $ScriptContent
     )
 
@@ -116,9 +116,9 @@ function Get-AliasesFromScript {
     $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+(\w+)\s+-Value\s+(\w+)'
     $SearchMatches = $aliasRegex.Matches($ScriptContent)
 
-    ForEach ($match in $SearchMatches) {
+    foreach ($match in $SearchMatches) {
         ## Check if alias is uncommented
-        if ( -Not ( $match.Value -match '^\s*#' ) ) {
+        if (-not ($match.Value -match '^\s*#')) {
             $Aliases += $match.Groups[1].Value
         }
     }
@@ -134,23 +134,23 @@ $Aliases = @()
 
 ## Scan for functions in Public/ directory only
 $PublicFunctionsPath = Join-Path $FunctionsPath "Public"
-if ( Test-Path -Path $PublicFunctionsPath -PathType Container ) {
+if (Test-Path -Path $PublicFunctionsPath -PathType Container) {
     Write-Output "Scanning path '$($PublicFunctionsPath)' for script files with functions."
 
     $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1 -Recurse
 
-    If ( $publicScripts ) {
+    if ($publicScripts) {
         Write-Output "Extracting uncommented functions from public scripts."
     }
 
-    ForEach ($script in $publicScripts) {
+    foreach ($script in $publicScripts) {
         $scriptContent = Get-Content -Path $script.FullName -Raw
         $Functions += Get-FunctionsFromScript -scriptContent $scriptContent
     }
 }
 
 ## Scan for aliases
-if ( Test-Path -Path $AliasesFile -PathType Leaf ) {
+if (Test-Path -Path $AliasesFile -PathType Leaf) {
     Write-Output "Scanning path '$($AliasesFile)' for aliases."
 
     $scriptContent = Get-Content -Path $AliasesFile -Raw
@@ -168,7 +168,7 @@ $manifest.FunctionsToExport = $FunctionsArray
 $manifest.AliasesToExport = $AliasesArray
 
 # Make sure that the RootModule, ModuleVersion, GUID, and Author are populated
-$manifest.RootModule = ".\ProfileModule.psm1"  # You can change this if necessary
+$manifest.RootModule = ".\ProfileModule.psm1" # You can change this if necessary
 $manifest.ModuleVersion = $version
 $manifest.GUID = $guid
 $manifest.Author = $Author

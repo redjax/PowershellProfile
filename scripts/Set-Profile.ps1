@@ -1,4 +1,4 @@
-Param(
+param(
     [switch]$Debug,
     [switch]$Verbose,
     [string]$ProfilePath = $PROFILE,
@@ -6,11 +6,11 @@ Param(
     [string]$ProfileName = "DefaultProfile"
 )
 
-If ( $Debug ) {
+if ($Debug) {
     $DebugPreference = "Continue"
 }
 
-If ( $Verbose ) {
+if ($Verbose) {
     $VerbosePreference = "Continue"
 }
 
@@ -24,11 +24,11 @@ $RepoProfilePath = Join-Path $RepoProfilesDir "$($ProfileName).ps1"
 Write-Verbose "Repository Profile path: $($RepoProfilePath)"
 
 ## Check if the profile exists
-if ( Test-Path $ProfilePath ) {
+if (Test-Path $ProfilePath) {
     ## Backup the existing profile by copying it to $PROFILE.bak (overwriting if exists)
     Write-Output "Backing up existing profile."
     Write-Debug "Move $($ProfilePath) -> $($ProfilePath).bak"
-    
+
     try {
         Move-Item -Path $ProfilePath -Destination "$ProfilePath.bak" -Force
     }
@@ -44,7 +44,7 @@ else {
 }
 
 ## Check if ProfileName.ps1 exists
-if ( Test-Path $RepoProfilePath ) {
+if (Test-Path $RepoProfilePath) {
     Write-Output "Install Powershell profile from repository"
     Write-Debug "Copy '$($RepoProfilePath)' to '$($ProfilePath)'"
 
