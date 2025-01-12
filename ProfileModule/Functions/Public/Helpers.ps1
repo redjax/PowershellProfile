@@ -4,3 +4,6 @@ function Test-IsAdmin {
     
     return $isAdmin
 }
+
+## Export functions
+# Export-ModuleMember -Function Test-IsAdmin

@@ -105,7 +105,7 @@ function Get-AliasesFromScript {
 
     $Aliases = @()
     $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+(\w+)\s+-Value\s+(\w+)'
-    $SearchMatches = $aliasRegex.Matches($scriptContent)
+    $SearchMatches = $aliasRegex.Matches($ScriptContent)
 
     ForEach ($match in $SearchMatches) {
         ## Check if alias is uncommented
@@ -123,16 +123,18 @@ Write-Host "Updating Powershell module at path: $($ModuleRoot)" -ForegroundColor
 $Functions = @()
 $Aliases = @()
 
-## Scan for functions
-if ( Test-Path -Path $FunctionsPath -PathType Container ) {
-    Write-Host "Scanning path '$($FunctionsPath)' for script files with functions." -ForegroundColor Cyan
+## Scan for functions in Public/ directory only
+$PublicFunctionsPath = Join-Path $FunctionsPath "Public"
+if ( Test-Path -Path $PublicFunctionsPath -PathType Container ) {
+    Write-Host "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Cyan
 
-    $scripts = Get-ChildItem -Path $FunctionsPath -Filter *.psm1
-    
-    If ( $Scripts ) {
-        Write-Host "Extracting uncommented functions." -ForegroundColor Magenta
+    $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1
+
+    If ( $publicScripts ) {
+        Write-Host "Extracting uncommented functions from public scripts." -ForegroundColor Magenta
     }
-    ForEach ($script in $scripts) {
+
+    ForEach ($script in $publicScripts) {
         $scriptContent = Get-Content -Path $script.FullName -Raw
         $Functions += Get-FunctionsFromScript -scriptContent $scriptContent
     }
@@ -177,7 +179,6 @@ try {
     VariablesToExport   = @()
 }
 "@
-
     Set-Content -Path $ManifestPath -Value $manifestContent
 
     Write-Host "Module manifest updated successfully." -ForegroundColor Green

@@ -1,65 +1,52 @@
-# Define paths
-$ModuleRoot = (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent)
-$FunctionsPath = Join-Path $ModuleRoot "Functions"
-$AliasesFile = Join-Path $ModuleRoot "Aliases.ps1"
+## Set directory separator character, i.e. '\' on Windows
+$DirectorySeparator = [System.IO.Path]::DirectorySeparatorChar
 
-# Initialize arrays for functions and aliases
-$FunctionsToExport = @()
-$AliasesToExport = @()
+## Set name of module from $PSScriptRoot
+$ModuleName = $PSScriptRoot.Split($DirectorySeparator)[-1]
 
-# Function to extract function names from script content
-function Get-FunctionsFromScript {
-    param($scriptContent)
-    $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
-    $searchmatches = $functionRegex.Matches($scriptContent)
-    $searchmatches | ForEach-Object { $_.Groups[1].Value }
-}
+## Define paths to public and private function directories
+$PublicFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Functions' + $DirectorySeparator + 'Public' + $DirectorySeparator
+$PrivateFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Functions' + $DirectorySeparator + 'Private' + $DirectorySeparator
 
-# Function to extract alias names from script content
-function Get-AliasesFromScript {
-    param($scriptContent)
-    $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+(\w+)\s+-Value\s+(\w+)'
-    $searchmatches = $aliasRegex.Matches($scriptContent)
-    $searchmatches | ForEach-Object { $_.Groups[1].Value }
-}
+## Regular expression to match function definitions
+$functionRegex = 'function\s+([^\s{]+)\s*\{'
 
-# Scan for functions in .ps1 and .psm1 scripts in Functions directory
-if (Test-Path -Path $FunctionsPath -PathType Container) {
-    Write-Host "Scanning path '$FunctionsPath' for script files with functions..." -ForegroundColor Cyan
-    $scripts = Get-ChildItem -Path $FunctionsPath -Recurse -Include "*.psm1", "*.ps1"
-    foreach ($script in $scripts) {
-        Write-Host "Scanning file: $($script.FullName)" -ForegroundColor Magenta
-        $scriptContent = Get-Content -Path $script.FullName -Raw
-        $FunctionsToExport += Get-FunctionsFromScript -scriptContent $scriptContent
+## Get list of .ps1 files in Public/ recursively
+$PublicFunctions = Get-ChildItem -Path $PublicFunctionsPath -Recurse -Filter *.ps1
+
+## Get list of .ps1 files in Private/ recursively
+$PrivateFunctions = Get-ChildItem -Path $PrivateFunctionsPath -Recurse -Filter *.ps1
+
+## Load all PowerShell functions from script files
+$PrivateFunctions | ForEach-Object { 
+    # Write-Host "Sourcing private function from: $($_.FullName)"
+    . $_.FullName 
+}  # Load private functions first
+
+$PublicFunctions | ForEach-Object { 
+    # Write-Host "Sourcing public function from: $($_.FullName)"
+    . $_.FullName 
+}   # Load public functions after
+
+## Gather function names from each script in the Public folder
+$PublicFunctionNames = @()
+
+foreach ($script in $PublicFunctions) {
+    $scriptContent = Get-Content -Path $script.FullName -Raw
+    $SearchMatches = [regex]::Matches($scriptContent, $functionRegex)
+    
+    foreach ($match in $SearchMatches) {
+        $functionName = $match.Groups[1].Value
+        $PublicFunctionNames += $functionName
     }
 }
 
-# Scan for aliases in Aliases.ps1 file
-if (Test-Path -Path $AliasesFile -PathType Leaf) {
-    Write-Host "Importing aliases from '$AliasesFile'..." -ForegroundColor Cyan
-    $scriptContent = Get-Content -Path $AliasesFile -Raw
-    $AliasesToExport += Get-AliasesFromScript -scriptContent $scriptContent
+## Debugging: Output the function names
+# Write-Host "Public functions to export: $PublicFunctionNames"
+
+## Export each public function individually
+$PublicFunctionNames | ForEach-Object {
+    Export-ModuleMember -Function $_
 }
 
-# Ensure functions and aliases are available when the module is imported
-Write-Host "Exporting functions: $($FunctionsToExport -join ', ')" -ForegroundColor Green
-Write-Host "Exporting aliases: $($AliasesToExport -join ', ')" -ForegroundColor Green
-
-# Create dynamic functions in the module scope and export them
-foreach ($function in $FunctionsToExport) {
-    $functionPath = Join-Path $FunctionsPath "$function.psm1"
-    if (Test-Path $functionPath) {
-        Write-Host "Loading function from file: $functionPath" -ForegroundColor Yellow
-        $functionDefinition = Get-Content -Path $functionPath -Raw
-        Invoke-Expression $functionDefinition
-    }
-    Export-ModuleMember -Function $function
-}
-
-# Create dynamic aliases and export them
-foreach ($alias in $AliasesToExport) {
-    Set-Alias -Name $alias -Value $alias
-    Export-ModuleMember -Alias $alias
-}
-
-Write-Host "Module setup completed." -ForegroundColor Green
+# Write-Host "Module loaded and functions exported."
