@@ -113,9 +113,33 @@ function Start-BeautifyScriptsInPath () {
     }
 }
 
+function Start-AnalyzeScriptsInPath () {
+    Param(
+        $ScanPath = ".\"
+    )
+
+    If ( -Not (Test-Path -Path $ScanPath) ) {
+        Write-Error "Failed to analyze scripts, could not find path: $($ScanPath)"
+        return
+    }
+
+    Write-Output "Analyzing scripts in path: $($ScanPath)"
+    try {
+        Invoke-ScriptAnalyzer -Recurse "$($ScanPath)"
+        
+        Write-Output "Analyzed scripts in path $($ScanPath)"
+        return
+    } catch {
+        Write-Error "Failed to analyze scripts in path: $($ScanPath). Details: $($_.Exception.Message)"
+        exit 1
+    }
+}
+
 function main () {
     If ( $Analyze ) {
         Install-PSScriptAnalyzerModule
+
+        Start-AnalyzeScriptsInPath -ScanPath .\scripts
     }
     
     If ( $Lint ) {
