@@ -2,7 +2,7 @@
 
 My Powershell `$PROFILE` module.
 
-This repository includes a module named [`ProfileModule`](./ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. Using the [custom `$PROFILE`](./PSProfile.ps1), my shell session can be customized by loading custom functions, aliases, & more from the `ProfileModule`.
+This repository includes a module named [`ProfileModule`](./ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. This repository includes swappable [Powershell profiles](./Profiles/).
 
 **WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`.
 
@@ -28,8 +28,8 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
         - `cp $PROFILE "$($PROFILE).orig"`
         - This will prevent accidentally nuking any customizations you've made to your `$PROFILE`
     - Update the module's [manifest file](./ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
-    - Copy the [`ProfileModule`] directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
-    - Copy/update the custom [`PSProfile.ps1`](./PSProfile.ps1) to your machine's `$PROFILE` location.
+    - Copy the [`ProfileModule`](./ProfileModule/) directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
+    - Copy/update a [custom profile](./Profiles/) (default: [`DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1)) to your machine's `$PROFILE` location.
       - This custom profile imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
 - Restart your shell
 
