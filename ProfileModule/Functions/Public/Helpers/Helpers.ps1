@@ -76,7 +76,7 @@ function Get-CommandInfo {
 }
 
 function Write-PSVersionTable {
-    Write-Output 'Powershell Version Info' -ForegroundColor Green
+    Write-Output 'Powershell Version Info'
     $PSVersionTable
 }
 
