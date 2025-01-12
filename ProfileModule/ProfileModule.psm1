@@ -1,59 +1,63 @@
-# ## Dynamically loads all function scripts from the Functions directory.
+# Define paths
+$ModuleRoot = (Split-Path -Path $MyInvocation.MyCommand.Definition -Parent)
+$FunctionsPath = Join-Path $ModuleRoot "Functions"
+$AliasesFile = Join-Path $ModuleRoot "Aliases.ps1"
 
-# ## Get the directory of the current module
-# $moduleBasePath = Split-Path -Parent $MyInvocation.MyCommand.Definition
-# $functionsPath = Join-Path -Path $moduleBasePath -ChildPath "Functions"
-# $aliasesPath = Join-Path -Path $moduleBasePath -ChildPath "Aliases.ps1"
+# Initialize arrays for functions and aliases
+$FunctionsToExport = @()
+$AliasesToExport = @()
 
-# ## Check if the Functions directory exists
-# if (-Not (Test-Path -Path $functionsPath)) {
-#     Write-Error "Functions directory not found: $functionsPath"
-#     return
-# }
+# Function to extract function names from script content
+function Get-FunctionsFromScript {
+    param($scriptContent)
+    $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
+    $SearchMatches = $functionRegex.Matches($scriptContent)
+    $SearchMatches | ForEach-Object { $_.Groups[1].Value }
+}
 
-# ## Function to check if a function is uncommented
-# function Test-FunctionIsUncommented {
-#     param (
-#         [string]$functionScript
-#     )
+# Function to extract alias names from script content
+function Get-AliasesFromScript {
+    param($scriptContent)
+    $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+(\w+)\s+-Value\s+(\w+)'
+    $SearchMatches = $aliasRegex.Matches($scriptContent)
+    $SearchMatches | ForEach-Object { $_.Groups[1].Value }
+}
 
-#     # Read the file content
-#     $content = Get-Content -Path $functionScript -Raw
+# Scan for functions in .ps1 and .psm1 scripts in Functions directory
+if (Test-Path -Path $FunctionsPath -PathType Container) {
+    Write-Host "Scanning path '$FunctionsPath' for script files with functions..." -ForegroundColor Cyan
+    $scripts = Get-ChildItem -Path $FunctionsPath -Filter "*.psm1,*.ps1" -Recurse
+    foreach ($script in $scripts) {
+        Write-Host "Scanning file: $($script.FullName)" -ForegroundColor Magenta
+        $scriptContent = Get-Content -Path $script.FullName -Raw
+        $FunctionsToExport += Get-FunctionsFromScript -scriptContent $scriptContent
+    }
+}
 
-#     # Use a regex to find function definitions (handle different styles of comments)
-#     $functions = Select-String -Pattern 'function\s+(\w+)' -InputObject $content
+# Scan for aliases in Aliases.ps1 file
+if (Test-Path -Path $AliasesFile -PathType Leaf) {
+    Write-Host "Importing aliases from '$AliasesFile'..." -ForegroundColor Cyan
+    $scriptContent = Get-Content -Path $AliasesFile -Raw
+    $AliasesToExport += Get-AliasesFromScript -scriptContent $scriptContent
+}
 
-#     return $functions
-# }
+# Ensure functions and aliases are available when the module is imported
+Write-Host "Exporting functions: $($FunctionsToExport -join ', ')" -ForegroundColor Green
+Write-Host "Exporting aliases: $($AliasesToExport -join ', ')" -ForegroundColor Green
 
-# ## Dot-source each script in the Functions directory and export valid functions
-# Get-ChildItem -Path $functionsPath -Filter "*.ps1" | ForEach-Object {
-#     Write-Host "Loading function script: $($_.FullName)"
+# Create dynamic functions in the module scope and export them
+foreach ($function in $FunctionsToExport) {
+    if (-not (Get-Command $function -ErrorAction SilentlyContinue)) {
+        $functionDefinition = Get-Content -Path (Join-Path $FunctionsPath "$function.psm1") -Raw
+        Invoke-Expression $functionDefinition
+    }
+    Export-ModuleMember -Function $function
+}
 
-#     # Dot-source the script
-#     . $_.FullName
+# Create dynamic aliases and export them
+foreach ($alias in $AliasesToExport) {
+    Set-Alias -Name $alias -Value $alias
+    Export-ModuleMember -Alias $alias
+}
 
-#     # Identify and export uncommented functions
-#     $validFunctions = Test-FunctionIsUncommented -functionScript $_.FullName
-
-#     foreach ($function in $validFunctions) {
-#         $functionName = $function.Matches.Groups[1].Value
-
-#         # Export only if the function is defined (and not commented)
-#         if (Get-Command -Name $functionName -ErrorAction SilentlyContinue) {
-#             Export-ModuleMember -Function $functionName
-#             Write-Host "Exporting function: $functionName"
-#         }
-#     }
-# }
-
-# ## Check if the aliases.ps1 file exists
-# if (-Not (Test-Path -Path $aliasesPath -PathType Leaf)) {
-#     Write-Error "Aliases file not found: $aliasesPath"
-#     return
-# }
-
-# ## Dot-source the aliases.ps1 file
-# . $aliasesPath
-
-# Export-ModuleMember -Function * -Alias *
+Write-Host "Module setup completed." -ForegroundColor Green
