@@ -156,7 +156,7 @@ function Start-ProfileInstall() {
 }
 
 function main() {
-    Write-Output "`n[ Update Powershell module's .psd1 manifest file ]" -ForegroundColor Blue
+    Write-Output "`n[ Update Powershell module's .psd1 manifest file ]"
 
     try {
         Start-ModuleManifestUpdate `
@@ -174,7 +174,7 @@ function main() {
         Write-Error "Error creating/updating module manifest. Details: $($_.Exception.Message)"
     }
 
-    Write-Output "`n[ Install ProfileModule in path: $($PSModulesPath) ]" -ForegroundColor Blue
+    Write-Output "`n[ Install ProfileModule in path: $($PSModulesPath) ]"
     try {
         Start-ModuleInstall `
             -Debug:$Debug `
@@ -184,7 +184,7 @@ function main() {
         Write-Error "Failed to install ProfileModule Powershell module. Details: $($_.Exception.Message)"
     }
 
-    Write-Output "`n[ Install custom `$PROFILE ]" -ForegroundColor Blue
+    Write-Output "`n[ Install custom `$PROFILE ]"
 
     try {
         Start-ProfileInstall `

@@ -1,25 +1,25 @@
 function Test-IsAdmin {
     ## Check if the current process is running with elevated privileges (admin rights)
     $isAdmin = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    
+
     return $isAdmin
 }
 
 function Start-AsAdmin {
-    <#
+<#
         .SYNOPSIS
         Pipe a command through an elevated Powershell prompt.
 
         .PARAMETER Command
         The Powershell command to run in the elevated shell.
     #>
-    param (
+    param(
         [string]$Command
     )
 
     # Check if the script is running as admin
-    $isAdmin = [bool](New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    
+    $isAdmin = [bool](New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
     if (-not $isAdmin) {
         # Prompt to run as administrator if not already running as admin
         $arguments = "-Command `"& {$command}`""
@@ -27,7 +27,7 @@ function Start-AsAdmin {
 
         try {
             Start-Process powershell -ArgumentList $arguments -Verb RunAs
-            return $true  # Indicate that the script was elevated and the command will run
+            return $true # Indicate that the script was elevated and the command will run
         }
         catch {
             Write-Error "Error executing command as admin. Details: $($_.Exception.Message)"
@@ -36,22 +36,22 @@ function Start-AsAdmin {
     else {
         # If already running as admin, execute the command
         Invoke-Expression $command
-        return $false  # Indicate that the command was run without elevation
+        return $false # Indicate that the command was run without elevation
     }
 }
 
-function Get-PowershellVersion() {
+function Get-PowershellVersion () {
     ## Print Powershell version string
     $PowershellVersion = $PSVersionTable.PSVersion.ToString()
 
     Write-Output "Powershell version: $PowershellVersion"
 }
 
-function Start-StarshipShell() {
+function Start-StarshipShell () {
     ## Initialize Starship shell
-    If ( Get-Command starship ) {
+    if (Get-Command starship) {
         try {
-            Invoke-Expression (&starship init powershell)
+            Invoke-Expression (& starship init powershell)
         }
         catch {
             ## Show error when verbose logging is enabled
@@ -61,7 +61,7 @@ function Start-StarshipShell() {
 }
 
 function Get-CommandInfo {
-    Param(
+    param(
         [string]$CommandInput
     )
 
@@ -76,7 +76,7 @@ function Get-CommandInfo {
 }
 
 function Write-PSVersionTable {
-    Write-Output 'Powershell Version Info' -ForegroundColor Green
+    Write-Output 'Powershell Version Info'
     $PSVersionTable
 }
 
@@ -84,8 +84,8 @@ function Show-TermColors {
     # [Enum]::GetValues([ConsoleColor])
 
     $colors = [enum]::GetValues([System.ConsoleColor])
-    Foreach ($bgcolor in $colors) {
-        Foreach ($fgcolor in $colors) { Write-Output "$fgcolor|"  -ForegroundColor $fgcolor -BackgroundColor $bgcolor -NoNewline }
+    foreach ($bgcolor in $colors) {
+        foreach ($fgcolor in $colors) { Write-Output "$fgcolor|" -ForegroundColor $fgcolor -BackgroundColor $bgcolor -NoNewline }
         Write-Output " on $bgcolor"
     }
 }
@@ -94,7 +94,7 @@ function Lock-Machine {
     ## Set computer state to Locked
 
     try {
-        rundll32.exe user32.dll, LockWorkStation
+        rundll32.exe user32.dll,LockWorkStation
     }
     catch {
         Write-Error "Unhandled exception locking machine. Details: $($_.Exception.Message)"

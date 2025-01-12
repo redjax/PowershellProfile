@@ -21,12 +21,12 @@ $PublicFunctions = Get-ChildItem -Path $PublicFunctionsPath -Recurse -Filter *.p
 $PrivateFunctions = Get-ChildItem -Path $PrivateFunctionsPath -Recurse -Filter *.ps1
 
 ## Load all private/internal PowerShell functions from script files
-$PrivateFunctions | ForEach-Object { 
-    . $_.FullName 
+$PrivateFunctions | ForEach-Object {
+    .$_.FullName
 }
 
-$PublicFunctions | ForEach-Object { 
-    . $_.FullName 
+$PublicFunctions | ForEach-Object {
+    .$_.FullName
 }
 
 ## Gather function names from each script in the Public folder
@@ -34,8 +34,8 @@ $PublicFunctionNames = @()
 
 foreach ($script in $PublicFunctions) {
     $scriptContent = Get-Content -Path $script.FullName -Raw
-    $SearchMatches = [regex]::Matches($scriptContent, $functionRegex)
-    
+    $SearchMatches = [regex]::Matches($scriptContent,$functionRegex)
+
     foreach ($match in $SearchMatches) {
         $functionName = $match.Groups[1].Value
         $PublicFunctionNames += $functionName
@@ -49,7 +49,7 @@ $PublicFunctionNames | ForEach-Object {
 
 ## Source the Aliases.ps1 file if it exists
 if (Test-Path -Path $AliasesFilePath) {
-    . $AliasesFilePath
+    .$AliasesFilePath
 
     ## Export aliases after sourcing the Aliases.ps1
     $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }

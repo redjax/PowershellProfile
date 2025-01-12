@@ -18,7 +18,7 @@ try {
     Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
 }
 
-if ( $ProfileImported ) {
+if ($ProfileImported) {
     ## Custom profile was imported successfully.
     #  Functions & aliases are available
 } else {
@@ -27,9 +27,9 @@ if ( $ProfileImported ) {
 }
 
 ## Initialize Starship shell
-If ( Get-Command starship ) {
+if (Get-Command starship) {
     try {
-        Invoke-Expression (&starship init powershell)
+        Invoke-Expression (& starship init powershell)
     }
     catch {
         ## Show error when verbose logging is enabled
