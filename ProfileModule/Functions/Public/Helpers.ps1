@@ -5,5 +5,11 @@ function Test-IsAdmin {
     return $isAdmin
 }
 
+function Get-PowershellVersion() {
+    $PowershellVersion = $PSVersionTable.PSVersion.ToString()
+
+    Write-Host "Powershell version: $PowershellVersion"
+}
+
 ## Export functions
 # Export-ModuleMember -Function Test-IsAdmin
