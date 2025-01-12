@@ -126,7 +126,7 @@ function Get-AliasesFromScript {
     return $Aliases
 }
 
-Write-Output "Updating Powershell module at path: $($ModuleRoot)" -ForegroundColor Green
+Write-Output "Updating Powershell module at path: $($ModuleRoot)"
 
 ## Update functions and aliases
 $Functions = @()
@@ -135,12 +135,12 @@ $Aliases = @()
 ## Scan for functions in Public/ directory only
 $PublicFunctionsPath = Join-Path $FunctionsPath "Public"
 if ( Test-Path -Path $PublicFunctionsPath -PathType Container ) {
-    Write-Output "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Cyan
+    Write-Output "Scanning path '$($PublicFunctionsPath)' for script files with functions."
 
     $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1 -Recurse
 
     If ( $publicScripts ) {
-        Write-Output "Extracting uncommented functions from public scripts." -ForegroundColor Magenta
+        Write-Output "Extracting uncommented functions from public scripts."
     }
 
     ForEach ($script in $publicScripts) {
@@ -151,10 +151,10 @@ if ( Test-Path -Path $PublicFunctionsPath -PathType Container ) {
 
 ## Scan for aliases
 if ( Test-Path -Path $AliasesFile -PathType Leaf ) {
-    Write-Output "Scanning path '$($AliasesFile)' for aliases." -ForegroundColor Cyan
+    Write-Output "Scanning path '$($AliasesFile)' for aliases."
 
     $scriptContent = Get-Content -Path $AliasesFile -Raw
-    Write-Output "Extracting uncommented aliases" -ForegroundColor Magenta
+    Write-Output "Extracting uncommented aliases"
     $Aliases += Get-AliasesFromScript -scriptContent $scriptContent
 }
 
@@ -173,7 +173,7 @@ $manifest.ModuleVersion = $version
 $manifest.GUID = $guid
 $manifest.Author = $Author
 
-Write-Output "Updating module manifest at path '$($ManifestPath)'" -ForegroundColor Cyan
+Write-Output "Updating module manifest at path '$($ManifestPath)'"
 try {
     ## Save the updated or new manifest
     $manifestContent = @"
@@ -190,7 +190,7 @@ try {
 "@
     Set-Content -Path $ManifestPath -Value $manifestContent
 
-    Write-Output "Module manifest updated successfully." -ForegroundColor Green
+    Write-Output "Module manifest updated successfully."
 } catch {
     Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
 }

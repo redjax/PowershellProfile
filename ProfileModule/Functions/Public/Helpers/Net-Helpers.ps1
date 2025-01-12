@@ -3,7 +3,7 @@ function Get-OpenIPAddress {
         [string]$Network = "192.168.1.1-100",
         [switch]$ResultsInWindow
     )
-    Write-Output "Scanning for open IP addresses on network: $Network" -ForegroundColor Cyan
+    Write-Output "Scanning for open IP addresses on network: $Network"
     
     if ( -Not (Get-Command nmap -ErrorAction SilentlyContinue) ) {
         Write-Error "nmap is not installed. Please install nmap and try again."
@@ -19,7 +19,7 @@ function Get-OpenIPAddress {
     } 
     
     if ( $ResultsInWindow ) {
-        Write-Output "Open IP addresses found (results window will open):" -ForegroundColor Green
+        Write-Output "Open IP addresses found (results window will open):"
         $NmapOutput | ForEach-Object {
             if ( $_ -match "Status: Down" ) {
                 ( $_ -split '\s+' )[1]
@@ -27,7 +27,7 @@ function Get-OpenIPAddress {
         } | Out-GridView -Title "Available IP addresses in network [$Network]:"
     }
     else {
-        Write-Output "Open IP addresses found:" -ForegroundColor Green
+        Write-Output "Open IP addresses found:"
         $NmapOutput | ForEach-Object {
             if ( $_ -match "Status: Down" ) {
                 ( $_ -split '\s+' )[1]
