@@ -82,9 +82,32 @@ function Start-BeatifySingleScript() {
     }
 }
 
+function Start-BeautifyScriptsInPath() {
+    Param(
+        [string]$ScanPath = ".\"
+    )
+
+    If ( -Not ( Test-Path -Path $ScanPath ) ) {
+        Write-Error "Failed to beautify scripts, could not find path: $($ScanPath)."
+        return $false
+    }
+
+    Write-Output "Beautifying script files in path: $($ScanPath)"
+    try {
+        Get-ChildItem -Path "$($ScanPath)" -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript
+        Write-Output "Finished beautifying scripts in path: $($ScanPath)"
+        return $true
+    } catch {
+        Write-Error "Failed to beautify scripts in path: $($ScanPath). Details: $($_.Exception.Message)"
+        return $false
+    }
+}
+
 function main() {
     Install-PSScriptAnalyzerModule
     Install-PowershellBeautifierModule
+
+    Start-BeautifyScriptsInPath -ScanPath .\Scripts
 }
 
 main
