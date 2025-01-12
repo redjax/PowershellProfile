@@ -14,8 +14,11 @@ function uptime {
     }
 }
 
-function touch ($file) {
+function touch {
     ## Create a blank file at $file path
+    Param(
+        [string]$file
+    )
 
     '' | Out-File $file -Encoding ASCII
 }
