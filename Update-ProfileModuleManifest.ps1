@@ -3,7 +3,7 @@ param(
     [string]$ModuleRoot = ".\ProfileModule",
     [string]$FunctionsPath = (Join-Path $ModuleRoot "Functions"),
     [string]$AliasesFile = (Join-Path $ModuleRoot "Aliases.ps1"),
-    [string]$ManifestPath = (Join-Path $ModuleRoot "MyPSProfile.psd1"),
+    [string]$ManifestPath = (Join-Path $ModuleRoot "ProfileModule.psd1"),
     [string]$GUIDFilePath = (Join-Path $ModuleRoot "guid.txt"),
     [string]$AuthorFilePath = (Join-Path $ModuleRoot "author.txt"),
     [string]$VersionFilePath = (Join-Path $ModuleRoot "version.txt"),
@@ -41,25 +41,21 @@ if ( -Not ( Test-Path -Path $GUIDFilePath ) ) {
 ## Save author if provided
 if ( $Author ) {
     Write-Debug "Saving author '$Author' to path: $($AuthorFilePath)"
-    ## Set author.txt contents to -Author param value
     Set-Content -Path $AuthorFilePath -Value $Author
 } elseif ( -Not (Test-Path -Path $AuthorFilePath)) {
     Write-Error "Author not provided and author.txt does not exist."
     exit 1
 } else {
-    ## Load author from author.txt file
     Write-Debug "Loading author from file: $($AuthorFilePath)"
     $Author = Get-Content -Path $AuthorFilePath
 }
 
 ## Set version if it doesn't exist
 if ( -Not ( Test-Path -Path $VersionFilePath ) ) {
-    ## Initialize version.txt contents with 0.1.0
     Write-Debug "Version file not found at path '$($VersionFilePath)'. Saving version '0.1.0' to version file."
     $version = "0.1.0"
     Set-Content -Path $VersionFilePath -Value $version
 } else {
-    ## Load version from version.txt file
     Write-Debug "Loading module version from file '$($VersionFilePath)'."
     $version = Get-Content -Path $VersionFilePath
 }
@@ -70,9 +66,8 @@ if ( Test-Path -Path $ManifestPath ) {
     $manifest = Import-PowerShellDataFile -Path $ManifestPath
 } else {
     Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
-
     $manifest = @{
-        RootModule          = "$moduleRoot\MyPSProfile.psm1"
+        RootModule          = ".\ProfileModule.psm1"
         ModuleVersion       = $version
         GUID                = $guid
         Author              = $Author
@@ -84,10 +79,6 @@ if ( Test-Path -Path $ManifestPath ) {
 }
 
 function Get-FunctionsFromScript {
-    <#
-        .SYNOPSIS
-        Helper function to extract functions from script content
-    #>
     Param(
         $scriptContent
     )
@@ -156,19 +147,38 @@ if ( Test-Path -Path $AliasesFile -PathType Leaf ) {
     $Aliases += Get-AliasesFromScript -scriptContent $scriptContent
 }
 
+# Ensure these are actual arrays of strings
+$FunctionsArray = @($Functions | ForEach-Object { "'$_'" })
+$AliasesArray = @($Aliases | ForEach-Object { "'$_'" })
+
 ## Add discovered functions to manifest's FunctionsToExport
-$manifest.FunctionsToExport = $Functions
+$manifest.FunctionsToExport = $FunctionsArray
 ## Add discovered aliases to manifest's AliasesToExport
-$manifest.AliasesToExport = $Aliases
+$manifest.AliasesToExport = $AliasesArray
+
+# Make sure that the RootModule, ModuleVersion, GUID, and Author are populated
+$manifest.RootModule = ".\ProfileModule.psm1"  # You can change this if necessary
+$manifest.ModuleVersion = $version
+$manifest.GUID = $guid
+$manifest.Author = $Author
 
 Write-Host "Updating module manifest at path '$($ManifestPath)'" -ForegroundColor Cyan
 try {
     ## Save the updated or new manifest
-    New-ModuleManifest -Path $ManifestPath -RootModule $manifest.RootModule `
-        -ModuleVersion $manifest.ModuleVersion -GUID $manifest.GUID `
-        -Author $manifest.Author -FunctionsToExport $manifest.FunctionsToExport `
-        -AliasesToExport $manifest.AliasesToExport -CmdletsToExport $manifest.CmdletsToExport `
-        -VariablesToExport $manifest.VariablesToExport
+    $manifestContent = @"
+@{
+    RootModule          = '$($manifest.RootModule)'
+    ModuleVersion       = '$($manifest.ModuleVersion)'
+    GUID                = '$($manifest.GUID)'
+    Author              = '$($manifest.Author)'
+    FunctionsToExport   = @($($FunctionsArray -join ', '))
+    AliasesToExport     = @($($AliasesArray -join ', '))
+    CmdletsToExport     = @()
+    VariablesToExport   = @()
+}
+"@
+
+    Set-Content -Path $ManifestPath -Value $manifestContent
 
     Write-Host "Module manifest updated successfully." -ForegroundColor Green
 } catch {
