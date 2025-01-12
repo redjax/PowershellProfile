@@ -1,12 +1,12 @@
 function Install-ScoopCli {
-    <#
+<#
         .SYNOPSIS
         Install the scoop CLI from https://scoop.sh
     #>
     Write-Information "Install scoop from https://get.scoop.sh"
     Write-Output "Download & install scoop"
-    
-    If ( -Not (Get-Command scoop) ) {
+
+    if (-not (Get-Command scoop)) {
         try {
             Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
         }
@@ -19,7 +19,7 @@ function Install-ScoopCli {
 }
 
 function Initialize-ScoopCli {
-    <#
+<#
         .SYNOPSIS
         Initialize the Scoop CLI.
 
@@ -32,14 +32,14 @@ function Initialize-ScoopCli {
         .EXAMPLE
         Initialize-ScoopCli -ScoopBuckets @("extras", "nerd-fonts")
     #>
-    Param(
-        [string[]]$ScoopBuckets = @("extras", "nerd-fonts")
+    param(
+        [string[]]$ScoopBuckets = @("extras","nerd-fonts")
     )
     Write-Output "Installing aria2 for accelerated downloads"
 
     try {
         scoop install aria2
-        if ( -Not $(scoop config aria2-enabled) -eq $True) {
+        if (-not $(scoop config aria2-enabled) -eq $True) {
             scoop config aria2-enabled true
         }
     }
@@ -59,7 +59,7 @@ function Initialize-ScoopCli {
             Write-Error "Exception details: $($_.Exception.Message)"
         }
     }
-    
+
     Write-Output "Disable scoop warning when using aria2 for downloads"
     try {
         scoop config aria2-warning-enabled false
