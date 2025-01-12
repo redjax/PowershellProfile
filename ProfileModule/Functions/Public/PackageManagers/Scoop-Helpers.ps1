@@ -4,7 +4,7 @@ function Install-ScoopCli {
         Install the scoop CLI from https://scoop.sh
     #>
     Write-Information "Install scoop from https://get.scoop.sh"
-    Write-Host "Download & install scoop"
+    Write-Output "Download & install scoop"
     
     If ( -Not (Get-Command scoop) ) {
         try {
@@ -35,7 +35,7 @@ function Initialize-ScoopCli {
     Param(
         [string[]]$ScoopBuckets = @("extras", "nerd-fonts")
     )
-    Write-Host "Installing aria2 for accelerated downloads"
+    Write-Output "Installing aria2 for accelerated downloads"
 
     try {
         scoop install aria2
@@ -48,11 +48,11 @@ function Initialize-ScoopCli {
         Write-Error "Exception details: $($exc.Message)"
     }
 
-    Write-Host "Enable scoop buckets"
+    Write-Output "Enable scoop buckets"
     foreach ($Bucket in $ScoopBuckets) {
         try {
             scoop bucket add $Bucket
-            Write-Host "Successfully added bucket: $Bucket"
+            Write-Output "Successfully added bucket: $Bucket"
         }
         catch {
             Write-Error "Failed to add bucket: $Bucket."
@@ -60,7 +60,7 @@ function Initialize-ScoopCli {
         }
     }
     
-    Write-Host "Disable scoop warning when using aria2 for downloads"
+    Write-Output "Disable scoop warning when using aria2 for downloads"
     try {
         scoop config aria2-warning-enabled false
     }
@@ -69,7 +69,7 @@ function Initialize-ScoopCli {
         Write-Error "Exception details: $($exc.Message)"
     }
 
-    Write-Host "Install git"
+    Write-Output "Install git"
     try {
         scoop install git
     }

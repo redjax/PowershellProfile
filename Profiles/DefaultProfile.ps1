@@ -45,4 +45,4 @@ $ProfileEndTime = Get-Date
 ## Calculate profile init time
 $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
-Write-Host "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
+Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."

@@ -63,14 +63,14 @@ function New-SymLink {
 
         ## Check if path is a junction
         If ( $Item.Attributes -band [System.IO.FileAttributes]::ReparsePoint ) {
-            Write-Host "Path is already a junction/symlink: $($DestPath)"
+            Write-Output "Path is already a junction/symlink: $($DestPath)"
             return
         }
 
         ## Path is a regular directory
         Write-Warning "Path already exists and is not a junction: $($DestPath)."
         If ( $Overwrite ) {
-            Write-Host "-Overwrite detected. Moving path '$($DestPath)' to '$($DestPath).bak' and creating junction."
+            Write-Output "-Overwrite detected. Moving path '$($DestPath)' to '$($DestPath).bak' and creating junction."
             If ( Test-Path "$($DestPath).bak" ) {
                 Write-Warning "$($DestPath).bak already exists, overwriting."
                 Remove-Item "$($DestPath).bak" -Recurse -Force
@@ -87,7 +87,7 @@ function New-SymLink {
         }
     }
 
-    Write-Host "Creating symlink from '$($SrcPath)' to '$($DestPath)'."
+    Write-Output "Creating symlink from '$($SrcPath)' to '$($DestPath)'."
     $SymlinkCommand = "New-Item -Path $($SrcPath) -ItemType SymbolicLink -Target $($DestPath)"
 
     If ( -Not ( Test-IsAdmin ) ) {
