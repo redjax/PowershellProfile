@@ -39,3 +39,10 @@ If ( Get-Command starship ) {
 
 ## Clear the screen on fresh sessions
 Clear-Host
+
+## End profile initialization timer
+$ProfileEndTime = Get-Date
+## Calculate profile init time
+$ProfileInitTime = $ProfileEndTime - $ProfileStartTime
+## Print initialization time
+Write-Host "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
