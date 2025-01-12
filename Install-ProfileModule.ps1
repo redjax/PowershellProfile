@@ -3,7 +3,7 @@ Param(
     [switch]$Verbose,
     [string]$RepositoryPath = $PSScriptRoot,
     [string]$SourcePath = (Join-Path -Path $RepositoryPath -ChildPath "ProfileModule"),
-    [string]$TargetPath = (Join-Path -Path "$env:USERPROFILE\Documents\PowerShell\Modules" -ChildPath "ProfileModule")
+    [string]$TargetPath = (Join-Path -Path (Split-Path -Parent $PROFILE) -ChildPath "Modules\ProfileModule")
 )
 
 If ( $Debug ) {
@@ -20,7 +20,7 @@ Write-Verbose "Target path: $TargetPath"
 ## Check if the target path exists
 If ( Test-Path -Path $TargetPath ) {
     Write-Debug "Target path '$($TargetPath)' exists. Removing before installing profile module."
-    Write-Host "Updating existing module at $TargetPath..."
+    Write-Host "Replacing existing module at $TargetPath." -ForegroundColor Magenta
     
     try {
         Remove-Item -Recurse -Force $TargetPath
@@ -31,10 +31,10 @@ If ( Test-Path -Path $TargetPath ) {
 }
 
 ## Copy the module to the Modules directory
-Write-Host "Installing ProfileModule to $TargetPath..."
+Write-Host "Installing ProfileModule to $TargetPath." -ForegroundColor Cyan
 try {
     Copy-Item -Recurse -Path $SourcePath -Destination $TargetPath
-    Write-Host "[SUCCESS] Powershell profile module installed at path: $TargetPath"
+    Write-Host "[SUCCESS] Powershell profile module installed at path: $TargetPath" -ForegroundColor Green
     exit 0
 } catch {
     Write-Error "[ERROR] Failed to install/update Powershell profile module. Details: $($_.Exception.Message)"
