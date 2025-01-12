@@ -1,4 +1,4 @@
-Param(
+param(
     [switch]$Debug,
     [switch]$Verbose,
     [string]$RepositoryPath = $PSScriptRoot,
@@ -6,10 +6,10 @@ Param(
     [string]$TargetPath = (Join-Path -Path (Split-Path -Parent $PROFILE) -ChildPath "Modules\ProfileModule")
 )
 
-If ( $Debug ) {
+if ($Debug) {
     $DebugPreference = "Continue"
 }
-If ( $Verbose ) {
+if ($Verbose) {
     $VerbosePreference = "Continue"
 }
 
@@ -18,10 +18,10 @@ Write-Verbose "Source path: $SourcePath"
 Write-Verbose "Target path: $TargetPath"
 
 ## Check if the target path exists
-If ( Test-Path -Path $TargetPath ) {
+if (Test-Path -Path $TargetPath) {
     Write-Debug "Target path '$($TargetPath)' exists. Removing before installing profile module."
     Write-Output "Replacing existing module at $TargetPath."
-    
+
     try {
         Remove-Item -Recurse -Force $TargetPath
     } catch {

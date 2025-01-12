@@ -6,25 +6,25 @@
     Lint/format code with Powershell-Beautifier (https://github.com/DTW-DanWard/PowerShell-Beautifier).
     Perform static type checking with PSScriptAnalyzer (https://learn.microsoft.com/en-us/powershell/module/psscriptanalyzer/?view=ps-modules).
 #>
-Param(
+param(
     [switch]$Verbose,
     [switch]$Debug
 )
 
-If ( $Debug ) {
+if ($Debug) {
     $DebugPreference = "Continue"
 } else {
     $DebugPreference = "SilentlyContinue"
 }
 
-If ( $Verbose ) {
+if ($Verbose) {
     $VerbosePreference = "Continue"
 } else {
     $VerbosePreference = "SilentlyContinue"
 }
 
-function Install-PowershellBeautifierModule() {
-    If ( -Not ( Get-Module -ListAvailable -Name PowerShell-Beautifier ) ) {
+function Install-PowershellBeautifierModule () {
+    if (-not (Get-Module -ListAvailable -Name PowerShell-Beautifier)) {
         Write-Output "PowerShell-Beautifier module is not installed. Installing now."
         try {
             Install-Module -Name PowerShell-Beautifier -Scope CurrentUser -Force -AllowClobber
@@ -39,8 +39,8 @@ function Install-PowershellBeautifierModule() {
     }
 }
 
-function Install-PSScriptAnalyzerModule() {
-    If ( -Not ( Get-Module -ListAvailable -Name PSScriptAnalyzer ) ) {
+function Install-PSScriptAnalyzerModule () {
+    if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
         Write-Output "PSScriptAnalyzer module is not installed. Installing now."
         try {
             Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -AllowClobber
@@ -55,17 +55,17 @@ function Install-PSScriptAnalyzerModule() {
     }
 }
 
-function Start-BeatifySingleScript() {
-    Param(
+function Start-BeatifySingleScript () {
+    param(
         [string]$TargetScript
     )
 
-    If ( -Not ( $TargetScript ) ) {
+    if (-not ($TargetScript)) {
         Write-Error "-TargetScript must not be `$null or empty."
         return $false
     }
 
-    If ( -Not (Test-Path "$($TargetScript)" ) ) {
+    if (-not (Test-Path "$($TargetScript)")) {
         Write-Error "Could not find file to beautify: $($TargetScript)"
         return $false
     }
@@ -82,19 +82,19 @@ function Start-BeatifySingleScript() {
     }
 }
 
-function Start-BeautifyScriptsInPath() {
-    Param(
+function Start-BeautifyScriptsInPath () {
+    param(
         [string]$ScanPath = ".\"
     )
 
-    If ( -Not ( Test-Path -Path $ScanPath ) ) {
+    if (-not (Test-Path -Path $ScanPath)) {
         Write-Error "Failed to beautify scripts, could not find path: $($ScanPath)."
         return $false
     }
 
     Write-Output "Beautifying script files in path: $($ScanPath)"
     try {
-        Get-ChildItem -Path "$($ScanPath)" -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript
+        Get-ChildItem -Path "$($ScanPath)" -Recurse -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript -IndentType FourSpaces -NewLine LF
         Write-Output "Finished beautifying scripts in path: $($ScanPath)"
         return $true
     } catch {
@@ -103,11 +103,11 @@ function Start-BeautifyScriptsInPath() {
     }
 }
 
-function main() {
+function main () {
     Install-PSScriptAnalyzerModule
     Install-PowershellBeautifierModule
 
-    Start-BeautifyScriptsInPath -ScanPath .\Scripts
+    Start-BeautifyScriptsInPath -ScanPath .\scripts
 }
 
 main
