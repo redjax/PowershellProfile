@@ -137,7 +137,7 @@ $PublicFunctionsPath = Join-Path $FunctionsPath "Public"
 if ( Test-Path -Path $PublicFunctionsPath -PathType Container ) {
     Write-Host "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Cyan
 
-    $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1
+    $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1 -Recurse
 
     If ( $publicScripts ) {
         Write-Host "Extracting uncommented functions from public scripts." -ForegroundColor Magenta
