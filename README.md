@@ -30,7 +30,9 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
     - Update the module's [manifest file](./ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
     - Copy the [`ProfileModule`](./ProfileModule/) directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
     - Copy/update a [custom profile](./Profiles/) (default: [`DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1)) to your machine's `$PROFILE` location.
-      - This custom profile imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
+      - The [default custom profile](./Profiles/DefaultProfile.ps1) imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
+      - To use a different profile, pass a `-ProfileName <profilename>`, where `<profilename>` is the name of a file in the [`Profiles/`](./Profiles/) directory without the `.ps1` file extension.
+        - i.e. `-ProfileName DefaultProfile` would use [`./Profiles/DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1)
 - Restart your shell
 
 To see a full list of the functions exported by this module, run: `Get-Command -Module ProfileModule -Commandtype Function`.
