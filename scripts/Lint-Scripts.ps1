@@ -102,10 +102,10 @@ function Start-BeautifyScriptsInPath () {
         return
     }
 
-    Write-Output "Beautifying script files in path: $($ScanPath)"
+    Write-Output "[START] Beautifying script files in path: $($ScanPath)"
     try {
         Get-ChildItem -Path "$($ScanPath)" -Recurse -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript -IndentType FourSpaces
-        Write-Output "Finished beautifying scripts in path: $($ScanPath)"
+        Write-Output "[FINISH] Beautified scripts in path: $($ScanPath)"
         return
     } catch {
         Write-Error "Failed to beautify scripts in path: $($ScanPath). Details: $($_.Exception.Message)"
@@ -123,11 +123,11 @@ function Start-AnalyzeScriptsInPath () {
         return
     }
 
-    Write-Output "Analyzing scripts in path: $($ScanPath)"
+    Write-Output "[START] Analyzing scripts in path: $($ScanPath)`n"
     try {
         Invoke-ScriptAnalyzer -Recurse "$($ScanPath)"
         
-        Write-Output "Analyzed scripts in path $($ScanPath)"
+        Write-Output "[FINISH] Analyzed scripts in path $($ScanPath)`n"
         return
     } catch {
         Write-Error "Failed to analyze scripts in path: $($ScanPath). Details: $($_.Exception.Message)"
@@ -140,6 +140,8 @@ function main () {
         Install-PSScriptAnalyzerModule
 
         Start-AnalyzeScriptsInPath -ScanPath .\scripts
+        Start-AnalyzeScriptsInPath -ScanPath .\Profiles
+        Start-AnalyzeScriptsInPath -ScanPath .\ProfileModule
     }
     
     If ( $Lint ) {
