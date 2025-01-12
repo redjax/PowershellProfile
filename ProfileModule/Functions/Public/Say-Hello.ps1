@@ -6,7 +6,7 @@ function Invoke-Greeting {
 }
 
 # function Commented-Function {
-    # Write-Output "Example function that is not detected by the manifest update script."
+# Write-Output "Example function that is not detected by the manifest update script."
 # }
 
 # Export-ModuleMember -Function Greet-User
