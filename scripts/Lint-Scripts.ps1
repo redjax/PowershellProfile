@@ -109,6 +109,7 @@ function main () {
 
     Start-BeautifyScriptsInPath -ScanPath .\scripts
     Start-BeautifyScriptsInPath -ScanPath .\Profiles
+    Start-BeautifyScriptsInPath -ScanPath .\ProfileModule
 }
 
 main
