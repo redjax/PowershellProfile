@@ -7,6 +7,9 @@
     that I want to import when a PowerShell session loads with this profile.
 #>
 
+## Start profile initialization timer
+$ProfileStartTime = Get-Date
+
 $ProfileImported = $False
 try {
     Import-Module ProfileModule
