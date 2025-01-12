@@ -12,6 +12,7 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
 - [Developing](#developing)
   - [Add new functions and aliases](#add-new-functions-and-aliases)
   - [Update the manifest](#update-the-manifest)
+  - [Linting \& analyzing](#linting--analyzing)
 - [Notes](#notes)
   - [Automatic updates to module's manifest](#automatic-updates-to-modules-manifest)
   - [Generate profile GUID](#generate-profile-guid)
@@ -58,6 +59,26 @@ You can see all exported functions & aliases by using `Get-Module ProfileModule`
 Each time you run [`Install-CustomProfile.ps1`](./Install-CustomProfile.ps1), the module's [manifest](./ProfileModule/ProfileModule.psd1) file is updated automatically. The script scans the `ProfileModule`'s `Functions/` directory and `Aliases.ps1` file, exporting any public functions & aliases and updating the `FunctionsToExport=@()` and `AliasesToExport=@()` arrays in the manifest.
 
 The script also installs the module and custom profile. If you just want to update the manifest, you can run the [`Update-ProfileModuleManifest.ps1`](./scripts/Update-ProfileModuleManifest.ps1) script.
+
+### Linting & analyzing
+
+Using the [`PSScriptAnalyzer`](https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/overview?view=ps-modules) module can help write cleaner, more maintainable scripts.
+
+To install the tool for the current user, run:
+
+```powershell
+Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -AllowClobber
+```
+
+To install for all users, run this in an elevated/admin prompt:
+
+```powershell
+Install-Module PSScriptAnalyzer -Force -Scope AllUsers -AllowClobber
+```
+
+Call the analyzer with `Invoke-ScriptAnalyzer -Path path/to/script.ps1` to analyze a specific script. Call `Invoke-ScriptAnalyzer` without a path to start an interactive prompt.
+
+You can also provide a directory with `-Path`, and pass the `-Recurse` parameter, to scan all `.ps1` files in a given path.
 
 ## Notes
 
@@ -178,3 +199,7 @@ If ( $Verbose ) {
 Passing switches as parameters uses this syntax: `-SwitchParam:$SwitchParam`.
 
 ## Links
+
+- [VirtualizationHowTo.com: PSScriptAnalyzer the ultimate Powershell script analyzer & linter](https://www.virtualizationhowto.com/2024/03/psscriptanalyzer-the-ultimate-powershell-script-analyzer-and-linter/)
+- [SumTips: Powershell Beautifier free tool to prettify `.ps1` scripts](https://sumtips.com/software/powershell-beautifier-free-tool-to-pretty-print-ps1-script-files/)
+- [Powershell Magazine](https://powershellmagazine.com)
