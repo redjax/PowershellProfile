@@ -60,5 +60,44 @@ function Start-StarshipShell() {
     }
 }
 
-## Export functions
-# Export-ModuleMember -Function Test-IsAdmin
+function Get-CommandInfo {
+    Param(
+        [string]$CommandInput
+    )
+
+    try {
+        $CommandOutput = $(Get-Command $CommandInput)
+        return $CommandOutput
+    }
+    catch {
+        Write-Error "Error running Get-Command '$($CommandInput)'. Details: $($_.Exception.message)"
+        return
+    }
+}
+
+function Write-PSVersionTable {
+    Write-Host 'Powershell Version Info' -ForegroundColor Green
+    $PSVersionTable
+}
+
+function Show-TermColors {
+    # [Enum]::GetValues([ConsoleColor])
+
+    $colors = [enum]::GetValues([System.ConsoleColor])
+    Foreach ($bgcolor in $colors) {
+        Foreach ($fgcolor in $colors) { Write-Host "$fgcolor|"  -ForegroundColor $fgcolor -BackgroundColor $bgcolor -NoNewline }
+        Write-Host " on $bgcolor"
+    }
+}
+
+function Lock-Machine {
+    ## Set computer state to Locked
+
+    try {
+        rundll32.exe user32.dll, LockWorkStation
+    }
+    catch {
+        Write-Error "Unhandled exception locking machine. Details: $($_.Exception.Message)"
+    }
+
+}
