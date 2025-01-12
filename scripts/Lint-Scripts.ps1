@@ -94,7 +94,7 @@ function Start-BeautifyScriptsInPath () {
 
     Write-Output "Beautifying script files in path: $($ScanPath)"
     try {
-        Get-ChildItem -Path "$($ScanPath)" -Recurse -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript -IndentType FourSpaces -NewLine LF
+        Get-ChildItem -Path "$($ScanPath)" -Recurse -Include *.ps1,*.psm1 | Edit-DTWBeautifyScript -IndentType FourSpaces
         Write-Output "Finished beautifying scripts in path: $($ScanPath)"
         return $true
     } catch {
