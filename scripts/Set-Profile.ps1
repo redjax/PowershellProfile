@@ -17,8 +17,10 @@ If ( $Verbose ) {
 Write-Verbose "Powershell profile path: $($ProfilePath)"
 Write-Verbose "Powershell modules path: $($PSModulesPath)"
 
+## Repository profiles path
+$RepoProfilesDir = Join-Path (Get-Location) "Profiles"
 ## Define the source path for ProfileName.ps1 (in the root of the git repository)
-$RepoProfilePath = Join-Path (Get-Location) "$($ProfileName).ps1"
+$RepoProfilePath = Join-Path $RepoProfilesDir "$($ProfileName).ps1"
 Write-Verbose "Repository Profile path: $($RepoProfilePath)"
 
 ## Check if the profile exists
