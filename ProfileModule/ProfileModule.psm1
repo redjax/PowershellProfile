@@ -10,6 +10,7 @@ $PrivateFunctionsPath = $PSScriptRoot + $DirectorySeparator + 'Functions' + $Dir
 
 ## Path to Aliases.ps1
 $AliasesFilePath = $PSScriptRoot + $DirectorySeparator + 'Aliases.ps1'
+$AliasesPath = $PSScriptRoot + $DirectorySeparator + "Aliases"
 
 ## Regular expression to match function definitions
 $functionRegex = 'function\s+([^\s{]+)\s*\{'
@@ -54,6 +55,24 @@ if (Test-Path -Path $AliasesFilePath) {
     ## Export aliases after sourcing the Aliases.ps1
     $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
 
+    $Aliases | ForEach-Object {
+        Export-ModuleMember -Alias $_.Name
+    }
+}
+
+## Load and export aliases from the Aliases directory
+If (Test-Path -Path $AliasesPath) {
+    $AliasFiles = Get-ChildItem -Path $AliasesPath -Recurse -Filter *.ps1
+
+    foreach ($AliasFile in $AliasFiles) {
+        # Source each .ps1 file in the Aliases directory
+        .$AliasFile.FullName
+    }
+
+    ## Get all aliases defined in the module
+    $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
+
+    ## Export each alias
     $Aliases | ForEach-Object {
         Export-ModuleMember -Alias $_.Name
     }

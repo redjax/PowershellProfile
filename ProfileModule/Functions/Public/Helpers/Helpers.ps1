@@ -101,3 +101,21 @@ function Lock-Machine {
     }
 
 }
+
+function Show-ProfileModuleFunctions {
+    try {
+        Get-Command -Module ProfileModule -CommandType Function
+    } catch {
+        Write-Error "Unable to show ProfileModule functions. Details: $($_.Exception.Message)"
+        exit 1
+    }
+}
+
+function Show-ProfileModuleAliases {
+    try {
+        Get-Command -Module ProfileModule -CommandType Alias
+    } catch {
+        Write-Error "Unable to show ProfileModule aliases. Details: $($_.Exception.Message)"
+        exit 1
+    }
+}

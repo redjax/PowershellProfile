@@ -3,6 +3,7 @@ param(
     [string]$ModuleRoot = ".\ProfileModule",
     [string]$FunctionsPath = (Join-Path $ModuleRoot "Functions"),
     [string]$AliasesFile = (Join-Path $ModuleRoot "Aliases.ps1"),
+    [string]$AliasesPath = "$ModuleRoot\Aliases",
     [string]$ManifestPath = (Join-Path $ModuleRoot "ProfileModule.psd1"),
     [string]$GUIDFilePath = (Join-Path $ModuleRoot "guid.txt"),
     [string]$AuthorFilePath = (Join-Path $ModuleRoot "author.txt"),
@@ -156,6 +157,38 @@ if (Test-Path -Path $AliasesFile -PathType Leaf) {
     $scriptContent = Get-Content -Path $AliasesFile -Raw
     Write-Output "Extracting uncommented aliases"
     $Aliases += Get-AliasesFromScript -scriptContent $scriptContent
+}
+
+## Check if the Aliases directory exists
+if (Test-Path -Path $AliasesPath -PathType Container) {
+    Write-Output "Scanning path '$($AliasesPath)' for alias script files."
+
+    # Retrieve all .ps1 files in the Aliases directory recursively
+    $aliasScripts = Get-ChildItem -Path $AliasesPath -Filter *.ps1 -Recurse
+
+    # Process each alias script
+    foreach ($aliasScript in $aliasScripts) {
+        Write-Verbose "Processing alias script: $($aliasScript.FullName)"
+
+        # Read the contents of the alias script
+        $scriptContent = Get-Content -Path $aliasScript.FullName -Raw
+
+        # Extract aliases using the Get-AliasesFromScript function
+        $discoveredAliases = Get-AliasesFromScript -ScriptContent $scriptContent
+
+        # Log discovered aliases for debugging
+        Write-Verbose "Discovered aliases: $($discoveredAliases -join ', ')"
+
+        # Add the discovered aliases to the overall Aliases collection
+        $Aliases += $discoveredAliases
+    }
+
+    # Deduplicate the aliases to avoid duplicates in the manifest
+    $Aliases = $Aliases | Sort-Object -Unique
+
+    Write-Output "Total aliases discovered: $($Aliases.Count)"
+} else {
+    Write-Output "Aliases directory not found at path '$($AliasesPath)'."
 }
 
 # Ensure these are actual arrays of strings
