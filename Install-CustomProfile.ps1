@@ -104,7 +104,7 @@ function Start-ModuleInstall() {
     $Debug = $Debug -eq $True
     $Verbose = $Verbose -eq $True
 
-    $InstallModuleScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Update-ProfileModuleManifest.ps1"
+    $InstallModuleScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Install-ProfileModule.ps1"
     
     Write-Debug "Calling script: $InstallModuleScriptPath"
     Write-Debug "Debug: $($Debug), Verbose: $($Verbose)"
