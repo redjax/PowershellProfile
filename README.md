@@ -33,6 +33,10 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
       - This custom profile imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
 - Restart your shell
 
+To see a full list of the functions exported by this module, run: `Get-Command -Module ProfileModule -Commandtype Function`.
+
+To see a ful list of the aliases exported by this module, run: `Get-Command -Module ProfileModule -CommandType Alias`.
+
 ## Developing
 
 ### Add new functions and aliases
