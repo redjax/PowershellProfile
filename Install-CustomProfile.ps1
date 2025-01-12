@@ -7,9 +7,15 @@ Param(
 If ( $Debug ) {
     $DebugPreference = "Continue"
 }
+else {
+    $DebugPreference = "SilentlyContinue"
+}
 
 If ( $Verbose ) {
     $VerbosePreference = "Continue"
+}
+else {
+    $VerbosePreference = "SilentlyContinue"
 }
 
 ## Set relative path to the ProfileModule/ directory
@@ -30,6 +36,8 @@ If ( $Verbose ) {
 [string]$AuthorFilePath = (Join-Path $ProfileModuleRoot "author.txt")
 ## Set path to module's version.txt containing the moddule's version
 [string]$VersionFilePath = (Join-Path $ProfileModuleRoot "version.txt")
+## Set path to machine's Modules\ path in the $PROFILE's parent directory
+[string]$PSModulesPath = "$(Split-Path $PROFILE -Parent)\Modules"
 
 Write-Verbose "ProfileModule path: $ProfileModuleRoot"
 Write-Verbose "Path to module's functions: $FunctionsPath"
@@ -40,66 +48,14 @@ Write-Verbose "Path to module's GUID file: $GUIDFilePath"
 Write-Verbose "Path to module's author file: $AuthorFilePath"
 Write-Verbose "Path to module's version file: $VersionFilePath"
 
-#################################
-# CREATE/UPDATE MODULE MANIFEST #
-#################################
-
-function Get-FunctionsFromScript {
-    <#
-        .SYNOPSIS
-        Scan .ps1 script for function definitions.
-    #>
-    Param(
-        $scriptContent
-    )
-
-    $Functions = @()
-    $functionRegex = [regex]'(?ms)^function\s+([^\s{]+)\s*{'
-    $SearchMatches = $functionRegex.Matches($scriptContent)
-    
-    ForEach ($match in $SearchMatches) {
-        ## Check if function is uncommented
-        if ( -Not ( $match.Value -match '^\s*#' ) ) {
-            # $Functions += $match.Groups[1].Value
-
-            # Remove any parentheses from the function name
-            $functionName = $match.Groups[1].Value -replace '\(\)', ''
-            $Functions += $functionName
-        }
-    }
-
-    return $Functions
-}
-
-function Get-AliasesFromScript {
-    <#
-        .SYNOPSIS
-        Scan a .ps1 file for alias definitions.
-    #>
-    Param(
-        $ScriptContent
-    )
-
-    $Aliases = @()
-    $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+(\w+)\s+-Value\s+(\w+)'
-    $SearchMatches = $aliasRegex.Matches($ScriptContent)
-
-    ForEach ($match in $SearchMatches) {
-        ## Check if alias is uncommented
-        if ( -Not ( $match.Value -match '^\s*#' ) ) {
-            $Aliases += $match.Groups[1].Value
-        }
-    }
-
-    return $Aliases
-}
-
 function Start-ModuleManifestUpdate() {
     <#
         .SYNOPSIS
         Create or update the module's .psd1 module manifest.
     #>
     Param(
+        $Debug = $False,
+        $Verbose = $False,
         $GUIDFilePath = $GUIDFilePath,
         $Author = $Author,
         $AuthorFilePath = $AuthorFilePath,
@@ -109,140 +65,97 @@ function Start-ModuleManifestUpdate() {
         $AliasesFile = $AliasesFile
     )
 
-    Write-Host "Creating/updating module manifest .psd1 file."
+    # Explicitly set Debug and Verbose if not provided
+    $Debug = $Debug -eq $True
+    $Verbose = $Verbose -eq $True
 
-    ## Generate GUID if it doesn't exist
-    if ( -Not ( Test-Path -Path $GUIDFilePath ) ) {
-        Write-Debug "GUID file '$($GUIDFilePath)' does not exist. Generating GUID and saving to file."
-        $guid = [guid]::NewGuid().ToString()
+    $UpdateManifestScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Update-ProfileModuleManifest.ps1"
     
-        ## Write GUID to file
-        Set-Content -Path $GUIDFilePath -Value $guid
-    }
-    else {
-        Write-Debug "Loading GUID from file: $($GUIDFilePath)"
-        $guid = Get-Content -Path $GUIDFilePath
-    }
+    Write-Debug "Calling script: $UpdateManifestScriptPath"
+    Write-Debug "Debug: $($Debug), Verbose: $($Verbose)"
 
-    ## Save author if provided
-    if ( $Author ) {
-        Write-Debug "Saving author '$Author' to path: $($AuthorFilePath)"
-        Set-Content -Path $AuthorFilePath -Value $Author
-    }
-    elseif ( -Not (Test-Path -Path $AuthorFilePath)) {
-        Write-Error "Author not provided and author.txt does not exist."
+    ## Call the script to update the module's manifest
+    & $UpdateManifestScriptPath `
+        -Author $Author `
+        -FunctionsPath $FunctionsPath `
+        -AliasesFile $AliasesFile `
+        -ManifestPath $ManifestPath `
+        -GUIDFilePath $GUIDFilePath `
+        -AuthorFilePath $AuthorFilePath `
+        -VersionFilePath $VersionFilePath `
+        -Debug:$Debug `
+        -Verbose:$Verbose
+}
+
+function Start-ModuleInstall() {
+    <#
+        .SYNOPSIS
+        Install Powershell module in profile's modules/ path.
+    #>
+    Param(
+        $Debug = $False,
+        $Verbose = $False,
+        $RepositoryPath = $PSScriptRoot,
+        $ModuleSource = (Join-Path -Path $RepositoryPath -ChildPath "ProfileModule"),
+        $ProfileModulePath = (Join-Path -Path (Split-Path -Parent $PROFILE) -ChildPath "Modules\ProfileModule")
+    )
+
+    # Explicitly set Debug and Verbose if not provided
+    $Debug = $Debug -eq $True
+    $Verbose = $Verbose -eq $True
+
+    $InstallModuleScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Update-ProfileModuleManifest.ps1"
+    
+    Write-Debug "Calling script: $InstallModuleScriptPath"
+    Write-Debug "Debug: $($Debug), Verbose: $($Verbose)"
+
+    ## Call the script to update the module's manifest
+    try {
+        & $InstallModuleScriptPath `
+            -Debug:$Debug `
+            -Verbose:$Verbose `
+            -RepositoryPath $RepositoryPath `
+            -SourcePath $ModuleSource `
+            -TargetPath $ProfileModulePath
+    } catch {
+        Write-Error "Error running ProfileModule install script. Details: $($_.Exception.Message)"
         exit 1
     }
-    else {
-        Write-Debug "Loading author from file: $($AuthorFilePath)"
-        $Author = Get-Content -Path $AuthorFilePath
-    }
-
-    ## Set version if it doesn't exist
-    if ( -Not ( Test-Path -Path $VersionFilePath ) ) {
-        Write-Debug "Version file not found at path '$($VersionFilePath)'. Saving version '0.1.0' to version file."
-        $version = "0.1.0"
-        Set-Content -Path $VersionFilePath -Value $version
-    }
-    else {
-        Write-Debug "Loading module version from file '$($VersionFilePath)'."
-        $version = Get-Content -Path $VersionFilePath
-    }
-
-    ## Import existing module manifest if it exists
-    if ( Test-Path -Path $ManifestPath ) {
-        Write-Debug "Loading module manifest contents from path '$($ManifestPath)'"
-        $manifest = Import-PowerShellDataFile -Path $ManifestPath
-    }
-    else {
-        Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
-        $manifest = @{
-            RootModule        = ".\ProfileModule.psm1"
-            ModuleVersion     = $version
-            GUID              = $guid
-            Author            = $Author
-            FunctionsToExport = @()
-            AliasesToExport   = @()
-            CmdletsToExport   = @()
-            VariablesToExport = @()
-        }
-    }
-
-    Write-Host "Updating Powershell module at path: $($ProfileModuleRoot)" -ForegroundColor Green
-
-    ## Create arrays to store functions & aliases to export
-    $Functions = @()
-    $Aliases = @()
-
-    ## Scan for functions in Public/ directory only
-    $PublicFunctionsPath = Join-Path $FunctionsPath "Public"
-    if ( Test-Path -Path $PublicFunctionsPath -PathType Container ) {
-        Write-Host "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Cyan
-
-        $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1
-
-        If ( $publicScripts ) {
-            Write-Host "Extracting uncommented functions from public scripts." -ForegroundColor Magenta
-        }
-
-        ForEach ($script in $publicScripts) {
-            Write-Debug "Loading scripts in: $script"
-            $scriptContent = Get-Content -Path $script.FullName -Raw
-            $Functions += Get-FunctionsFromScript -scriptContent $scriptContent
-        }
-    }
-    Write-Debug "Discovered functions: $($Functions)"
-
-    Write-Debug "Aliases path: $AliasesFile"
-    ## Scan for aliases
-    if ( Test-Path -Path $AliasesFile -PathType Leaf ) {
-        Write-Host "Scanning path '$($AliasesFile)' for aliases." -ForegroundColor Cyan
-
-        $scriptContent = Get-Content -Path $AliasesFile -Raw
-        Write-Host "Extracting uncommented aliases" -ForegroundColor Magenta
-        $Aliases += Get-AliasesFromScript -scriptContent $scriptContent
-    }
-
-    # Ensure these are actual arrays of strings
-    $FunctionsArray = @($Functions | ForEach-Object { "'$_'" })
-    $AliasesArray = @($Aliases | ForEach-Object { "'$_'" })
-
-    ## Add discovered functions to manifest's FunctionsToExport
-    $manifest.FunctionsToExport = $FunctionsArray
-    ## Add discovered aliases to manifest's AliasesToExport
-    $manifest.AliasesToExport = $AliasesArray
-
-    # Make sure that the RootModule, ModuleVersion, GUID, and Author are populated
-    $manifest.RootModule = ".\ProfileModule.psm1"  # You can change this if necessary
-    $manifest.ModuleVersion = $version
-    $manifest.GUID = $guid
-    $manifest.Author = $Author
-
-    Write-Host "Updating module manifest at path '$($ManifestPath)'" -ForegroundColor Cyan
-    try {
-        ## Save the updated or new manifest
-        $manifestContent = @"
-@{
-    RootModule          = '$($manifest.RootModule)'
-    ModuleVersion       = '$($manifest.ModuleVersion)'
-    GUID                = '$($manifest.GUID)'
-    Author              = '$($manifest.Author)'
-    FunctionsToExport   = @($($FunctionsArray -join ', '))
-    AliasesToExport     = @($($AliasesArray -join ', '))
-    CmdletsToExport     = @()
-    VariablesToExport   = @()
 }
-"@
-        Set-Content -Path $ManifestPath -Value $manifestContent
 
-        Write-Host "Module manifest updated successfully." -ForegroundColor Green
-    }
-    catch {
-        Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
+function Start-ProfileInstall() {
+    Param(
+        $Debug = $False,
+        $Verbose = $False,
+        $ProfilePath = $PROFILE,
+        $PSModulesPath = $PSModulesPath
+    )
+
+    # Explicitly set Debug and Verbose if not provided
+    $Debug = $Debug -eq $True
+    $Verbose = $Verbose -eq $True
+
+    $InstallModuleScriptPath = Join-Path -Path $PSScriptRoot -ChildPath ".\scripts\Set-Profile.ps1"
+
+    Write-Debug "Calling script: $InstallModuleScriptPath"
+    Write-Debug "Debug: $($Debug), Verbose: $($Verbose)"
+
+    try {
+        ## Call the script to update the module's manifest
+        & $InstallModuleScriptPath `
+            -Debug:$Debug `
+            -Verbose:$Verbose `
+            -ProfilePath $ProfilePath `
+            -PSModulesPath $PSModulesPath
+    } catch {
+        Write-Error "Error installing custom profile. Details: $($_.Exception.Message)"
+        exit 1
     }
 }
 
 function main() {
+    Write-Host "`n[ Update Powershell module's .psd1 manifest file ]" -ForegroundColor Blue
+
     try {
         Start-ModuleManifestUpdate `
             -GUIDFilePath $GUIDFilePath `
@@ -251,9 +164,33 @@ function main() {
             -VersionFilePath $VersionFilePath `
             -ManifestPath $ManifestPath `
             -FunctionsPath $FunctionsPath `
-            -AliasesFile $AliasesFile
-    } catch {
+            -AliasesFile $AliasesFile `
+            -Verbose:$Verbose `
+            -Debug:$Debug
+    }
+    catch {
         Write-Error "Error creating/updating module manifest. Details: $($_.Exception.Message)"
+    }
+
+    Write-Host "`n[ Install ProfileModule in path: $($PSModulesPath) ]" -ForegroundColor Blue
+    try {
+        Start-ModuleInstall `
+            -Debug:$Debug `
+            -Verbose:$Verbose
+    }
+    catch {
+        Write-Error "Failed to install ProfileModule Powershell module. Details: $($_.Exception.Message)"
+    }
+
+    Write-Host "`n[ Install custom `$PROFILE ]" -ForegroundColor Blue
+
+    try {
+        Start-ProfileInstall `
+            -Debug:$Debug `
+            -Verbose:$Verbose
+    } catch {
+        Write-Error "Error installing custom profile. Details: $($_.Exception.Message)"
+        exit 1
     }
 }
 
