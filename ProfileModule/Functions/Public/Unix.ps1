@@ -46,3 +46,16 @@ function grep {
     }
     $input | Select-String $regex
 }
+
+function df {
+    Get-Volume
+}
+
+function sed {
+    Param(
+        [string]$file,
+        [string]$find,
+        [string]$replace
+    )
+    (Get-Content $file).replace("$find", $replace) | Set-Content $file
+}
