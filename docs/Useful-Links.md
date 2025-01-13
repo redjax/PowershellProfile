@@ -21,3 +21,5 @@ As I find blogs, modules, examples, and more related to Powershell around the In
 - [Matt.Kotsenas.com: Profiling and asynchronous initialization to improve Powershell startup](https://matt.kotsenas.com/posts/pwsh-profiling-async-startup)
 - [Microsoft DevBlog: Optimizing your `$PROFILE`](https://devblogs.microsoft.com/powershell/optimizing-your-profile/)
 - [Github: PSProfiler](https://github.com/IISResetMe/PSProfiler)
+- [Wellstsai.com: Methods to accelerate Powershell profile loading speed](https://wellstsai.com/en/post/slow-powershell-profile-loading/)
+- [AdamTheAutomator: Powershell multithreading](https://adamtheautomator.com/powershell-multithreading/)
