@@ -225,3 +225,5 @@ Passing switches as parameters uses this syntax: `-SwitchParam:$SwitchParam`.
     - Good reference with a lot of well-structure methods.
 - [Github: PowershellIsFun](https://github.com/HarmVeenstra/Powershellisfun/tree/main)
   - Repository with a ton of script and `$PROFILE` examples.
+- [Github: scottmckendry Windots](https://github.com/scottmckendry/Windots)
+  - Really nicely structured Powershell profile.
