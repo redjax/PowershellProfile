@@ -59,7 +59,7 @@ if ($ProfileImported) {
 }
 
 ## Initialize Starship shell
-if (Get-Command starship) {
+if (Get-Command starship -ErrorAction SilentlyContinue) {
     try {
         Invoke-Expression (& starship init powershell)
     }
