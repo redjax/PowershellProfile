@@ -30,7 +30,19 @@ function unzip {
     $dirname = (Get-Item $file).Basename
 
     Write-Output ("Extracting", $file, "to", $dirname)
-    
+
     New-Item -Force -ItemType directory -Path $dirname
     expand-archive $file -OutputPath $dirname -ShowProgress
+}
+
+function grep {
+    Param(
+        [string]$regex,
+        [string]$dir
+    )
+    if ( $dir ) {
+            Get-ChildItem $dir | Select-String $regex
+            return
+    }
+    $input | Select-String $regex
 }
