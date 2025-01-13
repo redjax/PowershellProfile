@@ -2,6 +2,8 @@
 
 My Powershell `$PROFILE` module.
 
+[Documentation](./docs/)
+
 This repository includes a module named [`ProfileModule`](./ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. This repository includes swappable [Powershell profiles](./Profiles/).
 
 **WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`.
@@ -213,17 +215,4 @@ Passing switches as parameters uses this syntax: `-SwitchParam:$SwitchParam`.
 
 ## Links
 
-- [VirtualizationHowTo.com: PSScriptAnalyzer the ultimate Powershell script analyzer & linter](https://www.virtualizationhowto.com/2024/03/psscriptanalyzer-the-ultimate-powershell-script-analyzer-and-linter/)
-- [SumTips: Powershell Beautifier free tool to prettify `.ps1` scripts](https://sumtips.com/software/powershell-beautifier-free-tool-to-pretty-print-ps1-script-files/)
-- [Powershell Magazine](https://powershellmagazine.com)
-- [Microsoft Learn: Using PSScriptAnalyzer](https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer?view=ps-modules)
-- [Microsoft Learn: Invoke-ScriptAnalyzer](https://learn.microsoft.com/en-us/powershell/module/psscriptanalyzer/invoke-scriptanalyzer?view=ps-modules)
-- [PowershellIsFun.com: Using PSScriptAnalyzer to optimize your Powershell scripts](https://powershellisfun.com/2022/10/17/using-psscriptanalyzer-to-optimize-your-powershell-scripts/)
-- [belibug.com blog: Building a modular Powershell profile](https://blog.belibug.com/post/ps-profile-01/)
-- [`$PROFILE` examples]
-  - [Github: IndyPoSH Profile.ps1](https://github.com/dsolodow/IndyPoSH/blob/master/Profile.ps1)
-    - Good reference with a lot of well-structure methods.
-- [Github: PowershellIsFun](https://github.com/HarmVeenstra/Powershellisfun/tree/main)
-  - Repository with a ton of script and `$PROFILE` examples.
-- [Github: scottmckendry Windots](https://github.com/scottmckendry/Windots)
-  - Really nicely structured Powershell profile.
+*Check the [docs for useful links](./docs/Useful-Links.md)*
