@@ -4,8 +4,8 @@
 <p align="center">
   <a href="https://github.com/redjax/PowershellProfile">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://e1.pngegg.com/pngimages/64/313/png-clipart-simply-styled-icon-set-731-icons-free-powershell-white-and-blue-logo-illustration-thumbnail.png">
-      <img src="https://e1.pngegg.com/pngimages/64/313/png-clipart-simply-styled-icon-set-731-icons-free-powershell-white-and-blue-logo-illustration-thumbnail.png" height="100">
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.esecurityplanet.com/uploads/2021/05/logo-microsoft-powershell.png">
+      <img src="https://assets.esecurityplanet.com/uploads/2021/05/logo-microsoft-powershell.png" height="100">
     </picture>
   </a>
 </p>
