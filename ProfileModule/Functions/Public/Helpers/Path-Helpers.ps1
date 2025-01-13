@@ -109,16 +109,16 @@ function New-SymLink {
 }
 
 function Find-File {
-    Param(
+    param(
         [string]$Name
     )
 
     Get-ChildItem `
-        -Recurse `
-        -Filter "*${Name}*" `
-        -ErrorAction SilentlyContinue `
-        | ForEach-Object {
-            $place_path = $_.directory
-            Write-Output "${place_path}\${_}"
+         -Recurse `
+         -Filter "*${Name}*" `
+         -ErrorAction SilentlyContinue `
+         | ForEach-Object {
+        $place_path = $_.Directory
+        Write-Output "${place_path}\${_}"
     }
 }

@@ -1,7 +1,7 @@
 function Install-Winget {
     $WingetIsInstalled = Test-Command -CommandName "winget"
 
-    If ( -Not $WingetIsInstalled ) {
+    if (-not $WingetIsInstalled) {
         Write-Host "Installing Winget using Add-AppxPackage"
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
     }
@@ -12,8 +12,8 @@ function Install-Winget {
 
 function Start-WinGetUpdate {
     [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $false, HelpMessage = "Decide if you want to skip the WinGet version check, default it set to false")]
+    param(
+        [Parameter(Mandatory = $false,HelpMessage = "Decide if you want to skip the WinGet version check, default it set to false")]
         [switch]$SkipVersionCheck = $false
     )
     #Check if script was started as Administrator
@@ -29,7 +29,7 @@ function Start-WinGetUpdate {
     [string]$GitHubUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
     # The headers and API version for the GitHub API
     [hashtable]$GithubHeaders = @{
-        "Accept"               = "application/vnd.github.v3+json"
+        "Accept" = "application/vnd.github.v3+json"
         "X-GitHub-Api-Version" = "2022-11-28"
     }
     #
@@ -38,7 +38,7 @@ function Start-WinGetUpdate {
     # =================================
     #
     # Checks if WinGet is installed and if it's installed it will collect the current installed version of WinGet
-    [version]$CheckWinGet = $(try { (Get-AppxPackage -Name Microsoft.DesktopAppInstaller).version } catch { $Null })
+    [version]$CheckWinGet = $(try { (Get-AppxPackage -Name Microsoft.DesktopAppInstaller).Version } catch { $Null })
     <## Checking what architecture your running
     # To Install visualcredist use vc_redist.x64.exe /install /quiet /norestart
     # Now we also need to verify that's the latest version and then download and install it if the latest version is not installed
@@ -82,16 +82,16 @@ function Start-WinGetUpdate {
         # Collecting information from GitHub regarding latest version of WinGet
         try {
             if ($PSVersionTable.PSVersion.Major -ge 7) {
-                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 -HttpVersion 3.0 | Select-Object -Property assets, tag_name
+                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 -HttpVersion 3.0 | Select-Object -Property assets,tag_name
             }
             else {
-                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 | Select-Object -Property assets, tag_name
+                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 | Select-Object -Property assets,tag_name
             }
             [string]$latestVersion = $GithubInfoRestData.tag_name.Substring(1)
-            [System.Object]$GitHubInfo = [PSCustomObject]@{
-                Tag         = $latestVersion
-                DownloadUrl = $GithubInfoRestData.assets | where-object { $_.name -like "*.msixbundle" } | Select-Object -ExpandProperty browser_download_url
-                OutFile     = "$env:TEMP\WinGet_$($latestVersion).msixbundle"
+            [System.Object]$GitHubInfo = [pscustomobject]@{
+                Tag = $latestVersion
+                DownloadUrl = $GithubInfoRestData.assets | Where-Object { $_.Name -like "*.msixbundle" } | Select-Object -ExpandProperty browser_download_url
+                OutFile = "$env:TEMP\WinGet_$($latestVersion).msixbundle"
             }
         }
         catch {
@@ -109,7 +109,7 @@ function Start-WinGetUpdate {
             Add-AppxPackage $($GitHubInfo.OutFile)
         }
         else {
-            Write-OutPut "Your already on the latest version of WinGet $($CheckWinGet), no need to update."
+            Write-Output "Your already on the latest version of WinGet $($CheckWinGet), no need to update."
         }
     }
     # If Microsoft.VCLibs is not installed it will download and install it
@@ -129,7 +129,7 @@ function Start-WinGetUpdate {
         }
     }
     # Starts to check if you have any softwares that needs to be updated
-    Write-OutPut "Checks if any software needs to be updated"
+    Write-Output "Checks if any software needs to be updated"
     try {
         WinGet.exe upgrade --all --silent --force --accept-source-agreements --disable-interactivity --include-unknown
         Write-Output "Everything is now completed, you can close this window"
