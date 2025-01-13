@@ -1,7 +1,8 @@
 Param(
     [switch]$Debug,
     [switch]$Verbose,
-    [string]$ModuleAuthor
+    [string]$ModuleAuthor,
+    [string]$ProfileName = "DefaultProfile"
 )
 
 If ( $Debug ) {
@@ -147,7 +148,8 @@ function Start-ProfileInstall() {
             -Debug:$Debug `
             -Verbose:$Verbose `
             -ProfilePath $ProfilePath `
-            -PSModulesPath $PSModulesPath
+            -PSModulesPath $PSModulesPath `
+            -ProfileName $ProfileName
     }
     catch {
         Write-Error "Error installing custom profile. Details: $($_.Exception.Message)"
