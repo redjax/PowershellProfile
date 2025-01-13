@@ -24,6 +24,8 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
 
 - Clone the repository
 - Run `Install-CustomProfile.ps1`
+  - To Set a specific profile, pass a parameter `-ProfileName <name>`, where `<name>` is a file in the [Profiles/](./Profiles/) path, without the `.ps1` filename
+    - The default value for `$ProfileName` is `DefaultProfile`, which installs the [`DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1) profile.
   - This script will:
     - create a backup of your existing `$PROFILE` at `$($PROFILE).bak`.
       - You may still want to copy your old `$PROFILE`, like:
