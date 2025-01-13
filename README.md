@@ -1,5 +1,34 @@
 # Powershell Profile  <!-- omit in toc -->
 
+<!-- Repo image -->
+<p align="center">
+  <a href="https://github.com/redjax/PowershellProfile">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://assets.esecurityplanet.com/uploads/2021/05/logo-microsoft-powershell.png">
+      <img src="https://assets.esecurityplanet.com/uploads/2021/05/logo-microsoft-powershell.png" height="100">
+    </picture>
+  </a>
+</p>
+
+<!-- Git badges -->
+<p align="center">
+  <a href="https://github.com/redjax/PowershellProfile">
+    <img alt="Created At" src="https://img.shields.io/github/created-at/redjax/PowershellProfile">
+  </a>
+  <a href="https://github.com/redjax/PowershellProfile/commit">
+    <img alt="Last Commit" src="https://img.shields.io/github/last-commit/redjax/PowershellProfile">
+  </a>
+  <a href="https://github.com/redjax/PowershellProfile/commit">
+    <img alt="Commits this year" src="https://img.shields.io/github/commit-activity/y/redjax/PowershellProfile">
+  </a>
+  <a href="https://github.com/redjax/PowershellProfile">
+    <img alt="Repo size" src="https://img.shields.io/github/repo-size/redjax/PowershellProfile">
+  </a>
+  <!-- ![GitHub Latest Release](https://img.shields.io/github/release-date/redjax/PowershellProfile) -->
+  <!-- ![GitHub commits since latest release](https://img.shields.io/github/commits-since/redjax/PowershellProfile/latest) -->
+  <!-- ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/redjax/PowershellProfile/tests.yml) -->
+</p>
+
 My Powershell `$PROFILE` module.
 
 [Documentation](./docs/)
