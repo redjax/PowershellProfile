@@ -40,6 +40,23 @@ function Start-AsAdmin {
     }
 }
 
+function New-PSProfile {
+    if (!(Test-Path -Path $PROFILE)) {
+        Write-Warning "A Powershell profile was not found at path '$($PROFILE)'. Initializing new `$PROFILE."
+        try {
+            New-Item -ItemType File -Path $PROFILE -Force
+            Write-Output "Profile initialized at path: $($PROFILE)"
+            return
+        } catch {
+            Write-Error "Failed to initialize Powershell profile at path '$($PROFILE)'. Details: $($_.Exception.Message)"
+            return $_.Exception
+        }
+    } else {
+        Write-Output "A `$PROFILE .ps1 file already exists at path '$($PROFILE)'."
+        return
+    }
+}
+
 function Get-PowershellVersion () {
     ## Print Powershell version string
     $PowershellVersion = $PSVersionTable.PSVersion.ToString()
@@ -80,7 +97,7 @@ function Show-ApprovedVerbs {
     $verbs = Get-Verb
 
     # Format and display the verbs in a table
-    $verbs | Sort-Object Verb | Format-Table -Property Verb, Group -AutoSize
+    $verbs | Sort-Object Verb | Format-Table -Property Verb,Group-Object -AutoSize
 }
 
 function Write-PSVersionTable {
@@ -129,7 +146,7 @@ function Show-ProfileModuleAliases {
 }
 
 function Restart-Shell {
-    <#
+<#
         .SYNOPSIS
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
         $PROFILE, modules, env vars, etc.
@@ -139,14 +156,14 @@ function Restart-Shell {
 }
 
 function Show-PSProfilePaths {
-    <#
+<#
         .SYNOPSIS
         Show all $PROFILE paths.
     #>
 
     # $profile | Get-Member -MemberType NoteProperty
     $PROFILE | Get-Member -MemberType NoteProperty | ForEach-Object {
-        [PSCustomObject]@{
+        [pscustomobject]@{
             Name = $_.Name
             Path = $PROFILE.PSObject.Properties[$_.Name].Value
         }

@@ -174,7 +174,7 @@ if (Test-Path -Path $AliasesPath -PathType Container) {
         $scriptContent = Get-Content -Path $aliasScript.FullName -Raw
 
         # Extract aliases using the Get-AliasesFromScript function
-        $discoveredAliases = Get-AliasesFromScript -ScriptContent $scriptContent
+        $discoveredAliases = Get-AliasesFromScript -scriptContent $scriptContent
 
         # Log discovered aliases for debugging
         Write-Verbose "Discovered aliases: $($discoveredAliases -join ', ')"

@@ -1,5 +1,5 @@
 function New-SelfSignedCert {
-    Param(
+    param(
         [string]$CertName = $null,
         [string]$CertStorePath = "Cert:\CurrentUser\My",
         [int]$CertKeyLength = 4096,
@@ -8,21 +8,21 @@ function New-SelfSignedCert {
         [string]$CertOutputDir = "C:\Temp"
     )
 
-    If ( -Not $CertName ) {
+    if (-not $CertName) {
         Write-Error "You must give the certificate a name with -CertName."
         return
     }
 
     Write-Output "Generating certificate: $CertName"
     $Cert = New-SelfSignedCertificate `
-        -Subject "CN=$CertName" `
-        -CertStoreLocation "$($CertStorePath)" `
-        -KeyExportPolicy Exportable `
-        -KeySpec Signature `
-        -KeyLength $CertKeyLength `
-        -HashAlgorithm $CertHashAlgorithm
-    
-    If ( -Not ( Test-Path -Path $CertOutputDir -Type Container ) ) {
+         -Subject "CN=$CertName" `
+         -CertStoreLocation "$($CertStorePath)" `
+         -KeyExportPolicy Exportable `
+         -KeySpec Signature `
+         -KeyLength $CertKeyLength `
+         -HashAlgorithm $CertHashAlgorithm
+
+    if (-not (Test-Path -Path $CertOutputDir -Type Container)) {
         Write-Warning "Certificate output path does not exist: $CertOutputDir. Creating path."
 
         try {
