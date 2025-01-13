@@ -66,3 +66,11 @@ function which {
     )
     Get-Command $name | Select-Object -ExpandProperty Definition
 }
+
+function export {
+    Param(
+        [string]$name,
+        [string]$value
+    )
+    Set-Item -Force -Path "env:$name" -value $value;
+}
