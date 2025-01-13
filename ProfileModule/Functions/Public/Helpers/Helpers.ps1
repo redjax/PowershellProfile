@@ -75,6 +75,14 @@ function Get-CommandInfo {
     }
 }
 
+function Show-ApprovedVerbs {
+    # Get all approved verbs
+    $verbs = Get-Verb
+
+    # Format and display the verbs in a table
+    $verbs | Sort-Object Verb | Format-Table -Property Verb, Group -AutoSize
+}
+
 function Write-PSVersionTable {
     Write-Output 'Powershell Version Info'
     $PSVersionTable
@@ -119,3 +127,8 @@ function Show-ProfileModuleAliases {
         exit 1
     }
 }
+
+# function Reload-Shell {
+#     & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
+#     exit
+# }
