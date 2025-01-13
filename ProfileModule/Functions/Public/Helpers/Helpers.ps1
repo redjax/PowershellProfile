@@ -144,7 +144,11 @@ function Show-PSProfilePaths {
         Show all $PROFILE paths.
     #>
 
-    $PROFILE | ForEach-Object {
-        Write-Output "[$($_.Name)] $($_.Value)"
-    }
+    # $profile | Get-Member -MemberType NoteProperty
+    $PROFILE | Get-Member -MemberType NoteProperty | ForEach-Object {
+        [PSCustomObject]@{
+            Name = $_.Name
+            Path = $PROFILE.PSObject.Properties[$_.Name].Value
+        }
+    } | Format-Table -AutoSize
 }
