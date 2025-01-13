@@ -24,3 +24,6 @@ As I find blogs, modules, examples, and more related to Powershell around the In
 - [Wellstsai.com: Methods to accelerate Powershell profile loading speed](https://wellstsai.com/en/post/slow-powershell-profile-loading/)
 - [AdamTheAutomator: Powershell multithreading](https://adamtheautomator.com/powershell-multithreading/)
 - [StackOverflow: Use Runspaces (lazy loading) for your modules](https://stackoverflow.com/a/77227195)
+- [MikeFRobbins.com: Use symlinks to version control your Powershell profile with git](https://mikefrobbins.com/2023/11/09/use-symlinks-to-version-control-your-powershell-profile-with-git/)
+- [Hodgkins.io: Ultimate Powershell prompt customization and git setup guide](https://hodgkins.io/ultimate-powershell-prompt-and-git-setup)
+- [ScottMcKendry.tech: The ultimate Powershell profile](https://scottmckendry.tech/the-ultimate-powershell-profile/)
