@@ -75,6 +75,14 @@ function Get-CommandInfo {
     }
 }
 
+function Show-ApprovedVerbs {
+    # Get all approved verbs
+    $verbs = Get-Verb
+
+    # Format and display the verbs in a table
+    $verbs | Sort-Object Verb | Format-Table -Property Verb, Group -AutoSize
+}
+
 function Write-PSVersionTable {
     Write-Output 'Powershell Version Info'
     $PSVersionTable
@@ -118,4 +126,29 @@ function Show-ProfileModuleAliases {
         Write-Error "Unable to show ProfileModule aliases. Details: $($_.Exception.Message)"
         exit 1
     }
+}
+
+function Restart-Shell {
+    <#
+        .SYNOPSIS
+        Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
+        $PROFILE, modules, env vars, etc.
+    #>
+    & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
+    exit
+}
+
+function Show-PSProfilePaths {
+    <#
+        .SYNOPSIS
+        Show all $PROFILE paths.
+    #>
+
+    # $profile | Get-Member -MemberType NoteProperty
+    $PROFILE | Get-Member -MemberType NoteProperty | ForEach-Object {
+        [PSCustomObject]@{
+            Name = $_.Name
+            Path = $PROFILE.PSObject.Properties[$_.Name].Value
+        }
+    } | Format-Table -AutoSize
 }
