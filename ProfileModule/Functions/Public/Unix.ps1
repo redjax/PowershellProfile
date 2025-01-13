@@ -74,3 +74,17 @@ function export {
     )
     Set-Item -Force -Path "env:$name" -value $value;
 }
+
+function pkill {
+    Param(
+        [string]$name
+    )
+    Get-Process $name -ErrorAction SilentlyContinue | Stop-Process
+}
+
+function pgrep {
+    Param(
+        [string]$name
+    )
+    Get-Process $name
+}
