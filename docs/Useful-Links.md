@@ -18,3 +18,6 @@ As I find blogs, modules, examples, and more related to Powershell around the In
   - Repository with a ton of script and `$PROFILE` examples.
 - [Github: scottmckendry Windots](https://github.com/scottmckendry/Windots)
   - Really nicely structured Powershell profile.
+- [Matt.Kotsenas.com: Profiling and asynchronous initialization to improve Powershell startup](https://matt.kotsenas.com/posts/pwsh-profiling-async-startup)
+- [Microsoft DevBlog: Optimizing your `$PROFILE`](https://devblogs.microsoft.com/powershell/optimizing-your-profile/)
+- [Github: PSProfiler](https://github.com/IISResetMe/PSProfiler)
