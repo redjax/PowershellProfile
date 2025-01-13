@@ -1,4 +1,4 @@
-# Useful links
+# Useful links <!-- omit in toc -->
 
 As I find blogs, modules, examples, and more related to Powershell around the Internet, I'll add the links here.
 
