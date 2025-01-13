@@ -23,3 +23,4 @@ As I find blogs, modules, examples, and more related to Powershell around the In
 - [Github: PSProfiler](https://github.com/IISResetMe/PSProfiler)
 - [Wellstsai.com: Methods to accelerate Powershell profile loading speed](https://wellstsai.com/en/post/slow-powershell-profile-loading/)
 - [AdamTheAutomator: Powershell multithreading](https://adamtheautomator.com/powershell-multithreading/)
+- [StackOverflow: Use Runspaces (lazy loading) for your modules](https://stackoverflow.com/a/77227195)
