@@ -223,3 +223,5 @@ Passing switches as parameters uses this syntax: `-SwitchParam:$SwitchParam`.
 - [`$PROFILE` examples]
   - [Github: IndyPoSH Profile.ps1](https://github.com/dsolodow/IndyPoSH/blob/master/Profile.ps1)
     - Good reference with a lot of well-structure methods.
+- [Github: PowershellIsFun](https://github.com/HarmVeenstra/Powershellisfun/tree/main)
+  - Repository with a ton of script and `$PROFILE` examples.
