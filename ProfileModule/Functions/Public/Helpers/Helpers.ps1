@@ -128,7 +128,12 @@ function Show-ProfileModuleAliases {
     }
 }
 
-# function Reload-Shell {
-#     & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
-#     exit
-# }
+function Restart-Shell {
+    <#
+        .SYNOPSIS
+        Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
+        $PROFILE, modules, env vars, etc.
+    #>
+    & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
+    exit
+}
