@@ -59,3 +59,10 @@ function sed {
     )
     (Get-Content $file).replace("$find", $replace) | Set-Content $file
 }
+
+function which {
+    Param(
+        [string]$name
+    )
+    Get-Command $name | Select-Object -ExpandProperty Definition
+}
