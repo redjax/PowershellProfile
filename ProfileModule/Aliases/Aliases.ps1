@@ -19,3 +19,6 @@ Set-Alias -Name reload -Value Restart-Shell
 
 ## profiles -> Show-PSProfilePaths
 Set-Alias -Name profiles -Value Show-PSProfilePaths
+
+## find -> Find-File
+Set-Alias -Name find -Value Find-File
