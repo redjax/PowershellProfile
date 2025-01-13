@@ -49,7 +49,7 @@ function New-SymLink {
         If $DestPath is a directory/junction already, remove it or back it up before creating link.
 
         .EXAMPLE
-        New-SymLink -SrcPath c:\path\to\src -DestPath c:\path\to\destination [-Overwrite]
+        Create-NewSymLink -SrcPath c:\path\to\src -DestPath c:\path\to\destination [-Overwrite]
     #>
     param(
         [string]$SrcPath,

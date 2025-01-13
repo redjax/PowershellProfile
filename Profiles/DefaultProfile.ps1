@@ -10,6 +10,9 @@
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Set TLS to version 1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
+
 ## Set default parameters on various commands based on Powershell version
 If ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
