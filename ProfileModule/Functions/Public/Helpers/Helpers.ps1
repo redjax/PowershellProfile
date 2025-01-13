@@ -137,3 +137,14 @@ function Restart-Shell {
     & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
     exit
 }
+
+function Show-PSProfilePaths {
+    <#
+        .SYNOPSIS
+        Show all $PROFILE paths.
+    #>
+
+    $PROFILE | ForEach-Object {
+        Write-Output "[$($_.Name)] $($_.Value)"
+    }
+}
