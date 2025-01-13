@@ -13,7 +13,7 @@ param(
     [switch]$Analyze
 )
 
-if ( ( -Not $Lint ) -And ( -Not $Analyze ) ) {
+if ((-not $Lint) -and (-not $Analyze)) {
     Write-Output "You must pass one or both of -Lint / -Analyze."
     Write-Output "  [-Lint]: will scan scripts in the repository for formatting errors (double space instead of four, tabs instead of spaces, etc)."
     Write-Output "  [-Analyze]: will analyze script files with the PSScriptAnalyzer tool."
@@ -114,11 +114,11 @@ function Start-BeautifyScriptsInPath () {
 }
 
 function Start-AnalyzeScriptsInPath () {
-    Param(
+    param(
         $ScanPath = ".\"
     )
 
-    If ( -Not (Test-Path -Path $ScanPath) ) {
+    if (-not (Test-Path -Path $ScanPath)) {
         Write-Error "Failed to analyze scripts, could not find path: $($ScanPath)"
         return
     }
@@ -126,7 +126,7 @@ function Start-AnalyzeScriptsInPath () {
     Write-Output "[START] Analyzing scripts in path: $($ScanPath)`n"
     try {
         Invoke-ScriptAnalyzer -Recurse "$($ScanPath)"
-        
+
         Write-Output "[FINISH] Analyzed scripts in path $($ScanPath)`n"
         return
     } catch {
@@ -136,15 +136,15 @@ function Start-AnalyzeScriptsInPath () {
 }
 
 function main () {
-    If ( $Analyze ) {
+    if ($Analyze) {
         Install-PSScriptAnalyzerModule
 
         Start-AnalyzeScriptsInPath -ScanPath .\scripts
         Start-AnalyzeScriptsInPath -ScanPath .\Profiles
         Start-AnalyzeScriptsInPath -ScanPath .\ProfileModule
     }
-    
-    If ( $Lint ) {
+
+    if ($Lint) {
         Install-PowershellBeautifierModule
 
         Start-BeautifyScriptsInPath -ScanPath .\scripts

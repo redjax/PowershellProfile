@@ -61,7 +61,7 @@ if (Test-Path -Path $AliasesFilePath) {
 }
 
 ## Load and export aliases from the Aliases directory
-If (Test-Path -Path $AliasesPath) {
+if (Test-Path -Path $AliasesPath) {
     $AliasFiles = Get-ChildItem -Path $AliasesPath -Recurse -Filter *.ps1
 
     foreach ($AliasFile in $AliasFiles) {

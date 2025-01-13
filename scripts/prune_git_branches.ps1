@@ -8,21 +8,21 @@
         copy of your branch before pruning.
 #>
 param(
-    [String]$MainBranch = "main"
+    [string]$MainBranch = "main"
 )
 
 Write-Host "Pruning local branches that have been deleted on the remote." -ForegroundColor Green
 
 try {
     git checkout $($MainBranch); `
-        git remote update origin --prune; `
-        git branch -vv `
-    | Select-String -Pattern ": gone]" `
-    | ForEach-Object {
-        $_.toString().Trim().Split(" ")[0]
+         git remote update origin --prune; `
+         git branch -vv `
+         | Select-String -Pattern ": gone]" `
+         | ForEach-Object {
+        $_.ToString().Trim().Split(" ")[0]
     } `
-    | ForEach-Object {
-        git branch -d $_ 
+         | ForEach-Object {
+        git branch -d $_
     }
 
     Write-Host "Local branches pruned." -ForegroundColor Green
