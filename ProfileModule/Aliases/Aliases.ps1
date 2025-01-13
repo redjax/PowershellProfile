@@ -13,3 +13,9 @@ Set-Alias -Name sudo -Value Start-AsAdmin
 
 ## which -> Get-Command
 Set-Alias -Name which -Value Get-Command
+
+## reload -> Restart-Shell
+Set-Alias -Name reload -Value Restart-Shell
+
+## profiles -> Show-PSProfilePaths
+Set-Alias -Name profiles -Value Show-PSProfilePaths

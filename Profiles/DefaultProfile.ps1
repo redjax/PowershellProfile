@@ -10,9 +10,41 @@
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Set TLS to version 1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
+
+## Set default parameters on various commands based on Powershell version
+If ($PSVersionTable.PSVersion -ge '3.0') {
+    $PSDefaultParameterValues = @{
+        'Format-Table:AutoSize'       = $True;
+        'Send-MailMessage:SmtpServer' = $SMTPserver;
+        'Help:ShowWindow'             = $True;
+    }
+    ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
+    $Env:ADPS_LoadDefaultDrive = 0
+}
+
+## Alter shell based on environment
+If ($host.Name -eq 'ConsoleHost') {
+    If ($PSVersionTable.PSVersion -ge '3.0') {
+        Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        Set-PSReadLineOption -BellStyle None
+    }
+} ElseIf ($host.Name -eq 'Windows PowerShell ISE Host') {
+    $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
+    Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
+} ElseIf ($host.Name -eq 'Visual Studio Code Host') {
+    Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+    Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+}
+
+## Set to False by default, flip to True if ProfileModule is able to be imported.
 $ProfileImported = $False
 try {
     Import-Module ProfileModule
+    ## Successfully imported ProfileModule, set to True
     $ProfileImported = $True
 } catch {
     Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
