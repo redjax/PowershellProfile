@@ -97,7 +97,7 @@ function Show-ApprovedVerbs {
     $verbs = Get-Verb
 
     # Format and display the verbs in a table
-    $verbs | Sort-Object Verb | Format-Table -Property Verb, Group -AutoSize
+    $verbs | Sort-Object Verb | Format-Table -Property Verb,Group-Object -AutoSize
 }
 
 function Write-PSVersionTable {
@@ -146,7 +146,7 @@ function Show-ProfileModuleAliases {
 }
 
 function Restart-Shell {
-    <#
+<#
         .SYNOPSIS
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
         $PROFILE, modules, env vars, etc.
@@ -156,14 +156,14 @@ function Restart-Shell {
 }
 
 function Show-PSProfilePaths {
-    <#
+<#
         .SYNOPSIS
         Show all $PROFILE paths.
     #>
 
     # $profile | Get-Member -MemberType NoteProperty
     $PROFILE | Get-Member -MemberType NoteProperty | ForEach-Object {
-        [PSCustomObject]@{
+        [pscustomobject]@{
             Name = $_.Name
             Path = $PROFILE.PSObject.Properties[$_.Name].Value
         }

@@ -16,7 +16,7 @@ function uptime {
 
 function touch {
     ## Create a blank file at $file path
-    Param(
+    param(
         [string]$file
     )
 
@@ -24,25 +24,25 @@ function touch {
 }
 
 function unzip {
-    Param(
+    param(
         [string]$file
     )
-    $dirname = (Get-Item $file).Basename
+    $dirname = (Get-Item $file).BaseName
 
-    Write-Output ("Extracting", $file, "to", $dirname)
+    Write-Output ("Extracting",$file,"to",$dirname)
 
     New-Item -Force -ItemType directory -Path $dirname
-    expand-archive $file -OutputPath $dirname -ShowProgress
+    Expand-Archive $file -OutputPath $dirname -ShowProgress
 }
 
 function grep {
-    Param(
+    param(
         [string]$regex,
         [string]$dir
     )
-    if ( $dir ) {
-            Get-ChildItem $dir | Select-String $regex
-            return
+    if ($dir) {
+        Get-ChildItem $dir | Select-String $regex
+        return
     }
     $input | Select-String $regex
 }
@@ -52,38 +52,38 @@ function df {
 }
 
 function sed {
-    Param(
+    param(
         [string]$file,
         [string]$find,
         [string]$replace
     )
-    (Get-Content $file).replace("$find", $replace) | Set-Content $file
+    (Get-Content $file).Replace("$find",$replace) | Set-Content $file
 }
 
 function which {
-    Param(
+    param(
         [string]$name
     )
     Get-Command $name | Select-Object -ExpandProperty Definition
 }
 
 function export {
-    Param(
+    param(
         [string]$name,
         [string]$value
     )
-    Set-Item -Force -Path "env:$name" -value $value;
+    Set-Item -Force -Path "env:$name" -Value $value;
 }
 
 function pkill {
-    Param(
+    param(
         [string]$name
     )
     Get-Process $name -ErrorAction SilentlyContinue | Stop-Process
 }
 
 function pgrep {
-    Param(
+    param(
         [string]$name
     )
     Get-Process $name
