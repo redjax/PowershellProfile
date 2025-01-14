@@ -17,7 +17,7 @@
 # Set-PSDebug -Trace 1
 
 ## Manually set this to $false to keep profile outputs on-screen after initializing
-$ClearOnInit = $true
+$ClearOnInit = $false
 
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
@@ -28,13 +28,15 @@ $ProfileDir = $PSScriptRoot
 ## XDG .local/share
 $DataHome = if ($ENV:XDG_CONFIG_HOME -and $ENV:XDG_DATA_HOME) {
     $ENV:XDG_DATA_HOME
-} else {
+}
+else {
     [IO.Path]::Combine($HOME, ".local", "share")
 }
 ## XDG .config/
 $ConfigHome = if ($ENV:XDG_CONFIG_HOME) {
     $ENV:XDG_CONFIG_HOME
-} else {
+}
+else {
     [IO.Path]::Combine($HOME, ".config")
 }
 
@@ -52,38 +54,38 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
     $Env:ADPS_LoadDefaultDrive = 0
 }
 
+## Alter shell based on environment
+#  This code must be outside of the deferred
+#  loading below in order to set shell values
+#  immediately.
+if ( $host.Name -eq 'ConsoleHost' ) {
+    ## Powershell console/Windows Terminal
+
+    if ( $PSVersionTable.PSVersion -ge '3.0' ) {
+        ## Import PSReadLine interactive terminal
+        Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
+        ## Set keyboard key for accepting suggestions
+        Set-PSReadLineKeyHandler -Key Enter -Function MenuComplete
+        ## Disable audio bells
+        Set-PSReadLineOption -BellStyle None
+    }
+}
+ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
+    ## Powershell ISE
+    $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    ## Import ISE modules for more interactive sessions
+    $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
+    Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
+}
+ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
+    ## Load VSCode modules for Powershell for debugging & other integrations
+    Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+    Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+}
+
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
-    {
-        {
-            ## Alter shell based on environment
-            if ( $host.Name -eq 'ConsoleHost' ) {
-                ## Powershell console/Windows Terminal
-        
-                if ( $PSVersionTable.PSVersion -ge '3.0' ) {
-                    ## Import PSReadLine interactive terminal
-                    Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-                    ## Set keyboard key for accepting suggestions
-                    Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
-                    ## Disable audio bells
-                    Set-PSReadLineOption -BellStyle None
-                }
-            }
-            ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
-                ## Powershell ISE
-                $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-                ## Import ISE modules for more interactive sessions
-                $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
-                Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-            }
-            ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
-                ## Load VSCode modules for Powershell for debugging & other integrations
-                Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-                Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-            }
-        }
-    },
     {
 
         try {

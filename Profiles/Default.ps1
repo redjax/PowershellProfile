@@ -17,7 +17,7 @@
 # Set-PSDebug -Trace 1
 
 ## Manually set this to $false to keep profile outputs on-screen after initializing
-$ClearOnInit = $true
+$ClearOnInit = $false
 
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
@@ -48,7 +48,9 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
                 ## Import PSReadLine interactive terminal
                 Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
                 ## Set keyboard key for accepting suggestions
-                Set-PSReadLineKeyHandler -Key Tab -Function AcceptLine
+                Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+                ## Set Enter to its normal/expected behavior
+                Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
                 ## Disable audio bells
                 Set-PSReadLineOption -BellStyle None
             }
