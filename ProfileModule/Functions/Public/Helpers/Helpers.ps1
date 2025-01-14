@@ -6,7 +6,7 @@ function Test-IsAdmin {
 }
 
 function Start-AsAdmin {
-<#
+    <#
         .SYNOPSIS
         Pipe a command through an elevated Powershell prompt.
 
@@ -146,7 +146,7 @@ function Show-ProfileModuleAliases {
 }
 
 function Restart-Shell {
-<#
+    <#
         .SYNOPSIS
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
         $PROFILE, modules, env vars, etc.
@@ -156,7 +156,7 @@ function Restart-Shell {
 }
 
 function Show-PSProfilePaths {
-<#
+    <#
         .SYNOPSIS
         Show all $PROFILE paths.
     #>
