@@ -2,7 +2,7 @@ Param(
     [switch]$Debug,
     [switch]$Verbose,
     [string]$ModuleAuthor,
-    [string]$ProfileName = "DefaultProfile"
+    [string]$ProfileName = "Default"
 )
 
 If ( $Debug ) {

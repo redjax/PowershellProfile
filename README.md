@@ -49,7 +49,7 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
 - Clone the repository
 - Run `Install-CustomProfile.ps1`
   - To Set a specific profile, pass a parameter `-ProfileName <name>`, where `<name>` is a file in the [Profiles/](./Profiles/) path, without the `.ps1` filename
-    - The default value for `$ProfileName` is `DefaultProfile`, which installs the [`DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1) profile.
+    - The default value for `$ProfileName` is `Default`, which installs the [`Default.ps1`](./Profiles/Default.ps1) profile.
   - This script will:
     - create a backup of your existing `$PROFILE` at `$($PROFILE).bak`.
       - You may still want to copy your old `$PROFILE`, like:
@@ -57,10 +57,10 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
         - This will prevent accidentally nuking any customizations you've made to your `$PROFILE`
     - Update the module's [manifest file](./ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
     - Copy the [`ProfileModule`](./ProfileModule/) directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
-    - Copy/update a [custom profile](./Profiles/) (default: [`DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1)) to your machine's `$PROFILE` location.
-      - The [default custom profile](./Profiles/DefaultProfile.ps1) imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
+    - Copy/update a [custom profile](./Profiles/) (default: [`Default.ps1`](./Profiles/Default.ps1)) to your machine's `$PROFILE` location.
+      - The [default custom profile](./Profiles/Default.ps1) imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
       - To use a different profile, pass a `-ProfileName <profilename>`, where `<profilename>` is the name of a file in the [`Profiles/`](./Profiles/) directory without the `.ps1` file extension.
-        - i.e. `-ProfileName DefaultProfile` would use [`./Profiles/DefaultProfile.ps1`](./Profiles/DefaultProfile.ps1)
+        - i.e. `-ProfileName Default` would use [`./Profiles/Default.ps1`](./Profiles/Default.ps1)
 - Restart your shell
 
 To see a full list of the functions exported by this module, run: `Get-Command -Module ProfileModule -Commandtype Function`.

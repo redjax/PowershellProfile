@@ -3,7 +3,7 @@ param(
     [switch]$Verbose,
     [string]$ProfilePath = $PROFILE,
     [string]$PSModulesPath = "$(Split-Path $ProfilePath -Parent)\Modules",
-    [string]$ProfileName = "DefaultProfile"
+    [string]$ProfileName = "Default"
 )
 
 if ($Debug) {
