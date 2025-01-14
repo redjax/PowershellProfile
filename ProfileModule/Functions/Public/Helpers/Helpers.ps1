@@ -151,7 +151,17 @@ function Restart-Shell {
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
         $PROFILE, modules, env vars, etc.
     #>
-    & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
+
+    ## Determine the correct executable name based on the PowerShell version
+    $ShellExecutable = if ($PSVersionTable.PSEdition -eq 'Core') {
+        ## PowerShell 7+ uses pwsh.exe
+        "$PSHOME\pwsh.exe"
+    } else {
+        ## Windows PowerShell uses powershell.exe
+        "$PSHOME\powershell.exe"
+    }
+
+    & $ShellExecutable -NoExit -Command "Set-Location -Path '$PWD'"
     exit
 }
 
