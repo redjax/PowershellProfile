@@ -13,9 +13,9 @@ $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $fa
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
-        'Format-Table:AutoSize'       = $True;
+        'Format-Table:AutoSize' = $True;
         'Send-MailMessage:SmtpServer' = $SMTPserver;
-        'Help:ShowWindow'             = $True;
+        'Help:ShowWindow' = $True;
     }
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
@@ -32,20 +32,20 @@ if ($host.Name -eq 'ConsoleHost') {
 }
 elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
     $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-    $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
+    $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
     Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
 }
 elseif ($host.Name -eq 'Visual Studio Code Host') {
     Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
     Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
 }
-    
+
 
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
     {
-        
+
         try {
             Import-Module ProfileModule
             ## Indicate to the script that the ProfileModule was imported successfully
@@ -66,10 +66,10 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
         }
     }
 ) | ForEach-Object {
-    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_ 
+    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
 } | Out-Null
 
-If ( $ClearOnInit ) {
+if ($ClearOnInit) {
     Clear-Host
 }
 

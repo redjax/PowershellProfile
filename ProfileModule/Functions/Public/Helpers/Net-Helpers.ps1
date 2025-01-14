@@ -51,7 +51,7 @@ function Get-PublicIP {
 }
 
 function Get-HTTPSiteAvailable {
-    Param(
+    param(
         [string]$Site = "https://www.google.com",
         [string]$RequestSleep = 5
     )

@@ -124,7 +124,7 @@ function Find-File {
 }
 
 function Unlock-DownloadedFile {
-    <#
+<#
         .SYNOPSIS
         When downloading a file from the Internet, Windows will
         'lock' the file to prevent execution until you unlock it.
@@ -135,11 +135,11 @@ function Unlock-DownloadedFile {
         .EXAMPLE
         Unlock-DownloadedFile -FilePath C:\path\to\file-to-unlock.ext
     #>
-    Param(
+    param(
         [string]$FilePath
     )
 
-    If ( -Not $FilePath ) {
+    if (-not $FilePath) {
         Write-Error "Missing a -FilePath to unlock."
         return
     }

@@ -19,7 +19,7 @@ $functionRegex = 'function\s+([^\s{]+)\s*\{'
 $PublicFunctions = Get-ChildItem -Path $PublicFunctionsPath -Recurse -Filter *.ps1
 
 ## Get list of .ps1 files in Private/ recursively
-If ( Test-Path "$($PrivateFunctionsPath)") {
+if (Test-Path "$($PrivateFunctionsPath)") {
     $PrivateFunctions = Get-ChildItem -Path $PrivateFunctionsPath -Recurse -Filter *.ps1
 
     ## Load all private/internal Powershell functions from script files
