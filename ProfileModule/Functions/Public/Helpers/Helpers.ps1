@@ -57,14 +57,14 @@ function New-PSProfile {
     }
 }
 
-function Get-PowershellVersion () {
+function Get-PowershellVersion {
     ## Print Powershell version string
     $PowershellVersion = $PSVersionTable.PSVersion.ToString()
 
     Write-Output "Powershell version: $PowershellVersion"
 }
 
-function Start-StarshipShell () {
+function Start-StarshipShell  {
     ## Initialize Starship shell
     if (Get-Command starship) {
         try {

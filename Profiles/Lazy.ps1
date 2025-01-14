@@ -44,7 +44,7 @@ if ( $host.Name -eq 'ConsoleHost' ) {
         ## Import PSReadLine interactive terminal
         Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
         ## Set keyboard key for accepting suggestions
-        Set-PSReadLineKeyHandler -Key Tab -Function AcceptLine
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
         ## Disable audio bells
         Set-PSReadLineOption -BellStyle None
     }

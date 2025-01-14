@@ -49,7 +49,7 @@ Write-Verbose "Path to module's GUID file: $GUIDFilePath"
 Write-Verbose "Path to module's author file: $AuthorFilePath"
 Write-Verbose "Path to module's version file: $VersionFilePath"
 
-function Start-ModuleManifestUpdate() {
+function Start-ModuleManifestUpdate {
     <#
         .SYNOPSIS
         Create or update the module's .psd1 module manifest.
@@ -88,7 +88,7 @@ function Start-ModuleManifestUpdate() {
         -Verbose:$Verbose
 }
 
-function Start-ModuleInstall() {
+function Start-ModuleInstall {
     <#
         .SYNOPSIS
         Install Powershell module in profile's modules/ path.
@@ -125,7 +125,7 @@ function Start-ModuleInstall() {
     }
 }
 
-function Start-ProfileInstall() {
+function Start-ProfileInstall {
     Param(
         $Debug = $False,
         $Verbose = $False,
@@ -157,7 +157,7 @@ function Start-ProfileInstall() {
     }
 }
 
-function main() {
+function main {
     Write-Output "`n[ Update Powershell module's .psd1 manifest file ]"
 
     try {
