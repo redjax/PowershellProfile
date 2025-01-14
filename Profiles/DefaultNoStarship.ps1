@@ -58,17 +58,6 @@ if ($ProfileImported) {
     #  Functions & aliases are not available
 }
 
-## Initialize Starship shell
-if (Get-Command starship -ErrorAction SilentlyContinue) {
-    try {
-        Invoke-Expression (& starship init powershell)
-    }
-    catch {
-        ## Show error when verbose logging is enabled
-        #  Write-Verbose "The 'starship' command was not found. Skipping initialization." -Verbose
-    }
-}
-
 ## Clear the screen on fresh sessions
 Clear-Host
 
