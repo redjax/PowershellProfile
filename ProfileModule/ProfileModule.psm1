@@ -36,7 +36,8 @@ $PublicFunctions | ForEach-Object {
 $PublicFunctionNames = @()
 
 foreach ($script in $PublicFunctions) {
-    $scriptContent = Get-Content -Path $script.FullName -Raw
+    # $scriptContent = Get-Content -Path $script.FullName -Raw
+    $ScriptContent = [System.IO.File]::ReadAllText($script.FullName)
     $SearchMatches = [regex]::Matches($scriptContent,$functionRegex)
 
     foreach ($match in $SearchMatches) {

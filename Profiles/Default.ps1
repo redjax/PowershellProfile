@@ -28,44 +28,45 @@ $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $fa
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
-        'Format-Table:AutoSize' = $True;
+        'Format-Table:AutoSize'       = $True;
         'Send-MailMessage:SmtpServer' = $SMTPserver;
-        'Help:ShowWindow' = $True;
+        'Help:ShowWindow'             = $True;
     }
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
 }
 
-## Alter shell based on environment
-if ( $host.Name -eq 'ConsoleHost' ) {
-    ## Powershell console/Windows Terminal
-
-    if ( $PSVersionTable.PSVersion -ge '3.0' ) {
-        ## Import PSReadLine interactive terminal
-        Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-        ## Set keyboard key for accepting suggestions
-        Set-PSReadLineKeyHandler -Key Tab -Function AcceptLine
-        ## Disable audio bells
-        Set-PSReadLineOption -BellStyle None
-    }
-} ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
-    ## Powershell ISE
-    $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-    ## Import ISE modules for more interactive sessions
-    $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
-    Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-} ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
-    ## Load VSCode modules for Powershell for debugging & other integrations
-    Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-    Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-}
-
-
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
     {
+        ## Alter shell based on environment
+        if ( $host.Name -eq 'ConsoleHost' ) {
+            ## Powershell console/Windows Terminal
 
+            if ( $PSVersionTable.PSVersion -ge '3.0' ) {
+                ## Import PSReadLine interactive terminal
+                Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
+                ## Set keyboard key for accepting suggestions
+                Set-PSReadLineKeyHandler -Key Tab -Function AcceptLine
+                ## Disable audio bells
+                Set-PSReadLineOption -BellStyle None
+            }
+        }
+        ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
+            ## Powershell ISE
+            $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+            ## Import ISE modules for more interactive sessions
+            $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
+            Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
+        }
+        ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
+            ## Load VSCode modules for Powershell for debugging & other integrations
+            Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+            Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+        }
+    },
+    {
         try {
             Import-Module ProfileModule
             ## Indicate to the script that the ProfileModule was imported successfully
@@ -78,7 +79,7 @@ if ( $host.Name -eq 'ConsoleHost' ) {
             ## Signal even if there's an error
             $Global:ProfileModuleImported.Set()
         }
-    }
+    },
     {
         ## Initialize Starship shell
         if (Get-Command starship -ErrorAction SilentlyContinue) {
