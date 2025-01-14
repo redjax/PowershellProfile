@@ -7,6 +7,9 @@
     that I want to import when a PowerShell session loads with this profile.
 #>
 
+## Uncomment to enable profile tracing
+# Set-PSDebug -Trace 1
+
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
@@ -78,3 +81,6 @@ $ProfileEndTime = Get-Date
 $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
 Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
+
+## Disable profile tracing
+Set-PSDebug -Trace 0

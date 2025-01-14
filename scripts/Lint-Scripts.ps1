@@ -33,7 +33,7 @@ if ($Verbose) {
     $VerbosePreference = "SilentlyContinue"
 }
 
-function Install-PowershellBeautifierModule () {
+function Install-PowershellBeautifierModule  {
     if (-not (Get-Module -ListAvailable -Name PowerShell-Beautifier)) {
         Write-Output "PowerShell-Beautifier module is not installed. Installing now."
         try {
@@ -49,7 +49,7 @@ function Install-PowershellBeautifierModule () {
     }
 }
 
-function Install-PSScriptAnalyzerModule () {
+function Install-PSScriptAnalyzerModule  {
     if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
         Write-Output "PSScriptAnalyzer module is not installed. Installing now."
         try {
@@ -65,7 +65,7 @@ function Install-PSScriptAnalyzerModule () {
     }
 }
 
-function Start-BeatifySingleScript () {
+function Start-BeatifySingleScript  {
     param(
         [string]$TargetScript
     )
@@ -92,7 +92,7 @@ function Start-BeatifySingleScript () {
     }
 }
 
-function Start-BeautifyScriptsInPath () {
+function Start-BeautifyScriptsInPath  {
     param(
         [string]$ScanPath = ".\"
     )
@@ -113,7 +113,7 @@ function Start-BeautifyScriptsInPath () {
     }
 }
 
-function Start-AnalyzeScriptsInPath () {
+function Start-AnalyzeScriptsInPath  {
     param(
         $ScanPath = ".\"
     )
@@ -135,7 +135,7 @@ function Start-AnalyzeScriptsInPath () {
     }
 }
 
-function main () {
+function main  {
     if ($Analyze) {
         Install-PSScriptAnalyzerModule
 

@@ -14,13 +14,15 @@ param(
 
 if ($Debug) {
     $DebugPreference = "Continue"
-} else {
+}
+else {
     $DebugPreference = "SilentlyContinue"
 }
 
 if ($Verbose) {
     $VerbosePreference = "Continue"
-} else {
+}
+else {
     $VerbosePreference = "SilentlyContinue"
 }
 
@@ -38,21 +40,26 @@ if (-not (Test-Path -Path $GUIDFilePath)) {
     Write-Debug "GUID file '$($GUIDFilePath)' does not exist. Generating GUID and saving to file."
     $guid = [guid]::NewGuid().ToString()
     Set-Content -Path $GUIDFilePath -Value $guid
-} else {
+}
+else {
     Write-Debug "Loading GUID from file: $($GUIDFilePath)"
-    $guid = Get-Content -Path $GUIDFilePath
+    # $guid = Get-Content -Path $GUIDFilePath
+    $guid = [System.IO.File]::ReadAllText($GUIDFilePath)
 }
 
 ## Save author if provided
 if ($Author) {
     Write-Debug "Saving author '$Author' to path: $($AuthorFilePath)"
     Set-Content -Path $AuthorFilePath -Value $Author
-} elseif (-not (Test-Path -Path $AuthorFilePath)) {
+}
+elseif (-not (Test-Path -Path $AuthorFilePath)) {
     Write-Error "Author not provided and author.txt does not exist."
     exit 1
-} else {
+}
+else {
     Write-Debug "Loading author from file: $($AuthorFilePath)"
-    $Author = Get-Content -Path $AuthorFilePath
+    # $Author = Get-Content -Path $AuthorFilePath
+    $Author = [System.IO.File]::ReadAllText($AuthorFilePath)
 }
 
 ## Set version if it doesn't exist
@@ -60,25 +67,28 @@ if (-not (Test-Path -Path $VersionFilePath)) {
     Write-Debug "Version file not found at path '$($VersionFilePath)'. Saving version '0.1.0' to version file."
     $version = "0.1.0"
     Set-Content -Path $VersionFilePath -Value $version
-} else {
+}
+else {
     Write-Debug "Loading module version from file '$($VersionFilePath)'."
-    $version = Get-Content -Path $VersionFilePath
+    # $version = Get-Content -Path $VersionFilePath
+    $version = [System.IO.File]::ReadAllText($VersionFilePath)
 }
 
 ## Import existing module manifest if it exists
 if (Test-Path -Path $ManifestPath) {
     Write-Debug "Loading module manifest contents from path '$($ManifestPath)'"
     $manifest = Import-PowerShellDataFile -Path $ManifestPath
-} else {
+}
+else {
     Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
     $manifest = @{
-        RootModule = ".\ProfileModule.psm1"
-        ModuleVersion = $version
-        GUID = $guid
-        Author = $Author
+        RootModule        = ".\ProfileModule.psm1"
+        ModuleVersion     = $version
+        GUID              = $guid
+        Author            = $Author
         FunctionsToExport = @()
-        AliasesToExport = @()
-        CmdletsToExport = @()
+        AliasesToExport   = @()
+        CmdletsToExport   = @()
         VariablesToExport = @()
     }
 }
@@ -99,7 +109,7 @@ function Get-FunctionsFromScript {
             # $Functions += $match.Groups[1].Value
 
             # Remove any parentheses from the function name
-            $functionName = $match.Groups[1].Value -replace '\(\)',''
+            $functionName = $match.Groups[1].Value -replace '\(\)', ''
             $Functions += $functionName
         }
     }
@@ -187,7 +197,8 @@ if (Test-Path -Path $AliasesPath -PathType Container) {
     $Aliases = $Aliases | Sort-Object -Unique
 
     Write-Output "Total aliases discovered: $($Aliases.Count)"
-} else {
+}
+else {
     Write-Output "Aliases directory not found at path '$($AliasesPath)'."
 }
 
@@ -224,6 +235,7 @@ try {
     Set-Content -Path $ManifestPath -Value $manifestContent
 
     Write-Output "Module manifest updated successfully."
-} catch {
+}
+catch {
     Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
 }

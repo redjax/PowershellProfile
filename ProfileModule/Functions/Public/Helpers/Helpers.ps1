@@ -6,7 +6,7 @@ function Test-IsAdmin {
 }
 
 function Start-AsAdmin {
-<#
+    <#
         .SYNOPSIS
         Pipe a command through an elevated Powershell prompt.
 
@@ -57,14 +57,14 @@ function New-PSProfile {
     }
 }
 
-function Get-PowershellVersion () {
+function Get-PowershellVersion {
     ## Print Powershell version string
     $PowershellVersion = $PSVersionTable.PSVersion.ToString()
 
     Write-Output "Powershell version: $PowershellVersion"
 }
 
-function Start-StarshipShell () {
+function Start-StarshipShell  {
     ## Initialize Starship shell
     if (Get-Command starship) {
         try {
@@ -146,17 +146,27 @@ function Show-ProfileModuleAliases {
 }
 
 function Restart-Shell {
-<#
+    <#
         .SYNOPSIS
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
         $PROFILE, modules, env vars, etc.
     #>
-    & $PSHOME\powershell.exe -NoExit -Command "Set-Location -Path '$PWD'"
+
+    ## Determine the correct executable name based on the PowerShell version
+    $ShellExecutable = if ($PSVersionTable.PSEdition -eq 'Core') {
+        ## PowerShell 7+ uses pwsh.exe
+        "$PSHOME\pwsh.exe"
+    } else {
+        ## Windows PowerShell uses powershell.exe
+        "$PSHOME\powershell.exe"
+    }
+
+    & $ShellExecutable -NoExit -Command "Set-Location -Path '$PWD'"
     exit
 }
 
 function Show-PSProfilePaths {
-<#
+    <#
         .SYNOPSIS
         Show all $PROFILE paths.
     #>
