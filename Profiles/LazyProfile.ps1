@@ -13,34 +13,37 @@ $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $fa
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
-        'Format-Table:AutoSize' = $True;
+        'Format-Table:AutoSize'       = $True;
         'Send-MailMessage:SmtpServer' = $SMTPserver;
-        'Help:ShowWindow' = $True;
+        'Help:ShowWindow'             = $True;
     }
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
 }
 
+
+## Alter shell based on environment
+if ($host.Name -eq 'ConsoleHost') {
+    if ($PSVersionTable.PSVersion -ge '3.0') {
+        Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        Set-PSReadLineOption -BellStyle None
+    }
+}
+elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
+    $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
+    Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
+}
+elseif ($host.Name -eq 'Visual Studio Code Host') {
+    Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+    Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+}
+    
+
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
-    {
-        ## Alter shell based on environment
-        if ($host.Name -eq 'ConsoleHost') {
-            if ($PSVersionTable.PSVersion -ge '3.0') {
-                Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-                Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
-                Set-PSReadLineOption -BellStyle None
-            }
-        } elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
-            $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-            $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
-            Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-        } elseif ($host.Name -eq 'Visual Studio Code Host') {
-            Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-            Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-        }
-    },
     {
         
         try {
@@ -55,7 +58,7 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
             ## Signal even if there's an error
             $Global:ProfileModuleImported.Set()
         }
-    },
+    }
     {
         ## Initialize Starship shell
         if (Get-Command starship -ErrorAction SilentlyContinue) {
@@ -82,6 +85,7 @@ $ProfileEndTime = Get-Date
 $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
 Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
+Write-Output "Some commands may be unavailable for 1-3 seconds while background imports finish."
 
 ## Disable profile tracing
 Set-PSDebug -Trace 0
