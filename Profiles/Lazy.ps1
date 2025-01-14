@@ -5,6 +5,12 @@
     .DESCRIPTION
     Loads my custom ProfileModule PowerShell module. This module has various functions and aliases
     that I want to import when a PowerShell session loads with this profile.
+
+    Uses Register-EventEngine to run slower parts of scripts as background tasks, allowing prompt input
+    immediately and loading things like the Starship prompt in the background.
+
+    When background tasks finish, the next time the user hits Enter, CTRL-C, or anything else that produces
+    a newline the prompt will reload.
 #>
 
 ## Uncomment to enable profile tracing
