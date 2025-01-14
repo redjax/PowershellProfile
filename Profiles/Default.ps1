@@ -5,16 +5,25 @@
     .DESCRIPTION
     Loads my custom ProfileModule PowerShell module. This module has various functions and aliases
     that I want to import when a PowerShell session loads with this profile.
+
+    Uses Register-EventEngine to run slower parts of scripts as background tasks, allowing prompt input
+    immediately and loading things like the Starship prompt in the background.
+
+    When background tasks finish, the next time the user hits Enter, CTRL-C, or anything else that produces
+    a newline the prompt will reload.
 #>
 
 ## Uncomment to enable profile tracing
 # Set-PSDebug -Trace 1
 
+## Manually set this to $false to keep profile outputs on-screen after initializing
+$ClearOnInit = $true
+
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
-## Set TLS to version 1.2
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
+## Create a ManualResetEvent object for the ProfileModule import state
+$Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
@@ -28,52 +37,61 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
 }
 
 ## Alter shell based on environment
-if ($host.Name -eq 'ConsoleHost') {
-    if ($PSVersionTable.PSVersion -ge '3.0') {
+if ( $host.Name -eq 'ConsoleHost' ) {
+    ## Powershell console/Windows Terminal
+
+    if ( $PSVersionTable.PSVersion -ge '3.0' ) {
+        ## Import PSReadLine interactive terminal
         Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        ## Set keyboard key for accepting suggestions
+        Set-PSReadLineKeyHandler -Key Tab -Function AcceptLine
+        ## Disable audio bells
         Set-PSReadLineOption -BellStyle None
     }
-} elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
+} ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
+    ## Powershell ISE
     $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    ## Import ISE modules for more interactive sessions
     $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
     Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-} elseif ($host.Name -eq 'Visual Studio Code Host') {
+} ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
+    ## Load VSCode modules for Powershell for debugging & other integrations
     Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
     Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
 }
 
-## Set to False by default, flip to True if ProfileModule is able to be imported.
-$ProfileImported = $False
-try {
-    Import-Module ProfileModule
-    ## Successfully imported ProfileModule, set to True
-    $ProfileImported = $True
-} catch {
-    Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
-}
 
-if ($ProfileImported) {
-    ## Custom profile was imported successfully.
-    #  Functions & aliases are available
-} else {
-    ## Custom profile failed to import.
-    #  Functions & aliases are not available
-}
+## Wrap slow code to run asynchronously later
+#  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
+@(
+    {
 
-## Initialize Starship shell
-if (Get-Command starship -ErrorAction SilentlyContinue) {
-    try {
-        Invoke-Expression (& starship init powershell)
+        try {
+            Import-Module ProfileModule
+            ## Indicate to the script that the ProfileModule was imported successfully
+            $Global:ProfileModuleImported = $true
+            ## Signal that the module was successfully imported
+            $Global:ProfileModuleImported.Set()
+        }
+        catch {
+            Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
+            ## Signal even if there's an error
+            $Global:ProfileModuleImported.Set()
+        }
     }
-    catch {
-        ## Show error when verbose logging is enabled
-        #  Write-Verbose "The 'starship' command was not found. Skipping initialization." -Verbose
+    {
+        ## Initialize Starship shell
+        if (Get-Command starship -ErrorAction SilentlyContinue) {
+            Invoke-Expression (& starship init powershell)
+        }
     }
-}
+) | ForEach-Object {
+    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+} | Out-Null
 
-## Clear the screen on fresh sessions
-Clear-Host
+if ($ClearOnInit) {
+    Clear-Host
+}
 
 ## End profile initialization timer
 $ProfileEndTime = Get-Date
@@ -81,6 +99,7 @@ $ProfileEndTime = Get-Date
 $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
 Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
+Write-Output "Some commands may be unavailable for 1-3 seconds while background imports finish."
 
 ## Disable profile tracing
 Set-PSDebug -Trace 0
