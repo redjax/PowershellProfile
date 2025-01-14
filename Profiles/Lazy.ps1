@@ -22,6 +22,22 @@ $ClearOnInit = $true
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Set path to $PROFILE parent dir
+$ProfileDir = $PSScriptRoot
+
+## XDG .local/share
+$DataHome = if ($ENV:XDG_CONFIG_HOME -and $ENV:XDG_DATA_HOME) {
+    $ENV:XDG_DATA_HOME
+} else {
+    [IO.Path]::Combine($HOME, ".local", "share")
+}
+## XDG .config/
+$ConfigHome = if ($ENV:XDG_CONFIG_HOME) {
+    $ENV:XDG_CONFIG_HOME
+} else {
+    [IO.Path]::Combine($HOME, ".config")
+}
+
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
