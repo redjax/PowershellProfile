@@ -43,8 +43,8 @@ if (-not (Test-Path -Path $GUIDFilePath)) {
 }
 else {
     Write-Debug "Loading GUID from file: $($GUIDFilePath)"
-    # $guid = Get-Content -Path $GUIDFilePath
-    $guid = [System.IO.File]::ReadAllText($GUIDFilePath)
+    $guid = Get-Content -Path $GUIDFilePath
+    # $guid = [System.IO.File]::ReadAllText($GUIDFilePath)
 }
 
 ## Save author if provided
@@ -58,8 +58,8 @@ elseif (-not (Test-Path -Path $AuthorFilePath)) {
 }
 else {
     Write-Debug "Loading author from file: $($AuthorFilePath)"
-    # $Author = Get-Content -Path $AuthorFilePath
-    $Author = [System.IO.File]::ReadAllText($AuthorFilePath)
+    $Author = Get-Content -Path $AuthorFilePath
+    # $Author = [System.IO.File]::ReadAllText($AuthorFilePath)
 }
 
 ## Set version if it doesn't exist
@@ -70,8 +70,8 @@ if (-not (Test-Path -Path $VersionFilePath)) {
 }
 else {
     Write-Debug "Loading module version from file '$($VersionFilePath)'."
-    # $version = Get-Content -Path $VersionFilePath
-    $version = [System.IO.File]::ReadAllText($VersionFilePath)
+    $version = Get-Content -Path $VersionFilePath
+    # $version = [System.IO.File]::ReadAllText($VersionFilePath)
 }
 
 ## Import existing module manifest if it exists

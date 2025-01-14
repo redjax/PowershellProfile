@@ -152,8 +152,8 @@ function Restart-Shell {
         $PROFILE, modules, env vars, etc.
     #>
 
-    ## Determine the correct executable name based on the PowerShell version
-    $ShellExecutable = if ($PSVersionTable.PSEdition -eq 'Core') {
+    ## Determine the correct executable based on PowerShell version
+    $PowerShellExe = if ($PSVersionTable.PSEdition -eq 'Core') {
         ## PowerShell 7+ uses pwsh.exe
         "$PSHOME\pwsh.exe"
     } else {
@@ -161,7 +161,10 @@ function Restart-Shell {
         "$PSHOME\powershell.exe"
     }
 
-    & $ShellExecutable -NoExit -Command "Set-Location -Path '$PWD'"
+    ## Restart the shell and set the current working directory
+    & $PowerShellExe -NoExit -Command "Set-Location -Path '$PWD'"
+
+    ## Exit the current session
     exit
 }
 
