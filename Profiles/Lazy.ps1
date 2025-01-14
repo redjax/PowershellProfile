@@ -1,8 +1,17 @@
+<#
+    .SYNOPSIS
+    My custom PowerShell $PROFILE.
+
+    .DESCRIPTION
+    Loads my custom ProfileModule PowerShell module. This module has various functions and aliases
+    that I want to import when a PowerShell session loads with this profile.
+#>
+
+## Uncomment to enable profile tracing
+# Set-PSDebug -Trace 1
+
 ## Manually set this to $false to keep profile outputs on-screen after initializing
 $ClearOnInit = $true
-
-## Uncomment to enable profile tracing during load
-# Set-PSDebug -Trace 1
 
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
@@ -21,21 +30,26 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
     $Env:ADPS_LoadDefaultDrive = 0
 }
 
-
 ## Alter shell based on environment
-if ($host.Name -eq 'ConsoleHost') {
-    if ($PSVersionTable.PSVersion -ge '3.0') {
+if ( $host.Name -eq 'ConsoleHost' ) {
+    ## Powershell console/Windows Terminal
+
+    if ( $PSVersionTable.PSVersion -ge '3.0' ) {
+        ## Import PSReadLine interactive terminal
         Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        ## Set keyboard key for accepting suggestions
+        Set-PSReadLineKeyHandler -Key Tab -Function AcceptLine
+        ## Disable audio bells
         Set-PSReadLineOption -BellStyle None
     }
-}
-elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
+} ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
+    ## Powershell ISE
     $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    ## Import ISE modules for more interactive sessions
     $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
     Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-}
-elseif ($host.Name -eq 'Visual Studio Code Host') {
+} ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
+    ## Load VSCode modules for Powershell for debugging & other integrations
     Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
     Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
 }
