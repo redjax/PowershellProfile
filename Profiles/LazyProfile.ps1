@@ -49,7 +49,7 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
         try {
             Import-Module ProfileModule
             ## Indicate to the script that the ProfileModule was imported successfully
-            $Global:ProfileImported = $true
+            $Global:ProfileModuleImported = $true
             ## Signal that the module was successfully imported
             $Global:ProfileModuleImported.Set()
         }
@@ -62,13 +62,7 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
     {
         ## Initialize Starship shell
         if (Get-Command starship -ErrorAction SilentlyContinue) {
-            try {
-                Invoke-Expression (& starship init powershell)
-            }
-            catch {
-                ## Show error when verbose logging is enabled
-                #  Write-Verbose "The 'starship' command was not found. Skipping initialization." -Verbose
-            }
+            Invoke-Expression (& starship init powershell)
         }
     }
 ) | ForEach-Object {
