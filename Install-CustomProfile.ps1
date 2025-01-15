@@ -20,7 +20,7 @@ else {
 }
 
 ## Set relative path to the ProfileModule/ directory
-[string]$ProfileModuleRoot = ".\ProfileModule"
+[string]$ProfileModuleRoot = ".\Modules\ProfileModule"
 ## Set path to Functions/ directory
 [string]$FunctionsPath = (Join-Path $ProfileModuleRoot "Functions")
 ## Set path to public Functions
