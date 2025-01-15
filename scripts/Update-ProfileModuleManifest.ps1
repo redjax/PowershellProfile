@@ -1,6 +1,7 @@
 param(
     [string]$Author,
-    [string]$ModuleRoot = ".\ProfileModule",
+    [string]$RepoModulesDir = "$($PSScriptRoot)\Modules",
+    [string]$ModuleRoot = (Join-Path $RepoModulesDir "ProfileModule"),
     [string]$FunctionsPath = (Join-Path $ModuleRoot "Functions"),
     [string]$AliasesFile = (Join-Path $ModuleRoot "Aliases.ps1"),
     [string]$AliasesPath = "$ModuleRoot\Aliases",
