@@ -19,26 +19,31 @@ else {
     $VerbosePreference = "SilentlyContinue"
 }
 
+## Script root
+$ScriptRoot = $PSScriptRoot
+Write-Verbose "Script root: $($ScriptRoot)"
+## Path to Modules/ dir
+[string]$RepoModulesDir = (Join-Path -Path $ScriptRoot -ChildPath "Modules")
 ## Set relative path to the ProfileModule/ directory
-[string]$ProfileModuleRoot = ".\ProfileModule"
+[string]$ProfileModuleRoot = (Join-Path -Path $RepoModulesDir -ChildPath "ProfileModule")
 ## Set path to Functions/ directory
-[string]$FunctionsPath = (Join-Path $ProfileModuleRoot "Functions")
+[string]$FunctionsPath = (Join-Path -Path $ProfileModuleRoot -ChildPath "Functions")
 ## Set path to public Functions
-[string]$PublicFunctionsPath = (Join-Path $FunctionsPath "Public")
+[string]$PublicFunctionsPath = (Join-Path -Path $FunctionsPath -ChildPath "Public")
 ## Set path to private Functions
-[string]$PrivateFunctionsPath = (Join-Path $FunctionsPath "Private")
+[string]$PrivateFunctionsPath = (Join-Path -Path $FunctionsPath -ChildPath "Private")
 ## Path to module's Aliases.ps1 file
-[string]$AliasesFile = (Join-Path $ProfileModuleRoot "Aliases.ps1")
+[string]$AliasesFile = (Join-Path -Path $ProfileModuleRoot -ChildPath "Aliases.ps1")
 ## Set path to module's manifest .psd1 file
-[string]$ManifestPath = (Join-Path $ProfileModuleRoot "ProfileModule.psd1")
+[string]$ManifestPath = (Join-Path -Path $ProfileModuleRoot -ChildPath "ProfileModule.psd1")
 ## Set path to module's guid.txt containing the unique ID for the module
-[string]$GUIDFilePath = (Join-Path $ProfileModuleRoot "guid.txt")
+[string]$GUIDFilePath = (Join-Path -Path $ProfileModuleRoot -ChildPath "guid.txt")
 ## Set path to module's author.txt containing the module author name
-[string]$AuthorFilePath = (Join-Path $ProfileModuleRoot "author.txt")
+[string]$AuthorFilePath = (Join-Path -Path $ProfileModuleRoot -ChildPath "author.txt")
 ## Set path to module's version.txt containing the moddule's version
-[string]$VersionFilePath = (Join-Path $ProfileModuleRoot "version.txt")
+[string]$VersionFilePath = (Join-Path -Path $ProfileModuleRoot -ChildPath "version.txt")
 ## Set path to machine's Modules\ path in the $PROFILE's parent directory
-[string]$PSModulesPath = "$(Split-Path $PROFILE -Parent)\Modules"
+[string]$PSModulesPath = "$(Split-Path -Path $PROFILE -Parent)\Modules"
 
 Write-Verbose "ProfileModule path: $ProfileModuleRoot"
 Write-Verbose "Path to module's functions: $FunctionsPath"
@@ -157,7 +162,11 @@ function Start-ProfileInstall {
     }
 }
 
-function main {
+function Start-MainFunction {
+    Param(
+        [switch]$Debug,
+        [switch]$Verbose
+    )
     Write-Output "`n[ Update Powershell module's .psd1 manifest file ]"
 
     try {
@@ -178,9 +187,7 @@ function main {
 
     Write-Output "`n[ Install ProfileModule in path: $($PSModulesPath) ]"
     try {
-        Start-ModuleInstall `
-            -Debug:$Debug `
-            -Verbose:$Verbose
+        Start-ModuleInstall -Debug:$Debug `-Verbose:$Verbose
     }
     catch {
         Write-Error "Failed to install ProfileModule Powershell module. Details: $($_.Exception.Message)"
@@ -199,4 +206,4 @@ function main {
     }
 }
 
-main
+Start-MainFunction -Debug:$Debug -Verbose:$Verbose

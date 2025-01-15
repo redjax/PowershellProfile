@@ -36,8 +36,7 @@ if ($Verbose) {
 $LintPaths = @(
     ".\scripts"
     ".\Profiles"
-    # ".\Modules"
-    ".\ProfileModule"
+    ".\Modules"
 )
 
 function Install-PowershellBeautifierModule  {
