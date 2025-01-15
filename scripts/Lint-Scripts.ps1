@@ -33,6 +33,13 @@ if ($Verbose) {
     $VerbosePreference = "SilentlyContinue"
 }
 
+$LintPaths = @(
+    ".\scripts"
+    ".\Profiles"
+    # ".\Modules"
+    ".\ProfileModule"
+)
+
 function Install-PowershellBeautifierModule  {
     if (-not (Get-Module -ListAvailable -Name PowerShell-Beautifier)) {
         Write-Output "PowerShell-Beautifier module is not installed. Installing now."
@@ -139,17 +146,29 @@ function main  {
     if ($Analyze) {
         Install-PSScriptAnalyzerModule
 
-        Start-AnalyzeScriptsInPath -ScanPath .\scripts
-        Start-AnalyzeScriptsInPath -ScanPath .\Profiles
-        Start-AnalyzeScriptsInPath -ScanPath .\ProfileModule
+        $LintPaths | ForEach-Object {
+            Write-Output "Linting path: $($_)"
+            try {
+                Start-AnalyzeScriptsInPath -ScanPath "$_"
+            } catch {
+                Write-Error "Failed analyzing path '$($_)'. Details: $($_.Exception.Message)"
+                continue
+            }
+        }
     }
 
     if ($Lint) {
         Install-PowershellBeautifierModule
 
-        Start-BeautifyScriptsInPath -ScanPath .\scripts
-        Start-BeautifyScriptsInPath -ScanPath .\Profiles
-        Start-BeautifyScriptsInPath -ScanPath .\ProfileModule
+        $LintPaths | ForEach-Object {
+            Write-Output "Beautifying path: $($_)"
+            try {
+                Start-BeautifyScriptsInPath -ScanPath "$_"
+            } catch {
+                Write-Error "Failed beautifying path '$($_)'. Details: $($_.Exception.Message)"
+                continue
+            }
+        }
     }
 }
 
