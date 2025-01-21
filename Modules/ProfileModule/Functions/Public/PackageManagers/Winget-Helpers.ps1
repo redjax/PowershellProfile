@@ -1,5 +1,5 @@
 function Install-Winget {
-    $WingetIsInstalled = Test-Command -CommandName "winget"
+    $WingetIsInstalled = Get--Command -CommandName "winget"
 
     if (-not $WingetIsInstalled) {
         Write-Host "Installing Winget using Add-AppxPackage"
