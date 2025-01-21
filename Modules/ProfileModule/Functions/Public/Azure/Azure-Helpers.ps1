@@ -1,5 +1,5 @@
 function Install-AzureCLI {
-    if (-not (Test-Command "az")) {
+    if (-not (Get-Command "az")) {
         Write-Host "Installing Azure CLI with winget"
         winget install -e --id Microsoft.AzureCLI
     }
