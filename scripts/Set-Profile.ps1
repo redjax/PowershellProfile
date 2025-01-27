@@ -1,6 +1,7 @@
 param(
     [switch]$Debug,
     [switch]$Verbose,
+    [string]$RepoProfilesDir = "Profiles",
     [string]$ProfilePath = $PROFILE,
     [string]$PSModulesPath = "$(Split-Path $ProfilePath -Parent)\Modules",
     [string]$ProfileName = "Default"
@@ -18,7 +19,7 @@ Write-Verbose "Powershell profile path: $($ProfilePath)"
 Write-Verbose "Powershell modules path: $($PSModulesPath)"
 
 ## Repository profiles path
-$RepoProfilesDir = Join-Path (Get-Location) "Profiles"
+$RepoProfilesDir = Join-Path (Get-Location) "$($RepoProfilesDir)"
 ## Define the source path for ProfileName.ps1 (in the root of the git repository)
 $RepoProfilePath = Join-Path $RepoProfilesDir "$($ProfileName).ps1"
 Write-Verbose "Repository Profile path: $($RepoProfilePath)"
