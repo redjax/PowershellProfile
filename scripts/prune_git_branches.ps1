@@ -22,7 +22,7 @@ try {
         $_.ToString().Trim().Split(" ")[0]
     } `
          | ForEach-Object {
-            Write-Output "Deleting branch: $($_)"
+        Write-Output "Deleting branch: $($_)"
         try {
             git branch -D $_
         } catch {

@@ -17,14 +17,14 @@ $BaseProfile = "$($ScriptRoot)\_Base.ps1"
 
 Write-Output "Importing custom profile, your terminal may slow down for 1-2 seconds."
 
-If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
+if (-not (Test-Path -Path "$($BaseProfile)")) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
 }
 else {
     . "$($BaseProfile)"
 }
 
-If ( $ClearOnInit ) {
+if ($ClearOnInit) {
     Clear-Host
 }
 

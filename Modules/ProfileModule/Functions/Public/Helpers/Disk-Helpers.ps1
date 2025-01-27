@@ -1,13 +1,13 @@
 function Get-DiskUsage {
     Get-PSDrive -PSProvider filesystem | Where-Object {
         $_.used -gt 0
-    } | Select-Object -Property Root, @{
-        name       = "SizeGB";
+    } | Select-Object -Property Root,@{
+        Name = "SizeGB";
         expression = {
             ($_.used + $_.free) / 1GB -as [int]
         }
     },
-    @{name = "UsedGB"; expression = { ($_.used / 1GB) -as [int] } },
-    @{name = "FreeGB"; expression = { ($_.free / 1GB) -as [int] } },
-    @{name = "PctFree"; expression = { [math]::round(($_.free / ($_.used + $_.free)) * 100, 2) } }
+    @{ Name = "UsedGB"; expression = { ($_.used / 1GB) -as [int] } },
+    @{ Name = "FreeGB"; expression = { ($_.free / 1GB) -as [int] } },
+    @{ Name = "PctFree"; expression = { [math]::Round(($_.free / ($_.used + $_.free)) * 100,2) } }
 }

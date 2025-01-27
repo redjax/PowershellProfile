@@ -83,13 +83,13 @@ if (Test-Path -Path $ManifestPath) {
 else {
     Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
     $manifest = @{
-        RootModule        = ".\ProfileModule.psm1"
-        ModuleVersion     = $version
-        GUID              = $guid
-        Author            = $Author
+        RootModule = ".\ProfileModule.psm1"
+        ModuleVersion = $version
+        GUID = $guid
+        Author = $Author
         FunctionsToExport = @()
-        AliasesToExport   = @()
-        CmdletsToExport   = @()
+        AliasesToExport = @()
+        CmdletsToExport = @()
         VariablesToExport = @()
     }
 }
@@ -110,7 +110,7 @@ function Get-FunctionsFromScript {
             # $Functions += $match.Groups[1].Value
 
             # Remove any parentheses from the function name
-            $functionName = $match.Groups[1].Value -replace '\(\)', ''
+            $functionName = $match.Groups[1].Value -replace '\(\)',''
             $Functions += $functionName
         }
     }
