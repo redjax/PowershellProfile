@@ -25,6 +25,9 @@ $ProfileStartTime = Get-Date
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
+## Set TLS to 1.2
+[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
