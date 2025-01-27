@@ -19,23 +19,22 @@ If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
 }
 else {
-    ## Load from common _Base.ps1
-    #  Wrap slow code to run asynchronously later
-    #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
-    @(
-        {
-            . "$($BaseProfile)"
-        },
-        {
-            ## Initialize Starship shell
-            if (Get-Command starship -ErrorAction SilentlyContinue) {
-                Invoke-Expression (& starship init powershell)
-            }
-        }
-    ) | ForEach-Object {
-        Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
-    } | Out-Null
+    . "$($BaseProfile)"
 }
+
+## Initialize Starship in the background
+#  Wrap slow code to run asynchronously later
+#  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
+@(
+    {
+        ## Initialize Starship shell
+        if (Get-Command starship -ErrorAction SilentlyContinue) {
+            Invoke-Expression (& starship init powershell)
+        }
+    }
+) | ForEach-Object {
+    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+} | Out-Null
 
 If ( $ClearOnInit ) {
     Clear-Host
