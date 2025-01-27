@@ -6,18 +6,14 @@
     Loads my custom ProfileModule PowerShell module. This module has various functions and aliases
     that I want to import when a PowerShell session loads with this profile.
 
-    Uses Register-EventEngine to run slower parts of scripts as background tasks, allowing prompt input
-    immediately and loading things like the profile module in the background.
-
-    When background tasks finish, the next time the user hits Enter, CTRL-C, or anything else that produces
-    a newline the prompt will reload.
+    Includes the Starship prompt.
 #>
 
 ## Uncomment to enable profile tracing
 # Set-PSDebug -Trace 1
 
 ## Manually set this to $false to keep profile outputs on-screen after initializing
-$ClearOnInit = $false
+$ClearOnInit = $true
 
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
@@ -25,12 +21,15 @@ $ProfileStartTime = Get-Date
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
+## Set TLS to version 1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
+
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
-        'Format-Table:AutoSize'       = $True;
+        'Format-Table:AutoSize' = $True;
         'Send-MailMessage:SmtpServer' = $SMTPserver;
-        'Help:ShowWindow'             = $True;
+        'Help:ShowWindow' = $True;
     }
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
@@ -75,11 +74,20 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
             $Global:ProfileModuleImported = $true
             ## Signal that the module was successfully imported
             $Global:ProfileModuleImported.Set()
+
+            ## reload -> Restart-Shell
+            Set-Alias -Name reload -Value Restart-Shell
         }
         catch {
             Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
             ## Signal even if there's an error
             $Global:ProfileModuleImported.Set()
+        }
+    },
+    {
+        ## Initialize Starship shell
+        if (Get-Command starship -ErrorAction SilentlyContinue) {
+            Invoke-Expression (& starship init powershell)
         }
     }
 ) | ForEach-Object {
@@ -96,7 +104,6 @@ $ProfileEndTime = Get-Date
 $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
 Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
-Write-Output "Some commands may be unavailable for 1-3 seconds while background imports finish."
 
 ## Disable profile tracing
 Set-PSDebug -Trace 0
