@@ -22,21 +22,6 @@ If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
 }
 else {
     . "$($BaseProfile)"
-
-    ## Set the prompt, if available
-    If ( (Get-Command Get-Prompt -ErrorAction SilentlyContinue ) ) {
-        function Prompt {
-            <#
-                .SUMMARY
-                Override the built-in Powershell prompt with the profile's custom prompt
-            #>
-
-            return Get-Prompt
-        }
-    } else {
-        Write-Warning "No custom Get-Prompt command defined in `$PROFILE. Falling back to default Powershell prompt."
-    }
-
 }
 
 If ( $ClearOnInit ) {
