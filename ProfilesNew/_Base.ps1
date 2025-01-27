@@ -81,12 +81,6 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
             ## Signal even if there's an error
             $Global:ProfileModuleImported.Set()
         }
-    },
-    {
-        ## Initialize Starship shell
-        if (Get-Command starship -ErrorAction SilentlyContinue) {
-            Invoke-Expression (& starship init powershell)
-        }
     }
 ) | ForEach-Object {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_

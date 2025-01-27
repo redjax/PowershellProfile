@@ -25,12 +25,6 @@ else {
     @(
         {
             . "$($BaseProfile)"
-        },
-        {
-            ## Initialize Starship shell
-            if (Get-Command starship -ErrorAction SilentlyContinue) {
-                Invoke-Expression (& starship init powershell)
-            }
         }
     ) | ForEach-Object {
         Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
