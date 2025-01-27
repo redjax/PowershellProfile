@@ -22,7 +22,13 @@ try {
         $_.ToString().Trim().Split(" ")[0]
     } `
          | ForEach-Object {
-        git branch -d $_
+            Write-Output "Deleting branch: $($_)"
+        try {
+            git branch -D $_
+        } catch {
+            Write-Error "Error deleting branch '$($_)'. Details: $($_.Exception.Message)"
+            continue
+        }
     }
 
     Write-Host "Local branches pruned." -ForegroundColor Green
