@@ -1,4 +1,14 @@
 function Convert-ToLowercase {
+    <#
+        .SUMMARY
+        Convert a string to all lowercase.
+
+        .PARAM InputString
+        The string to convert to lowercase.
+
+        .EXAMPLE
+        Convert-ToLowercase -InputString "Hello World"
+    #>
     Param(
         $InputString = $null
     )
@@ -12,6 +22,16 @@ function Convert-ToLowercase {
 }
 
 function Convert-ToUppercase {
+    <#
+        .SUMMARY
+        Convert a string to all uppercase.
+
+        .PARAM InputString
+        The string to convert to uppercase.
+
+        .EXAMPLE
+        Convert-ToUppercase -InputString "Hello World"
+    #>
     Param(
         $InputString = $null
     )
@@ -25,6 +45,16 @@ function Convert-ToUppercase {
 }
 
 function Convert-ToTitlecase {
+    <#
+        .SUMMARY
+        Convert a string to titlecase.  
+
+        .PARAM InputString
+        The string to convert to titlecase.
+
+        .EXAMPLE
+        Convert-ToTitlecase -InputString "hello world"
+    #>
     Param(
         $InputString = $null
     )
