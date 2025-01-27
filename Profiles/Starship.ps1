@@ -15,7 +15,7 @@ $ProfileStartTime = Get-Date
 $ScriptRoot = $PSScriptRoot
 $BaseProfile = "$($ScriptRoot)\_Base.ps1"
 
-If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
+if (-not (Test-Path -Path "$($BaseProfile)")) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
 }
 else {
@@ -36,7 +36,7 @@ else {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
 } | Out-Null
 
-If ( $ClearOnInit ) {
+if ($ClearOnInit) {
     Clear-Host
 }
 

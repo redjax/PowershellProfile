@@ -26,17 +26,80 @@ $ProfileStartTime = Get-Date
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
 ## Set TLS to 1.2
-[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+function Get-Prompt {
+    <#
+        .SUMMARY
+        Custom Powershell prompt using only built-in tools.
+
+        .DESCRIPTION
+        This is the base/default prompt. It can be overridden with oh-my-posh/starship/etc.
+
+        When no other prompt is available, the shell will fall back to this prompt.
+    #>
+
+    #Assign Windows Title Text
+    $host.ui.RawUI.WindowTitle = "Current Folder: $pwd"
+
+    #Configure current user, current folder and date outputs
+    $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf
+    $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
+    $Date = Get-Date -Format 'dddd hh:mm:ss tt'
+
+    # Test for Admin / Elevated
+    $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+
+    #Calculate execution time of last cmd and convert to milliseconds, seconds or minutes
+    $LastCommand = Get-History -Count 1
+    if ($lastCommand) { $RunTime = ($lastCommand.EndExecutionTime - $lastCommand.StartExecutionTime).TotalSeconds }
+
+    if ($RunTime -ge 60) {
+        $ts = [timespan]::fromseconds($RunTime)
+        $min,$sec = ($ts.ToString("mm\:ss")).Split(":")
+        $ElapsedTime = -join ($min," min ",$sec," sec")
+    }
+    else {
+        $ElapsedTime = [math]::Round(($RunTime),2)
+        $ElapsedTime = -join (($ElapsedTime.ToString())," sec")
+    }
+
+    #Decorate the CMD Prompt
+    Write-Host ""
+    Write-Host ($(if ($IsAdmin) { 'Elevated ' } else { '' })) -BackgroundColor DarkRed -ForegroundColor White -NoNewline
+    Write-Host " USER:$($CmdPromptUser.Name.split("\")[1]) " -BackgroundColor DarkBlue -ForegroundColor White -NoNewline
+    if ($CmdPromptCurrentFolder -like "*:*")
+    { Write-Host " $CmdPromptCurrentFolder " -ForegroundColor White -BackgroundColor DarkGray -NoNewline }
+    else { Write-Host ".\$CmdPromptCurrentFolder\ " -ForegroundColor White -BackgroundColor DarkGray -NoNewline }
+
+    Write-Host " $date " -ForegroundColor White
+    Write-Host "[$elapsedTime] " -NoNewline -ForegroundColor Green
+    return "> "
+}
 
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
-        'Format-Table:AutoSize'       = $True;
+        'Format-Table:AutoSize' = $True;
         'Send-MailMessage:SmtpServer' = $SMTPserver;
-        'Help:ShowWindow'             = $True;
+        'Help:ShowWindow' = $True;
     }
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
+}
+
+if ((Get-Command Get-Prompt -ErrorAction SilentlyContinue)) {
+    function prompt {
+        <#
+            .SUMMARY
+            Override the built-in Powershell prompt with the profile's custom prompt
+        #>
+
+        return Get-Prompt
+    }
+}
+else {
+    Write-Warning "No custom Get-Prompt command defined in `$PROFILE. Falling back to default Powershell prompt."
 }
 
 ## Wrap slow code to run asynchronously later
@@ -44,10 +107,10 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
 @(
     {
         ## Alter shell based on environment
-        if ( $host.Name -eq 'ConsoleHost' ) {
+        if ($host.Name -eq 'ConsoleHost') {
             ## Powershell console/Windows Terminal
 
-            if ( $PSVersionTable.PSVersion -ge '3.0' ) {
+            if ($PSVersionTable.PSVersion -ge '3.0') {
                 ## Import PSReadLine interactive terminal
                 Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
                 ## Set keyboard key for accepting suggestions
@@ -58,14 +121,14 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
                 Set-PSReadLineOption -BellStyle None
             }
         }
-        ElseIf ( $host.Name -eq 'Windows PowerShell ISE Host' ) {
+        elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
             ## Powershell ISE
             $host.PrivateData.IntellisenseTimeoutInSeconds = 5
             ## Import ISE modules for more interactive sessions
-            $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
+            $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
             Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
         }
-        ElseIf ( $host.Name -eq 'Visual Studio Code Host' ) {
+        elseif ($host.Name -eq 'Visual Studio Code Host') {
             ## Load VSCode modules for Powershell for debugging & other integrations
             Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
             Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
