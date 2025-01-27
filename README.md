@@ -33,7 +33,7 @@ My Powershell `$PROFILE` module.
 
 [Documentation](./docs/)
 
-This repository includes a module named [`ProfileModule`](./ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. This repository includes swappable [Powershell profiles](./Profiles/).
+This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. This repository includes swappable [Powershell profiles](./Profiles/).
 
 **WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`.
 
@@ -55,8 +55,8 @@ This repository includes a module named [`ProfileModule`](./ProfileModule/), whi
       - You may still want to copy your old `$PROFILE`, like:
         - `cp $PROFILE "$($PROFILE).orig"`
         - This will prevent accidentally nuking any customizations you've made to your `$PROFILE`
-    - Update the module's [manifest file](./ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
-    - Copy the [`ProfileModule`](./ProfileModule/) directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
+    - Update the module's [manifest file](./Modules/ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
+    - Copy the [`ProfileModule`](./Modules/ProfileModule/) directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
     - Copy/update a [custom profile](./Profiles/) (default: [`Default.ps1`](./Profiles/Default.ps1)) to your machine's `$PROFILE` location.
       - The [default custom profile](./Profiles/Default.ps1) imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
       - To use a different profile, pass a `-ProfileName <profilename>`, where `<profilename>` is the name of a file in the [`Profiles/`](./Profiles/) directory without the `.ps1` file extension.

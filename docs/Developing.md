@@ -25,17 +25,17 @@ These docs are for adding new features/modules/profiles to this repository.
 
 To add new functions to the module, consider if the function is meant to be used internally in the module (functions & aliases you do not need/want to expose to the user), or exported to the session.
 
-If the script/file is meant to be accessible only from within the module, create the file in [`Functions/Private`](./ProfileModule/Functions/Private/).
+If the script/file is meant to be accessible only from within the module, create the file in [`Functions/Private`](./Modules/ProfileModule/Functions/Private/).
 
-If you are writing a custom function or setting an alias meant to be accessible by the user when this module is imported, the file belongs in [`Functions/Public`](./ProfileModule/Functions/Public/). These files are sourced by the [module's `.psm1` file](./ProfileModule/ProfileModule.psm1), and exported with the module.
+If you are writing a custom function or setting an alias meant to be accessible by the user when this module is imported, the file belongs in [`Functions/Public`](./Modules/ProfileModule/Functions/Public/). These files are sourced by the [module's `.psm1` file](./Modules/ProfileModule/ProfileModule.psm1), and exported with the module.
 
-If you are setting an alias, i.e. `Set-Alias -Name tn -Value Test-NetConnection`, edit the [`Aliases.ps1`](./ProfileModule/Aliases.ps1) file.
+If you are setting an alias, i.e. `Set-Alias -Name tn -Value Test-NetConnection`, edit the [`Aliases.ps1`](./Modules/ProfileModule/Aliases.ps1) file.
 
 You can see all exported functions & aliases by using `Get-Module ProfileModule` after installing it.
 
 ## Update the manifest
 
-Each time you run [`Install-CustomProfile.ps1`](./Install-CustomProfile.ps1), the module's [manifest](./ProfileModule/ProfileModule.psd1) file is updated automatically. The script scans the `ProfileModule`'s `Functions/` directory and `Aliases.ps1` file, exporting any public functions & aliases and updating the `FunctionsToExport=@()` and `AliasesToExport=@()` arrays in the manifest.
+Each time you run [`Install-CustomProfile.ps1`](./Install-CustomProfile.ps1), the module's [manifest](./Modules/ProfileModule/ProfileModule.psd1) file is updated automatically. The script scans the `ProfileModule`'s `Functions/` directory and `Aliases.ps1` file, exporting any public functions & aliases and updating the `FunctionsToExport=@()` and `AliasesToExport=@()` arrays in the manifest.
 
 The script also installs the module and custom profile. If you just want to update the manifest, you can run the [`Update-ProfileModuleManifest.ps1`](./scripts/Update-ProfileModuleManifest.ps1) script.
 
