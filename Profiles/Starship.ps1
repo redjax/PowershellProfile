@@ -5,6 +5,8 @@
     .DESCRIPTION
     Loads my custom ProfileModule PowerShell module. This module has various functions and aliases
     that I want to import when a PowerShell session loads with this profile.
+
+    Includes the Starship prompt.
 #>
 
 ## Uncomment to enable profile tracing
@@ -32,43 +34,6 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
 }
-
-# ## Alter shell based on environment
-# if ($host.Name -eq 'ConsoleHost') {
-#     if ($PSVersionTable.PSVersion -ge '3.0') {
-#         Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-#         Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
-#         Set-PSReadLineOption -BellStyle None
-#     }
-# } elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
-#     $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-#     $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
-#     Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-# } elseif ($host.Name -eq 'Visual Studio Code Host') {
-#     Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-#     Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-# }
-
-# ## Set to False by default, flip to True if ProfileModule is able to be imported.
-# $ProfileImported = $False
-# try {
-#     Import-Module ProfileModule
-#     ## Successfully imported ProfileModule, set to True
-#     $ProfileImported = $True
-
-#     ## reload -> Restart-Shell
-#     Set-Alias -Name reload -Value Restart-Shell
-# } catch {
-#     Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
-# }
-
-# if ($ProfileImported) {
-#     ## Custom profile was imported successfully.
-#     #  Functions & aliases are available
-# } else {
-#     ## Custom profile failed to import.
-#     #  Functions & aliases are not available
-# }
 
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
@@ -117,6 +82,12 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
             Write-Error "Error loading ProfileModule. Details: $($_.Exception.Message)"
             ## Signal even if there's an error
             $Global:ProfileModuleImported.Set()
+        }
+    },
+    {
+        ## Initialize Starship shell
+        if (Get-Command starship -ErrorAction SilentlyContinue) {
+            Invoke-Expression (& starship init powershell)
         }
     }
 ) | ForEach-Object {
