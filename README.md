@@ -35,6 +35,8 @@ My Powershell `$PROFILE` module.
 
 This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. This repository includes swappable [Powershell profiles](./Profiles/).
 
+All Profiles load from a [common base profile](./docs/Developing.md#base-template).
+
 **WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`.
 
 ## Table of Contents <!-- omit in toc -->

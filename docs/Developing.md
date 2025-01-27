@@ -5,6 +5,7 @@ These docs are for adding new features/modules/profiles to this repository.
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Base template](#base-template)
 - [Add new functions and aliases](#add-new-functions-and-aliases)
 - [Update the manifest](#update-the-manifest)
 - [Linting and analyzing](#linting-and-analyzing)
@@ -20,6 +21,44 @@ These docs are for adding new features/modules/profiles to this repository.
     - Affects only the current user but applies to all host applications.
   - [ ] `$PROFILE.CurrentUserCurrentHost`
     - Affects only the current user and the current host application.
+
+## Base template
+
+Powershell profiles in the [Profiles/](../Profiles/) path all load from a common [`_Base.ps1`](../Profiles/_Base.ps1). Any code placed in `_Base.ps1` will be available to a profile that "sources" the base profile:
+
+```powershell
+$BaseProfile = "$($PSScriptRoot)\_Base.ps1"
+
+If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
+    Write-Warning "Could not find base profile '$($BaseProfile)'."
+} else {
+  . "$($BaseProfile)"
+}
+```
+
+To load the base profile asynchronously (allow for immediate command execution, run custom profile imports in the background, re-initialize shell when the next command is executed), 
+
+```powershell
+$BaseProfile = "$($PSScriptRoot)\_Base.ps1"
+
+If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
+    Write-Warning "Could not find base profile '$($BaseProfile)'."
+}
+else {
+    ## Load from common _Base.ps1
+    #  Wrap slow code to run asynchronously later
+    #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
+    @(
+        {
+            . "$($BaseProfile)"
+        }
+    ) | ForEach-Object {
+        Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+    } | Out-Null
+}
+```
+
+Keep the base template minimal. This template loads my custom [`ProfileModule`](../Modules/ProfileModule/), with all of the functions & aliases & module imports, before initializing the rest of the Powershell profile. For an example of what this looks like, check the [`Default.ps1` profile](../Profiles/Default.ps1).
 
 ## Add new functions and aliases
 
