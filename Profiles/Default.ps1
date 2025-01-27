@@ -15,6 +15,8 @@ $ProfileStartTime = Get-Date
 $ScriptRoot = $PSScriptRoot
 $BaseProfile = "$($ScriptRoot)\_Base.ps1"
 
+Write-Output "Importing custom profile, your terminal may slow down for 1-2 seconds."
+
 If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
 }
@@ -22,13 +24,15 @@ else {
     ## Load from common _Base.ps1
     #  Wrap slow code to run asynchronously later
     #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
-    @(
-        {
-            . "$($BaseProfile)"
-        }
-    ) | ForEach-Object {
-        Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
-    } | Out-Null
+    # @(
+    #     {
+    #         . "$($BaseProfile)"
+    #     }
+    # ) | ForEach-Object {
+    #     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+    # } | Out-Null
+
+    . "$($BaseProfile)"
 }
 
 If ( $ClearOnInit ) {
