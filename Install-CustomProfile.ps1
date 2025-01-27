@@ -27,8 +27,10 @@ If ( $Verbose ) {
 [string]$PublicFunctionsPath = (Join-Path -Path $FunctionsPath -ChildPath "Public")
 ## Set path to private Functions
 [string]$PrivateFunctionsPath = (Join-Path -Path $FunctionsPath -ChildPath "Private")
+## Set path to Aliases/ directory
+[string]$AliasesPath = (Join-Path -Path $ProfileModuleRoot -ChildPath "Aliases")
 ## Path to module's Aliases.ps1 file
-[string]$AliasesFile = (Join-Path -Path $ProfileModuleRoot -ChildPath "Aliases.ps1")
+[string]$AliasesFile = (Join-Path -Path $AliasesPath -ChildPath "Aliases.ps1")
 ## Set path to module's manifest .psd1 file
 [string]$ManifestPath = (Join-Path -Path $ProfileModuleRoot -ChildPath "ProfileModule.psd1")
 ## Set path to module's guid.txt containing the unique ID for the module
