@@ -26,7 +26,7 @@ $ProfileStartTime = Get-Date
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
 ## Set TLS to 1.2
-[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 function Get-Prompt {
     <#
@@ -69,8 +69,8 @@ function Get-Prompt {
     Write-host ($(if ($IsAdmin) { 'Elevated ' } else { '' })) -BackgroundColor DarkRed -ForegroundColor White -NoNewline
     Write-Host " USER:$($CmdPromptUser.Name.split("\")[1]) " -BackgroundColor DarkBlue -ForegroundColor White -NoNewline
     If ($CmdPromptCurrentFolder -like "*:*")
-        {Write-Host " $CmdPromptCurrentFolder "  -ForegroundColor White -BackgroundColor DarkGray -NoNewline}
-        else {Write-Host ".\$CmdPromptCurrentFolder\ "  -ForegroundColor White -BackgroundColor DarkGray -NoNewline}
+    { Write-Host " $CmdPromptCurrentFolder "  -ForegroundColor White -BackgroundColor DarkGray -NoNewline }
+    else { Write-Host ".\$CmdPromptCurrentFolder\ "  -ForegroundColor White -BackgroundColor DarkGray -NoNewline }
 
     Write-Host " $date " -ForegroundColor White
     Write-Host "[$elapsedTime] " -NoNewline -ForegroundColor Green
@@ -87,6 +87,21 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
 }
+
+If ( (Get-Command Get-Prompt -ErrorAction SilentlyContinue ) ) {
+    function Prompt {
+        <#
+            .SUMMARY
+            Override the built-in Powershell prompt with the profile's custom prompt
+        #>
+
+        return Get-Prompt
+    }
+}
+else {
+    Write-Warning "No custom Get-Prompt command defined in `$PROFILE. Falling back to default Powershell prompt."
+}
+
 
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
