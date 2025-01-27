@@ -34,3 +34,8 @@ As I find blogs, modules, examples, and more related to Powershell around the In
 - [ilovepowershell.com: Powershell profiles: Customizing and save settings](https://ilovepowershell.com/powershell-basics/powershell-profiles-customize-save-settings-how-to/)
 - [sharepointdiary.com: How to create and manage your Powershell profile](https://www.sharepointdiary.com/2021/08/create-and-manage-powershell-profiles.html)
 - [rsw.io: Powershell tips: 10 tips and tricks to get the most Powershell](https://rsw.io/powershell-tips-10-tips-and-tricks-to-get-the-most-powershell/)
+- [commandline.ninja: How to customize your Powershell command prompt](https://commandline.ninja/customize-pscmdprompt/)
+- [medium.com/@anitjha31: Elevate your Windows Powershell: My personal customization guide](https://medium.com/@anitjha31/elevate-your-windows-powershell-my-personal-customization-guide-b2dbbe9d766c)
+- [4sysops.com: How to change the Powershell prompt](https://4sysops.com/archives/how-to-change-the-powershell-prompt/)
+- [Scott Hanselman: My ultimate Powershell prompt with Oh-My-Posh and the Windows Terminal](https://www.hanselman.com/blog/my-ultimate-powershell-prompt-with-oh-my-posh-and-the-windows-terminal)
+- [ohmyposh.dev](https://ohmyposh.dev/docs/installation/prompt)
