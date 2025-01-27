@@ -2,6 +2,8 @@ Param(
     [switch]$Debug,
     [switch]$Verbose,
     [string]$ModuleAuthor,
+    [string]$RepoProfilesDir = "Profiles",
+    [string]$RepoModulesDir = "Modules",
     [string]$ProfileName = "Default",
     [string]$ProfileBaseFilename = "_Base.ps1"
 )
@@ -16,7 +18,7 @@ If ( $Verbose ) {
 }
 
 ## Set relative path to the Powershell _Base.ps1 profile
-[string]$ProfileBase = ".\ProfilesNew\$($ProfileBaseFilename)"
+[string]$ProfileBase = ".\Profiles\$($ProfileBaseFilename)"
 ## Set relative path to the ProfileModule/ directory
 [string]$ProfileModuleRoot = (Join-Path -Path $RepoModulesDir -ChildPath "ProfileModule")
 ## Set path to Functions/ directory
@@ -149,7 +151,7 @@ function Start-ProfileInstall {
             -ProfilePath $ProfilePath `
             -PSModulesPath $PSModulesPath `
             -ProfileName $ProfileName `
-            -RepoProfilesDir "ProfilesNew"
+            -RepoProfilesDir "Profiles"
     }
     catch {
         Write-Error "Error installing custom profile. Details: $($_.Exception.Message)"
@@ -201,7 +203,7 @@ function Start-ProfileBaseInstall {
 
 }
 
-function main {
+function Start-MainFunction {
     Write-Output "`n[ Update Powershell module's .psd1 manifest file ]"
 
     try {
