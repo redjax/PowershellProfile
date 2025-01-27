@@ -9,11 +9,11 @@ function Convert-ToLowercase {
         .EXAMPLE
         Convert-ToLowercase -InputString "Hello World"
     #>
-    Param(
+    param(
         $InputString = $null
     )
 
-    If ( -Not $InputString ) {
+    if (-not $InputString) {
         Write-Warning "Missing an -InputString to set to lowercase"
     }
 
@@ -32,11 +32,11 @@ function Convert-ToUppercase {
         .EXAMPLE
         Convert-ToUppercase -InputString "Hello World"
     #>
-    Param(
+    param(
         $InputString = $null
     )
 
-    If ( -Not $InputString ) {
+    if (-not $InputString) {
         Write-Warning "Missing an -InputString to set to uppercase"
     }
 
@@ -55,11 +55,11 @@ function Convert-ToTitlecase {
         .EXAMPLE
         Convert-ToTitlecase -InputString "hello world"
     #>
-    Param(
+    param(
         $InputString = $null
     )
 
-    If ( -Not $InputString ) {
+    if (-not $InputString) {
         Write-Warning "Missing an -InputString to set to title case"
     }
 
