@@ -22,3 +22,7 @@ Set-Alias -Name profiles -Value Show-PSProfilePaths
 
 ## find -> Find-File
 Set-Alias -Name find -Value Find-File
+
+## lg -> lazygit
+Set-Alias -Name lg -Value lazygit
+
