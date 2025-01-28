@@ -83,13 +83,13 @@ if (Test-Path -Path $ManifestPath) {
 else {
     Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
     $manifest = @{
-        RootModule = ".\ProfileModule.psm1"
-        ModuleVersion = $version
-        GUID = $guid
-        Author = $Author
+        RootModule        = ".\ProfileModule.psm1"
+        ModuleVersion     = $version
+        GUID              = $guid
+        Author            = $Author
         FunctionsToExport = @()
-        AliasesToExport = @()
-        CmdletsToExport = @()
+        AliasesToExport   = @()
+        CmdletsToExport   = @()
         VariablesToExport = @()
     }
 }
@@ -108,10 +108,12 @@ function Get-FunctionsFromScript {
         ## Check if function is uncommented
         if (-not ($match.Value -match '^\s*#')) {
             # $Functions += $match.Groups[1].Value
-
+            
             # Remove any parentheses from the function name
-            $functionName = $match.Groups[1].Value -replace '\(\)',''
+            $functionName = $match.Groups[1].Value -replace '\(\)', ''
             $Functions += $functionName
+
+            Write-Debug "Found module function: $($functionName)"
         }
     }
 
@@ -131,7 +133,10 @@ function Get-AliasesFromScript {
     foreach ($match in $SearchMatches) {
         ## Check if alias is uncommented
         if (-not ($match.Value -match '^\s*#')) {
-            $Aliases += $match.Groups[1].Value
+            $AliasName = $match.Groups[1].Value
+            $Aliases += $AliasName
+
+            Write-Debug "Found module alias: $($AliasName)"
         }
     }
 
@@ -153,11 +158,16 @@ if (Test-Path -Path $PublicFunctionsPath -PathType Container) {
 
     if ($publicScripts) {
         Write-Output "Extracting uncommented functions from public scripts."
-    }
+    
 
-    foreach ($script in $publicScripts) {
-        $scriptContent = Get-Content -Path $script.FullName -Raw
-        $Functions += Get-FunctionsFromScript -scriptContent $scriptContent
+        foreach ($script in $publicScripts) {
+            Write-Debug "Extracting functions from script: $($script.FullName)"
+            $scriptContent = Get-Content -Path $script.FullName -Raw
+            $Functions += Get-FunctionsFromScript -scriptContent $scriptContent
+        }
+    }
+    else {
+        Write-Output "No functions found in script: $($script.FullName)"
     }
 }
 

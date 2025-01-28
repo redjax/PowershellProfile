@@ -83,6 +83,7 @@ function Start-ModuleManifestUpdate {
         -Author $Author `
         -FunctionsPath $FunctionsPath `
         -AliasesFile $AliasesFile `
+        -AliasesPath $AliasesPath `
         -ManifestPath $ManifestPath `
         -GUIDFilePath $GUIDFilePath `
         -AuthorFilePath $AuthorFilePath `
