@@ -30,7 +30,7 @@ $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $fa
 
 function Get-Prompt {
     <#
-        .SUMMARY
+        .SYNOPSIS
         Custom Powershell prompt using only built-in tools.
 
         .DESCRIPTION
@@ -91,7 +91,7 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
 if ((Get-Command Get-Prompt -ErrorAction SilentlyContinue)) {
     function prompt {
         <#
-            .SUMMARY
+            .SYNOPSIS
             Override the built-in Powershell prompt with the profile's custom prompt
         #>
 
