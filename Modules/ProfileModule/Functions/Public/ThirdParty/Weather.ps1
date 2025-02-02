@@ -39,7 +39,7 @@ function Get-Weather {
         [ValidatePattern('^[a-z]{2}$')]
         [string]$Language = "",
         [Parameter(Mandatory = $false, HelpMessage = "The output format to use. 1-4, or another format (see all with -Help)")]
-        [string]$Format = "%c+It+is+%C+in+%l+(%T+%Z)+\n+\n+Temp.:+%t+(actual)+%f+(feels+like)+\n+Humidity:+%h+\n+Wind:+%w+\n+Moon:+%m+(Moon+day:%M)+\n+Precipitation+(mm/3+hrs):+%p+\n+Pressure:+%P+\n+UV+Index:+%u",
+        [string]$Format = "%c+It+is+%C+in+%l+(%T+%Z)+\n+\n+Temp.:+%t+(actual)+%f+(feels+like)+\n+Humidity:+%h+\n+Wind:+%w+\n+Moon:+%m+(Moon+day:%M)+\n+Precipitation+(mm/3+hrs):+%p+\n+Pressure:+%P+\n+UV+Index:+%u\n+\nDawn:+%D+\n+Sunrise:+%S+\n+Zenith:%z+\n+Sunset:+%s+\n+Dusk:+%d",
         [Parameter(Mandatory = $false, HelpMessage = "If set, retrieve weather as PNG image")]
         [switch]$PNG,
         [Parameter(Mandatory = $false, HelpMessage = "Request help page")]
