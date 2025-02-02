@@ -39,11 +39,13 @@ function Get-Weather {
         [ValidatePattern('^[a-z]{2}$')]
         [string]$Language = "",
         [Parameter(Mandatory = $false, HelpMessage = "The output format to use. 1-4, or another format (see all with -Help)")]
-        [string]$Format = "",
+        [string]$Format = "%c+It+is+%C+in+%l+(%T+%Z)+\n+\n+Temp.:+%t+(actual)+%f+(feels+like)+\n+Humidity:+%h+\n+Wind:+%w+\n+Moon:+%m+(Moon+day:%M)+\n+Precipitation+(mm/3+hrs):+%p+\n+Pressure:+%P+\n+UV+Index:+%u",
         [Parameter(Mandatory = $false, HelpMessage = "If set, retrieve weather as PNG image")]
         [switch]$PNG,
         [Parameter(Mandatory = $false, HelpMessage = "Request help page")]
-        [switch]$Help
+        [switch]$Help,
+        [Parameter(Mandatory = $false, HelpMessage = "Also show forecast")]
+        [switch]$Forecast
     )
     
     $baseUrl = "https://wttr.in"
@@ -57,16 +59,17 @@ function Get-Weather {
     }
     
     ## Construct the location part of the URL
-    if ($Location) {
+    if ( $Location ) {
         $locationPath = "/$($Location -replace ' ', '+')"
     } else {
         $locationPath = ""
     }
-    
     ## Construct the query parameters
     $queryParams = @()
     if ($Units) { $queryParams += $Units }
-    if ($Format) { $queryParams += $Format }
+    
+    if ( $Format ) {$queryParams += "format=$Format" }
+    
     if ($Language) { $queryParams += "lang=$Language" }
     
     ## If PNG is requested, modify the URL accordingly
@@ -78,12 +81,23 @@ function Get-Weather {
             $url += "?" + ($queryParams -join "&")
         }
     }
+
+    if ( $Forecast ) {
+        $url = "$($baseUrl)/$($Location)"
+    }
     
-    Write-Information "Fetching weather from: $url"
+    If ( $Location ) {
+        Write-Information "Fetching weather for $Location"
+        Invoke-RestMethod -Uri $url
+        return
+    } else {
+        Write-Information "Fetching weather from wttr.in"
+    }
     
     if ( $PNG ) {
         Start-Process $url
     } else {
         Invoke-RestMethod -Uri $url
+        return
     }
 }
