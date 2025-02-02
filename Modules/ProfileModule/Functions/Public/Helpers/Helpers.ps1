@@ -145,7 +145,7 @@ function Show-ProfileModuleAliases {
     }
 }
 
-function Restart-Shell {
+function Restart-ShellSession {
 <#
         .SYNOPSIS
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
