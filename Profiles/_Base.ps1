@@ -102,38 +102,66 @@ else {
     Write-Warning "No custom Get-Prompt command defined in `$PROFILE. Falling back to default Powershell prompt."
 }
 
+## Alter shell based on environment
+if ($host.Name -eq 'ConsoleHost') {
+    ## Powershell console/Windows Terminal
+
+    if ($PSVersionTable.PSVersion -ge '3.0') {
+        ## Import PSReadLine interactive terminal
+        Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
+        ## Set keyboard key for accepting suggestions
+        Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+        ## Set Enter to its normal/expected behavior
+        Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+        ## Disable audio bells
+        Set-PSReadLineOption -BellStyle None
+    }
+}
+elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
+    ## Powershell ISE
+    $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    ## Import ISE modules for more interactive sessions
+    $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
+    Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
+}
+elseif ($host.Name -eq 'Visual Studio Code Host') {
+    ## Load VSCode modules for Powershell for debugging & other integrations
+    Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+    Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+}
+
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
-    {
-        ## Alter shell based on environment
-        if ($host.Name -eq 'ConsoleHost') {
-            ## Powershell console/Windows Terminal
+    # {
+    #     ## Alter shell based on environment
+    #     if ($host.Name -eq 'ConsoleHost') {
+    #         ## Powershell console/Windows Terminal
 
-            if ($PSVersionTable.PSVersion -ge '3.0') {
-                ## Import PSReadLine interactive terminal
-                Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-                ## Set keyboard key for accepting suggestions
-                Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
-                ## Set Enter to its normal/expected behavior
-                Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
-                ## Disable audio bells
-                Set-PSReadLineOption -BellStyle None
-            }
-        }
-        elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
-            ## Powershell ISE
-            $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-            ## Import ISE modules for more interactive sessions
-            $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
-            Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-        }
-        elseif ($host.Name -eq 'Visual Studio Code Host') {
-            ## Load VSCode modules for Powershell for debugging & other integrations
-            Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-            Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-        }
-    },
+    #         if ($PSVersionTable.PSVersion -ge '3.0') {
+    #             ## Import PSReadLine interactive terminal
+    #             Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
+    #             ## Set keyboard key for accepting suggestions
+    #             Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+    #             ## Set Enter to its normal/expected behavior
+    #             Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
+    #             ## Disable audio bells
+    #             Set-PSReadLineOption -BellStyle None
+    #         }
+    #     }
+    #     elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
+    #         ## Powershell ISE
+    #         $host.PrivateData.IntellisenseTimeoutInSeconds = 5
+    #         ## Import ISE modules for more interactive sessions
+    #         $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
+    #         Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
+    #     }
+    #     elseif ($host.Name -eq 'Visual Studio Code Host') {
+    #         ## Load VSCode modules for Powershell for debugging & other integrations
+    #         Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+    #         Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
+    #     }
+    # },
     {
         try {
             Import-Module ProfileModule
