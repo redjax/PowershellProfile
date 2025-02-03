@@ -95,22 +95,11 @@ Describe '$Name' {
 $AppendModuleFunctionExportString = @"
 
 
-## Load and export aliases from the Aliases directory
-if (Test-Path -Path `$AliasesPath) {
-    `$AliasFiles = Get-ChildItem -Path `$AliasesPath -Recurse -Filter *.ps1
-
-    foreach (`$AliasFile in `$AliasFiles) {
-        # Source each .ps1 file in the Aliases directory
-        .`$AliasFile.FullName
-    }
-
-    ## Get all aliases defined in the module
-    `$Aliases = Get-Command -CommandType Alias | Where-Object { `$_.Source -eq `$ModuleName }
-
-    ## Export each alias
-    `$Aliases | ForEach-Object {
-        Export-ModuleMember -Alias `$_.Name
-    }
+## Export each function
+foreach ($function in (Get-ChildItem "$ModuleRoot/public" -Recurse -File -Filter "*.ps1")) {
+	. Import-ModuleFile -Path $function.FullName
+	$functionName = $function.BaseName
+	Export-ModuleMember -Function $functionName
 }
 "@
 
