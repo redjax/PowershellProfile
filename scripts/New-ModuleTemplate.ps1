@@ -110,13 +110,13 @@ $AppendModuleFunctionExportString = @"
 
 
 ## Export each function
-foreach ($function in (Get-ChildItem "$ModuleRoot/public" -Recurse -File -Filter "*.ps1")) {
-	. Import-ModuleFile -Path $function.FullName
-	$functionName = $function.BaseName
-	Export-ModuleMember -Function $functionName
+foreach (`$function in (Get-ChildItem "`$ModuleRoot/public" -Recurse -File -Filter "*.ps1")) {
+	. Import-ModuleFile -Path `$function.FullName
+	`$functionName = `$function.BaseName
+	Export-ModuleMember -Function `$functionName
 }
 "@
 
-$AppendModuleFunctionExportString | Out-File -FilePath $ModulePath\$Name.psm1 -Append
+$AppendModuleFunctionExportString | Out-File -FilePath $ModulePath\$Name.psm1 -Append -Encoding utf8
 
 Write-Output "Module '$Name' has been initialized successfully."
