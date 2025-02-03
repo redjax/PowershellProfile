@@ -26,11 +26,23 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 $ModulesPath = Join-Path $RepoRoot "modules"
 $ModulePath = Join-Path $ModulesPath $Name
 
+if ( -Not ( Test-Path -Path $ModulesPath ) ) {
+    Write-Warning "Modules path '$($ModulesPath)' does not exist. Creating path."
+    try {
+        New-Item -Path "$($ModulesPath)" -ItemType "directory"
+    }
+    catch {
+        Write-Error "Error creating path '$($ModulesPath)'. Details: $($_.Exception.Message)"
+        exit 1
+    }
+}
+
 If ( -Not (Get-Command Invoke-PSMDTemplate -ErrorAction SilentlyContinue) ) {
     Write-Warning "This script requires the Invoke-PSMDTemplate module. Attempting to install."
     try {
         Install-Module PSModuleDevelopment -Scope CurrentUser -Force
-    } catch {
+    }
+    catch {
         Write-Error "Failed to install required module: PSModuleDevelopment. Details: $($_.Exception.Message)"
         exit 1
     }
@@ -43,9 +55,10 @@ if (Test-Path $ModulePath) {
 }
 
 Write-Output "Creating module: $Name in $ModulesPath..."
-try{
+try {
     Invoke-PSMDTemplate -TemplateName "Module" -Name $Name -OutPath $ModulesPath
-} catch {
+}
+catch {
     Write-Error "Error creating new module from template. Details: $($_.Exception.Message)"
     exit 1
 }
@@ -77,16 +90,17 @@ TODO: Describe the module.
 }
 
 # Create an empty Pester test file
-$TestFile = Join-Path $ModulePath "tests" "$Name.Tests.ps1"
+$TestFile = Join-Path -Path (Join-Path -Path $ModulePath -ChildPath "tests") -ChildPath "$Name.Tests.ps1"
+
 if (-not (Test-Path $TestFile)) {
     @"
 # Pester tests for $Name module
 
 Describe '$Name' {
     It 'Should import the module without errors' {
-        Import-Module (Join-Path `$(PSScriptRoot) .. $Name.psm1`) -Force
-        $Module = Get-Module -Name $Name
-        $Module | Should -Not -Be $null
+        Import-Module (Join-Path `$PSScriptRoot ".." "$Name.psm1") -Force
+        `$Module = Get-Module -Name $Name
+        `$Module -eq `$null | Should Be `$false
     }
 }
 "@ | Set-Content -Path $TestFile -Encoding utf8
