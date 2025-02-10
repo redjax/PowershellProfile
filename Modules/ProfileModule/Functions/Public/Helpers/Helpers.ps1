@@ -58,8 +58,16 @@ function New-PSProfile {
 }
 
 function Get-PowershellVersion {
-    ## Print Powershell version string
-    $PowershellVersion = $PSVersionTable.PSVersion.ToString()
+    Param(
+        [string]$VersionPart = "full"
+    )
+    if ( $VersionPart -eq "major") {
+        $PowershellVersion = $PSVersionTable.PSVersion.Major.ToString()
+    } elseif ( $VersionPart -eq "minor" ) {
+        $PowershellVersion = $PSVersionTable.PSVersion.Minor.ToString()
+    } else {
+        $PowershellVersion = $PSVersionTable.PSVersion.ToString()
+    }
 
     Write-Output "Powershell version: $PowershellVersion"
 }
