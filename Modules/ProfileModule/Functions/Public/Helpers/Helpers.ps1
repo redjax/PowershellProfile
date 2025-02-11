@@ -6,7 +6,7 @@ function Test-IsAdmin {
 }
 
 function Start-AsAdmin {
-<#
+    <#
         .SYNOPSIS
         Pipe a command through an elevated Powershell prompt.
 
@@ -47,11 +47,13 @@ function New-PSProfile {
             New-Item -ItemType File -Path $PROFILE -Force
             Write-Output "Profile initialized at path: $($PROFILE)"
             return
-        } catch {
+        }
+        catch {
             Write-Error "Failed to initialize Powershell profile at path '$($PROFILE)'. Details: $($_.Exception.Message)"
             return $_.Exception
         }
-    } else {
+    }
+    else {
         Write-Output "A `$PROFILE .ps1 file already exists at path '$($PROFILE)'."
         return
     }
@@ -59,17 +61,34 @@ function New-PSProfile {
 
 function Get-PowershellVersion {
     Param(
-        [string]$VersionPart = "full"
+        [switch]$Major,
+        [switch]$Minor
     )
-    if ( $VersionPart -eq "major") {
-        $PowershellVersion = $PSVersionTable.PSVersion.Major.ToString()
-    } elseif ( $VersionPart -eq "minor" ) {
-        $PowershellVersion = $PSVersionTable.PSVersion.Minor.ToString()
-    } else {
-        $PowershellVersion = $PSVersionTable.PSVersion.ToString()
-    }
 
-    Write-Output "Powershell version: $PowershellVersion"
+    if ( ($Major -and $Minor) -or ( ( -not $Major ) -and ( -not $Minor ) ) ) {
+        ## Both flags passed, or neither passed, print full string
+        $PowershellVersion = $PSVersionTable.PSVersion.ToString()
+        Write-Debug "Powershell version: $($PowershellVersion)"
+
+        return $PowershellVersion
+
+    }
+    elseif ( $Major ) {
+        ## Return major version
+        $PowershellVersion = $PSVersionTable.PSVersion.Major.ToString()
+        Write-Debug "Powershell version: $($PowershellVersion)"
+
+        return $PowershellVersion
+
+    }
+    else {
+        ## Return minor version
+        $PowershellVersion = $PSVersionTable.PSVersion.Minor.ToString()
+        Write-Debug "Powershell version: $($PowershellVersion)"
+
+        return $PowershellVersion
+
+    }
 }
 
 function Start-StarshipShell {
@@ -105,7 +124,7 @@ function Show-ApprovedVerbs {
     $verbs = Get-Verb
 
     # Format and display the verbs in a table
-    $verbs | Sort-Object Verb | Format-Table -Property Verb,Group-Object -AutoSize
+    $verbs | Sort-Object Verb | Format-Table -Property Verb, Group-Object -AutoSize
 }
 
 function Write-PSVersionTable {
@@ -127,7 +146,7 @@ function Lock-Machine {
     ## Set computer state to Locked
 
     try {
-        rundll32.exe user32.dll,LockWorkStation
+        rundll32.exe user32.dll, LockWorkStation
     }
     catch {
         Write-Error "Unhandled exception locking machine. Details: $($_.Exception.Message)"
@@ -138,7 +157,8 @@ function Lock-Machine {
 function Show-ProfileModuleFunctions {
     try {
         Get-Command -Module ProfileModule -CommandType Function
-    } catch {
+    }
+    catch {
         Write-Error "Unable to show ProfileModule functions. Details: $($_.Exception.Message)"
         exit 1
     }
@@ -147,14 +167,15 @@ function Show-ProfileModuleFunctions {
 function Show-ProfileModuleAliases {
     try {
         Get-Command -Module ProfileModule -CommandType Alias
-    } catch {
+    }
+    catch {
         Write-Error "Unable to show ProfileModule aliases. Details: $($_.Exception.Message)"
         exit 1
     }
 }
 
 function Restart-ShellSession {
-<#
+    <#
         .SYNOPSIS
         Functions like the unix 'exec $SHELL' command. Reload a terminal session to refresh
         $PROFILE, modules, env vars, etc.
@@ -164,7 +185,8 @@ function Restart-ShellSession {
     $PowerShellExe = if ($PSVersionTable.PSEdition -eq 'Core') {
         ## PowerShell 7+ uses pwsh.exe
         "$PSHOME\pwsh.exe"
-    } else {
+    }
+    else {
         ## Windows PowerShell uses powershell.exe
         "$PSHOME\powershell.exe"
     }
@@ -177,7 +199,7 @@ function Restart-ShellSession {
 }
 
 function Show-PSProfilePaths {
-<#
+    <#
         .SYNOPSIS
         Show all $PROFILE paths.
     #>
