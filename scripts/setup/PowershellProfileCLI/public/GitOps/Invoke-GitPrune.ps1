@@ -1,4 +1,5 @@
-function Prune-GitBranches {
+$ConfirmPreference = "High"
+function Invoke-GitPrune {
     <#
         .SYNOPSIS
         Deletes (prunes) any local branches that still exist after being deleted on the remote.
@@ -16,13 +17,20 @@ function Prune-GitBranches {
     #>
     [CmdletBinding(
         ## Support -WhatIf and -Confirm
-        SupportsShouldProcess = $True
+        SupportsShouldProcess = $True,
+        ## Set ConfirmPreference above function definitions
+        #  to automatically prompt on specified level
+        ConfirmImpact = "High"
     )]
     param(
+        # [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$MainBranch = "main"
     )
 
-    Write-Host "Pruning local branches that have been deleted on the remote." -ForegroundColor Green
+    if ( -Not $PSCmdlet.ShouldProcess($MainBranch) ) {
+        Write-Warning "Skipping git branch prune operation."
+        return
+    }
 
     try {
         git checkout $($MainBranch); `
