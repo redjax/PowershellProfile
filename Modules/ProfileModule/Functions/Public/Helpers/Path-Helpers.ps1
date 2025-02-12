@@ -14,6 +14,18 @@ function Get-ParentPath {
     return $ParentPath
 }
 
+function Get-ProfileDir {
+    return (Split-Path -Path $PROFILE -Parent)
+}
+
+function Switch-ToProfilePath {
+    try {
+        Set-Location -Path (Split-Path -Path $PROFILE -Parent)
+    } catch {
+        Write-Error "Error changing to profile directory. Details: $($_.Exception.Message)"
+    }
+}
+
 function Edit-Profile {
     <#
         Open current profile.ps1 in PowerShell ISE
