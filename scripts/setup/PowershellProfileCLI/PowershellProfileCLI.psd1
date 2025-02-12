@@ -9,13 +9,13 @@
 	GUID = 'ca77cf84-b820-42f6-ad28-543e02fb3c7f'
 	
 	# Author of this module
-	Author = 'jack'
+	Author = 'redjax'
 	
 	# Company or vendor of this module
 	CompanyName = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright = 'Copyright (c) 2025 jack'
+	Copyright = 'Copyright (c) 2025 redjax'
 	
 	# Description of the functionality provided by this module
 	Description = 'CLI module for the PowershellProfile repository.'
@@ -38,7 +38,9 @@
 	# FormatsToProcess = @('xml\PowershellProfileCLI.Format.ps1xml')
 	
 	# Functions to export from this module
-	FunctionsToExport = ''
+	FunctionsToExport = @(
+		'Prune-GitBranches'
+	)
 	
 	# Cmdlets to export from this module
 	CmdletsToExport = ''

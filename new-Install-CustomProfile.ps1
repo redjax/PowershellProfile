@@ -35,3 +35,11 @@ try {
     Write-Error "Error getting the PowershellProfileCLI commands. Module may have imported incorrectly. Details: $($_.Exception.Message)"
     exit 1
 }
+
+Write-Information "Testing git branch prune script"
+try {
+    Prune-GitBranches
+} catch {
+    Write-Error "Error pruning git branches. Details: $($_.Exception.Message)"
+    exit 1
+}
