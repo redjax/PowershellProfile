@@ -1,0 +1,12 @@
+﻿TOPIC
+	about_PowershellProfileCLI
+	
+SHORT DESCRIPTION
+	A short synopsis of PowershellProfileCLI
+
+LONG DESCRIPTION
+	A more detailed description of PowershellProfileCLI,
+	Should tell the user how to get started with this module.
+	
+KEYWORDS
+	module development debugging
