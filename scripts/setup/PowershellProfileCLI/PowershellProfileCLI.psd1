@@ -39,7 +39,8 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'Invoke-GitPrune'
+		'Invoke-GitPrune',
+		'Invoke-Cli'
 	)
 	
 	# Cmdlets to export from this module

@@ -27,6 +27,13 @@ function Invoke-GitPrune {
         [string]$MainBranch = "main"
     )
 
+    Set-LoggingLevel -Verbose:$Verbose -Debug:$Debug
+
+    if ( -Not ( Test-Path -Path ./.git -ErrorAction SilentlyContinue ) ) {
+        Write-Warning "Path '$($PWD)' is not a git repository."
+        return
+    }
+
     if ( -Not $PSCmdlet.ShouldProcess($MainBranch) ) {
         Write-Warning "Skipping git branch prune operation."
         return

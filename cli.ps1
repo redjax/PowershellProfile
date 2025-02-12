@@ -22,19 +22,10 @@ Param(
 ## Enable informational logging
 $InformationPreference = "Continue"
 
-if ( $PSCmdlet.MyInvocation.BoundParameters.ContainsKey('Verbose') ) {
-    $VerbosePreference = "Continue"
-    $DebugPreference = "Continue"
-    Write-Verbose "DEBUG and VERBOSE logging enabled."
-}
-elseif ( $PSCmdlet.MyInvocation.BoundParameters.ContainsKey('Debug') ) {
-    $DebugPreference = "Continue"
-    Write-Debug "DEBUG logging enabled."
-}
-else {
-    $VerbosePreference = "SilentlyContinue"
-    $DebugPreference = "SilentlyContinue"
-}
+# $VerbosePreference = if ($PSCmdlet.MyInvocation.BoundParameters['Verbose']) { "Continue" } else { "SilentlyContinue" }
+# $DebugPreference = if ($PSCmdlet.MyInvocation.BoundParameters['Debug']) { "Continue" } else { "SilentlyContinue" }
+
+Set-LoggingLevel -Verbose:$Verbose -Debug:$Debug
 
 Write-Debug "Importing PowershellProfileCLI module from path: $($ModulePath)"
 try {
@@ -55,13 +46,19 @@ catch {
 }
 
 if (
-    $PSCmdlet.MyInvocation.BoundParameters.ContainsKey('Debug') `
-        -or
-    $PSCmdlet.MyInvocation.BoundParameters.ContainsKey('Verbose')
+    $_Debug -or $_Verbose
 ) {
     Write-Debug "Discovered commands:"
     $_DiscoveredCommands | Format-Table
 }
+
+$cliParams = @{
+    Operation = "prune-branches"
+    Debug     = $Debug
+    Verbose   = $Verbose
+}
+## Call the CLI
+Invoke-Cli @cliParams
 
 # Write-Information "Testing git branch prune script"
 # try {
