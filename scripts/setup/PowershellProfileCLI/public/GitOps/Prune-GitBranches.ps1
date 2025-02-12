@@ -14,6 +14,10 @@ function Prune-GitBranches {
         .EXAMPLE
         Prune-GitBranches -MainBranch "main"
     #>
+    [CmdletBinding(
+        ## Support -WhatIf and -Confirm
+        SupportsShouldProcess = $True
+    )]
     param(
         [string]$MainBranch = "main"
     )
@@ -29,12 +33,19 @@ function Prune-GitBranches {
             $_.ToString().Trim().Split(" ")[0]
         } `
         | ForEach-Object {
-            Write-Output "Deleting branch: $($_)"
-            try {
-                git branch -D $_
+            If ( $PSCmdlet.ShouldProcess(($_)) ) {
+                Write-Output "Deleting branch: $($_)"
+
+                try {
+                    git branch -D $_
+                }
+                catch {
+                    Write-Error "Error deleting branch '$($_)'. Details: $($_.Exception.Message)"
+                    continue
+                }
             }
-            catch {
-                Write-Error "Error deleting branch '$($_)'. Details: $($_.Exception.Message)"
+            else {
+                Write-Information "Skipping deletion of branch: $($_)"
                 continue
             }
         }
