@@ -11,7 +11,17 @@ function Invoke-Cli {
         [string[]]$Args
     )
 
-    Write-Debug "CLI operation: $($Operation)"
-    Write-Debug "Got ($($Args.Count)) args"
+    # Write-Debug "CLI operation: $($Operation)"
+    # Write-Debug "Got ($($Args.Count)) args"
+
+    $Args | ForEach-Object {
+        Write-Debug "Arg: $($Args[$_])"
+    }
+
+    switch ($Operation) {
+        "prune-branches" {
+            Invoke-GitPrune -MainBranch $Args.MainBranch
+        }
+    }
 
 }

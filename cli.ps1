@@ -25,8 +25,6 @@ $InformationPreference = "Continue"
 # $VerbosePreference = if ($PSCmdlet.MyInvocation.BoundParameters['Verbose']) { "Continue" } else { "SilentlyContinue" }
 # $DebugPreference = if ($PSCmdlet.MyInvocation.BoundParameters['Debug']) { "Continue" } else { "SilentlyContinue" }
 
-Set-LoggingLevel -Verbose:$Verbose -Debug:$Debug
-
 Write-Debug "Importing PowershellProfileCLI module from path: $($ModulePath)"
 try {
     Import-Module $ModulePath -Force
@@ -35,6 +33,8 @@ catch {
     Write-Error "Error importing the PowershellProfileCLI module. Details: $($_.Exception.Message)"
     exit 1
 }
+
+# Set-LoggingLevel -Verbose:$Verbose -Debug:$Debug
 
 Write-Debug "Getting array of public functions from CLI module."
 try {
@@ -56,6 +56,9 @@ $cliParams = @{
     Operation = "prune-branches"
     Debug     = $Debug
     Verbose   = $Verbose
+    Args      = @{
+        "MainBranch" = "main"
+    }
 }
 ## Call the CLI
 Invoke-Cli @cliParams

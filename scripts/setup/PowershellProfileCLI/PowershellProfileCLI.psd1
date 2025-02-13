@@ -40,7 +40,8 @@
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Invoke-GitPrune',
-		'Invoke-Cli'
+		'Invoke-Cli',
+		'Set-LoggingLevel'
 	)
 	
 	# Cmdlets to export from this module
