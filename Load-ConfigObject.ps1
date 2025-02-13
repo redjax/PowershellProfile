@@ -8,6 +8,10 @@ $defaultConfig = [PSCustomObject]@{
         name = "Default"
     }
     log_level = "INFO"
+    repo      = [PSCustomObject]@{
+        profiles_dir = "Profiles"
+        profile_base = "_Base.ps1"
+    }
 }
 
 function Get-ConfigObject {
@@ -59,7 +63,7 @@ function Get-ConfigObject {
 ## Initialize configuration object
 try {
     $Config = Get-ConfigObject
-    Write-Host "Created config object:" -ForegroundColor Green
+    Write-Host "Created config object." -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to create config object. Details: $($_.Exception.Message)"
