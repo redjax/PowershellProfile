@@ -1,23 +1,37 @@
-Param(
-    $ProfileConfig = "config.json"
-)
+function Read-ConfigFile {
+    <#
+        .SYNOPSIS
+        Read repository configuration from a JSON file.
 
-## Config schema
-$defaultConfig = [PSCustomObject]@{
-    profile   = [PSCustomObject]@{
-        name = "Default"
-    }
-    log_level = "INFO"
-    repo      = [PSCustomObject]@{
-        profiles_dir = "Profiles"
-        profile_base = "_Base.ps1"
-    }
-}
+        .DESCRIPTION
+        Configure the $PROFILE module's behavior by reading settings from a JSON file.
 
-function Get-ConfigObject {
+        .PARAMETER ProfileConfig
+        Path to a JSON file with settings for this repository.
+
+        .EXAMPLE
+        Read-ConfigFile -ProfileConfig "config.json"
+    #>
     Param(
         $ProfileConfig = "config.json"
     )
+
+    if ( -Not $ProfileConfig ) {
+        throw "Missing input -ProfileConfig, which should be a path to a JSON file with settings for this repository."
+    }
+
+    ## Config schema
+    $defaultConfig = [PSCustomObject]@{
+        profile   = [PSCustomObject]@{
+            name = "Default"
+        }
+        log_level = "INFO"
+        repo      = [PSCustomObject]@{
+            profiles_dir = "Profiles"
+            profile_base = "_Base.ps1"
+        }
+    }
+
     if ( -Not ( Test-Path -Path $ProfileConfig -PathType Leaf ) ) {
         Write-Warning "Could not find profile configuration at path: $($ProfileConfig). Creating default config."
     
@@ -31,7 +45,7 @@ function Get-ConfigObject {
         }
     }
 
-    Write-Host "Loading profile configuration from: $($ProfileConfig)" -ForegroundColor Cyan
+    Write-Debug "Loading profile configuration from: $($ProfileConfig)"
     try {
         $ConfigJson = Get-Content -Path $ProfileConfig -Raw | ConvertFrom-Json
     }
@@ -40,8 +54,8 @@ function Get-ConfigObject {
         exit 1
     }
 
-    Write-Host "Loaded configuration:" -ForegroundColor Magenta
-    Write-Host ($ConfigJson | ConvertTo-Json -Depth 10)
+    Write-Debug "Loaded configuration:"
+    Write-Debug ($ConfigJson | ConvertTo-Json -Depth 10)
 
     ## Create config object
     try {
@@ -58,14 +72,4 @@ function Get-ConfigObject {
     }
 
     return $Config
-}
-
-## Initialize configuration object
-try {
-    $Config = Get-ConfigObject
-    Write-Host "Created config object." -ForegroundColor Green
-}
-catch {
-    Write-Error "Failed to create config object. Details: $($_.Exception.Message)"
-    exit 1
 }
