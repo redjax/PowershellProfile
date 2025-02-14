@@ -40,7 +40,10 @@
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Get-ProfileConfig',
-		'Start-ModuleManifestUpdate'
+		'Start-ModuleManifestUpdate',
+		'Set-PowershellProfile',
+		'Start-BaseProfileInstall',
+		'Install-PowershellProfile'
 	)
 	
 	# Cmdlets to export from this module

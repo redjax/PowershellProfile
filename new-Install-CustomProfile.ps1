@@ -4,7 +4,9 @@ Param(
     [Parameter(mandatory = $false, HelpMessage = "Name of module")]
     [string]$ModuleName = "ProfileModule",
     [Parameter(mandatory = $false, HelpMessage = "Path to repo modules directory")]
-    [string]$RepoModulesDir = "$($PSScriptRoot)\Modules"
+    [string]$RepoModulesDir = "$($PSScriptRoot)\Modules",
+    [Parameter(mandatory = $false, HelpMessage = "Path to repo Profiles directory")]
+    [string]$ProfilesDir = "$($PSScriptRoot)\Profiles"
 )
 
 ## Vars
@@ -47,5 +49,14 @@ try {
 }
 catch {
     Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
+    exit 1
+}
+
+## Install Base $PROFILE
+try {
+    Start-BaseProfileInstall -ProfileBase "$($ProfilesDir)/$($ProfileConfig.repo.profile_base)"
+}
+catch {
+    Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
     exit 1
 }

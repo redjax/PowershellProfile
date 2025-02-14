@@ -27,7 +27,7 @@ function Read-ConfigFile {
         }
         log_level = "INFO"
         repo      = [PSCustomObject]@{
-            profiles_dir = "Profiles"
+            author       = "redjax"
             profile_base = "_Base.ps1"
         }
     }
@@ -64,6 +64,10 @@ function Read-ConfigFile {
                 name = $ConfigJson.profile.name
             }
             log_level = $ConfigJson.log_level
+            repo      = [PSCustomObject]@{
+                author       = $ConfigJson.repo.author
+                profile_base = $ConfigJson.repo.profile_base
+            }
         }
     }
     catch {

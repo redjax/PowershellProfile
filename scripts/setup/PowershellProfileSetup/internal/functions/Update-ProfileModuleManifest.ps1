@@ -143,7 +143,7 @@ function Update-ProfileModuleManifest {
         return $Aliases
     }
 
-    Write-Output "Updating Powershell module at path: $($ModuleRoot)"
+    Write-Host "Updating Powershell module at path: $($ModuleRoot)" -ForegroundColor Cyan
 
     ## Update functions and aliases
     $Functions = @()
@@ -152,12 +152,12 @@ function Update-ProfileModuleManifest {
     ## Scan for functions in Public/ directory only
     $PublicFunctionsPath = Join-Path $FunctionsPath "Public"
     if (Test-Path -Path $PublicFunctionsPath -PathType Container) {
-        Write-Output "Scanning path '$($PublicFunctionsPath)' for script files with functions."
+        Write-Host "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Magenta
 
         $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1 -Recurse
 
         if ($publicScripts) {
-            Write-Output "Extracting uncommented functions from public scripts."
+            Write-Host "Extracting uncommented functions from public scripts." -ForegroundColor Magenta
     
 
             foreach ($script in $publicScripts) {
@@ -167,13 +167,13 @@ function Update-ProfileModuleManifest {
             }
         }
         else {
-            Write-Output "No functions found in script: $($script.FullName)"
+            Write-Warning "No functions found in script: $($script.FullName)"
         }
     }
 
     ## Scan for aliases
     if (Test-Path -Path $AliasesPath -PathType Container) {
-        Write-Output "Scanning path '$($AliasesPath)' for alias script files."
+        Write-Host "Scanning path '$($AliasesPath)' for alias script files." -ForegroundColor Magenta
 
         # Retrieve all .ps1 files in the Aliases directory recursively
         $aliasScripts = Get-ChildItem -Path $AliasesPath -Filter *.ps1 -Recurse
@@ -198,10 +198,10 @@ function Update-ProfileModuleManifest {
         # Deduplicate the aliases to avoid duplicates in the manifest
         $Aliases = $Aliases | Sort-Object -Unique
 
-        Write-Output "Total aliases discovered: $($Aliases.Count)"
+        Write-Host "Total aliases discovered: $($Aliases.Count)" -ForegroundColor Green
     }
     else {
-        Write-Output "Aliases directory not found at path '$($AliasesPath)'."
+        Write-Warning "Aliases directory not found at path '$($AliasesPath)'."
     }
 
     # Ensure these are actual arrays of strings
@@ -219,7 +219,7 @@ function Update-ProfileModuleManifest {
     $manifest.GUID = $guid
     $manifest.Author = $Author
 
-    Write-Output "Updating module manifest at path '$($ManifestPath)'"
+    Write-Host "Updating module manifest at path '$($ManifestPath)'" -ForegroundColor Cyan
     try {
         ## Save the updated or new manifest
         $manifestContent = @"
@@ -236,10 +236,11 @@ function Update-ProfileModuleManifest {
 "@
         Set-Content -Path $ManifestPath -Value $manifestContent
 
-        Write-Output "Module manifest updated successfully."
+        Write-Host "Module manifest updated successfully." -ForegroundColor Green
     }
     catch {
         Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
+        exit 1
     }
 
 }
