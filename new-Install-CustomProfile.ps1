@@ -1,6 +1,10 @@
 Param(
     [Parameter(mandatory = $false, HelpMessage = "The path to the JSON config file to use for script execution.")]
-    [string]$ConfigFile = "config.json"
+    [string]$ConfigFile = "config.json",
+    [Parameter(mandatory = $false, HelpMessage = "Name of module")]
+    [string]$ModuleName = "ProfileModule",
+    [Parameter(mandatory = $false, HelpMessage = "Path to repo modules directory")]
+    [string]$RepoModulesDir = "$($PSScriptRoot)\Modules"
 )
 
 ## Vars
@@ -35,9 +39,11 @@ catch {
 ## Debug print configuration object
 Write-Debug ($ProfileConfig | ConvertTo-Json -Depth 10)
 
-Write-Host "Updating module manifest."
 try {
-    Start-ModuleManifestUpdate
+    Start-ModuleManifestUpdate `
+        -ModuleAuthor $ProfileConfig.repo.author `
+        -ModuleName $ModuleName `
+        -RepoModulesDir $RepoModulesDir
 }
 catch {
     Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"

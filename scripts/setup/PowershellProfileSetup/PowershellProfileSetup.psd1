@@ -15,7 +15,7 @@
 	CompanyName       = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright         = 'Copyright (c) 2025 jack'
+	Copyright         = 'Copyright (c) 2025 redjax'
 	
 	# Description of the functionality provided by this module
 	Description       = 'Module to aid with setup/configuration for my PowershellProfile module.'
