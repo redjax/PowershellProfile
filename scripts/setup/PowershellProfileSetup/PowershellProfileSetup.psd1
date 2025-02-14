@@ -40,9 +40,9 @@
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Get-ProfileConfig',
-		'Start-ModuleManifestUpdate',
+		'Invoke-ModuleManifestUpdate',
 		'Set-PowershellProfile',
-		'Start-BaseProfileInstall',
+		'Invoke-BaseProfileInstall',
 		'Install-ProfileModule'
 	)
 	

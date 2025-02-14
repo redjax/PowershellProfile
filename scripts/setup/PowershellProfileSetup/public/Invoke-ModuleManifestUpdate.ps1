@@ -1,4 +1,4 @@
-function Start-ModuleManifestUpdate {
+function Invoke-ModuleManifestUpdate {
     Param(
         [string]$ModuleAuthor = $env:USERNAME,
         [string]$ModuleName = "ProfileModule",

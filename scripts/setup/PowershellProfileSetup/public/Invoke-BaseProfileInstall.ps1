@@ -1,4 +1,4 @@
-function Start-BaseProfileInstall {
+function Invoke-BaseProfileInstall {
     Param(
         [Parameter(Mandatory = $false, HelpMessage = "The path where the base profile will be installed.")]
         [string]$InstallPath = "$(Split-Path $PROFILE -Parent)\_Base.ps1",

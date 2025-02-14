@@ -52,7 +52,7 @@ Write-Verbose "Path to module's GUID file: $GUIDFilePath"
 Write-Verbose "Path to module's author file: $AuthorFilePath"
 Write-Verbose "Path to module's version file: $VersionFilePath"
 
-function Start-ModuleManifestUpdate {
+function Invoke-ModuleManifestUpdate {
     <#
         .SYNOPSIS
         Create or update the module's .psd1 module manifest.
@@ -210,7 +210,7 @@ function Start-MainFunction {
     Write-Output "`n[ Update Powershell module's .psd1 manifest file ]"
 
     try {
-        Start-ModuleManifestUpdate `
+        Invoke-ModuleManifestUpdate `
             -GUIDFilePath $GUIDFilePath `
             -Author $ModuleAuthor `
             -AuthorFilePath $AuthorFilePath `
@@ -235,12 +235,13 @@ function Start-MainFunction {
 
     Write-Output "`n[ Install _Base.ps1 ]"
 
-    try{
+    try {
         Start-ProfileBaseInstall `
             -Debug:$Debug `
             -Verbose:$Verbose `
             -BaseProfile:$ProfileBase
-    } catch {
+    }
+    catch {
         Write-Error "Error installing `$Profile _Base.ps1. Details: $($_.Exception.Message)"
     }
 

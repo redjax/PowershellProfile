@@ -42,7 +42,7 @@ catch {
 Write-Debug ($ProfileConfig | ConvertTo-Json -Depth 10)
 
 try {
-    Start-ModuleManifestUpdate `
+    Invoke-ModuleManifestUpdate `
         -ModuleAuthor $ProfileConfig.repo.author `
         -ModuleName $ModuleName `
         -RepoModulesDir $RepoModulesDir
@@ -54,7 +54,7 @@ catch {
 
 ## Install Base $PROFILE
 try {
-    Start-BaseProfileInstall -ProfileBase "$($ProfilesDir)/$($ProfileConfig.repo.profile_base)"
+    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/$($ProfileConfig.repo.profile_base)"
 }
 catch {
     Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
