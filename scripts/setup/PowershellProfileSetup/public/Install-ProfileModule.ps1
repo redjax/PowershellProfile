@@ -13,7 +13,7 @@ function Install-ProfileModule {
     ## Check if the target path exists
     if (Test-Path -Path $ProfileModTar) {
         Write-Debug "Target path '$($ProfileModTar)' exists. Removing before installing profile module."
-        Write-Output "Replacing existing module at $ProfileModTar."
+        Write-Host "Replacing existing module at $ProfileModTar." -ForegroundColor Cyan
 
         try {
             Remove-Item -Recurse -Force $ProfileModTar
@@ -25,10 +25,10 @@ function Install-ProfileModule {
     }
 
     ## Copy the module to the Modules directory
-    Write-Output "Installing ProfileModule to $ProfileModTar."
+    Write-Host "Installing ProfileModule to $ProfileModTar." -ForegroundColor Cyan
     try {
         Copy-Item -Recurse -Path $ProfileModSrc -Destination $ProfileModTar
-        Write-Output "[SUCCESS] Powershell profile module installed at path: $ProfileModTar"
+        Write-Host "[SUCCESS] Powershell profile module installed at path: $ProfileModTar" -ForegroundColor Green
         exit 0
     }
     catch {

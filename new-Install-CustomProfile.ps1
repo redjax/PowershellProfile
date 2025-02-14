@@ -60,3 +60,16 @@ catch {
     Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
     exit 1
 }
+
+## Install $PROFILE
+try {
+    Install-ProfileModule -RepositoryPath $PSScriptRoot
+    Write-Host "Installed $($ModuleName) module" -ForegroundColor Green
+}
+catch {
+    Write-Error "Error installing module. Details: $($_.Exception.Message)"
+    exit 1
+}
+
+Write-Host "`nPowershell profile installed. Restart your terminal for changes to take effect." -ForegroundColor Green
+exit $LASTEXITCODE

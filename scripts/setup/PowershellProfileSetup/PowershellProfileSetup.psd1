@@ -43,7 +43,7 @@
 		'Start-ModuleManifestUpdate',
 		'Set-PowershellProfile',
 		'Start-BaseProfileInstall',
-		'Install-PowershellProfile'
+		'Install-ProfileModule'
 	)
 	
 	# Cmdlets to export from this module
