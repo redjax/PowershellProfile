@@ -1,0 +1,10 @@
+{
+    "profile": {
+        "name": "Default"
+    },
+    "log_level": "INFO",
+    "repo": {
+        "author": "redjax",
+        "profile_base": "_Base.ps1"
+    }
+}

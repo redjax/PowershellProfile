@@ -1,6 +1,6 @@
 function Convert-ToLowercase {
     <#
-        .SUMMARY
+        .SYNOPSIS
         Convert a string to all lowercase.
 
         .PARAM InputString
@@ -23,7 +23,7 @@ function Convert-ToLowercase {
 
 function Convert-ToUppercase {
     <#
-        .SUMMARY
+        .SYNOPSIS
         Convert a string to all uppercase.
 
         .PARAM InputString
@@ -46,7 +46,7 @@ function Convert-ToUppercase {
 
 function Convert-ToTitlecase {
     <#
-        .SUMMARY
+        .SYNOPSIS
         Convert a string to titlecase.  
 
         .PARAM InputString

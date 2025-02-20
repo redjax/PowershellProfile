@@ -49,11 +49,12 @@ All Profiles load from a [common base profile](./docs/Developing.md#base-templat
 ## Usage
 
 - Clone the repository
+- Copy [`config.example.json`](./config.example.json) to `config.json`
+  - Edit the file if you want to install a profile other than [the default profile](./Profiles/Default.ps1)
 - Run `Install-CustomProfile.ps1`
-  - To Set a specific profile, pass a parameter `-ProfileName <name>`, where `<name>` is a file in the [Profiles/](./Profiles/) path, without the `.ps1` filename
-    - The default value for `$ProfileName` is `Default`, which installs the [`Default.ps1`](./Profiles/Default.ps1) profile.
   - This script will:
-    - create a backup of your existing `$PROFILE` at `$($PROFILE).bak`.
+    - Import the [`PowershellProfileSetup` module](./scripts/setup/PowershellProfileSetup/)
+    - Create a backup of your existing `$PROFILE` at `$($PROFILE).bak`.
       - You may still want to copy your old `$PROFILE`, like:
         - `cp $PROFILE "$($PROFILE).orig"`
         - This will prevent accidentally nuking any customizations you've made to your `$PROFILE`

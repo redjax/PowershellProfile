@@ -1,5 +1,5 @@
 <#
-    .SUMMARY
+    .SYNOPSIS
     Powershell $PROFILE with Starship prompt.
 #>
 

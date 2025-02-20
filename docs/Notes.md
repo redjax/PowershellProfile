@@ -5,9 +5,79 @@ Things I've learned building this repository.
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Check Powershell version](#check-powershell-version)
+  - [Use Powershell version as a conditional](#use-powershell-version-as-a-conditional)
 - [Automatic updates to module's manifest](#automatic-updates-to-modules-manifest)
 - [Generate profile GUID](#generate-profile-guid)
 - [Pass -Verbose and -Debug to other scripts](#pass--verbose-and--debug-to-other-scripts)
+
+## Check Powershell version
+
+You can use the `$PSVersionTable.PSVersion` variable to get the current shell's version. Below are examples of what you will see when you run this command:
+
+Powershell 5:
+
+```powershell
+$ $PSVersionTable.PSVersion
+
+Major  Minor  Build  Revision
+-----  -----  -----  --------
+5      1      26100  2161
+```
+
+Powershell 7:
+
+```powershell
+$PSVersionTable.PSVersion
+
+Major  Minor  Patch  PreReleaseLabel BuildLabel
+-----  -----  -----  --------------- ----------
+7      5      0
+```
+
+You can also select only the major/minor version:
+
+```powershell
+## Select the major version
+$PSVersionTable.PSVersion.Major.ToString()
+
+## Select the minor version:
+$PSVersionTable.PSVersion.Minor.ToString()
+```
+
+Or get the whole version as a string:
+
+```powershell
+$PSVersionTable.PSVersion.ToString()
+```
+
+### Use Powershell version as a conditional
+
+You can use the Powershell version's major (or major/minor) release string in a conditional statement. To write a conditional check using the shell's version, use:
+
+```powershell
+## Store Powershell major and minor versions in variables
+$PowershellMajorVersion = $PSVersionTable.PSVersion.Major.ToString()
+$PowershellMinorVersion = $PSVersionTable.PSVersion.Minor.ToString()
+
+## Check if Powershell major version is 7
+if ( $PowershellMajorVersion -eq "7" ) {
+    ## Do something when shell is Powershell 7/Core
+    ...
+} elseif ( $PowershellMajorVersion -eq "5" ) {
+    ## Do something when shell is Powershell 5
+    ...
+}
+```
+
+An example of when you might want to conditionally check the shell's version is when setting TLS with `[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12`. This step is unnecessary on Powershell 7, and will slow the shell down. To ensure this command only runs on Powershell 5:
+
+```powershell
+## Set TLS to 1.2 on Powershell 5 prompts
+if ($PSVersionTable.PSVersion.Major -eq 5) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
+```
 
 ## Automatic updates to module's manifest
 

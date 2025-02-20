@@ -25,12 +25,14 @@ $ProfileStartTime = Get-Date
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 
-## Set TLS to 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+## Set TLS to 1.2 on Powershell 5 prompts
+if ($PSVersionTable.PSVersion.Major -eq 5) {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
 
 function Get-Prompt {
     <#
-        .SUMMARY
+        .SYNOPSIS
         Custom Powershell prompt using only built-in tools.
 
         .DESCRIPTION
@@ -66,6 +68,7 @@ function Get-Prompt {
 
     #Decorate the CMD Prompt
     Write-Host ""
+    Write-Host " PS$($PSVersionTable.PSVersion.Major) " -BackgroundColor Blue -ForegroundColor White -NoNewline
     Write-Host ($(if ($IsAdmin) { 'Elevated ' } else { '' })) -BackgroundColor DarkRed -ForegroundColor White -NoNewline
     Write-Host " USER:$($CmdPromptUser.Name.split("\")[1]) " -BackgroundColor DarkBlue -ForegroundColor White -NoNewline
     if ($CmdPromptCurrentFolder -like "*:*")
@@ -91,7 +94,7 @@ if ($PSVersionTable.PSVersion -ge '3.0') {
 if ((Get-Command Get-Prompt -ErrorAction SilentlyContinue)) {
     function prompt {
         <#
-            .SUMMARY
+            .SYNOPSIS
             Override the built-in Powershell prompt with the profile's custom prompt
         #>
 

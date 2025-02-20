@@ -1,16 +1,27 @@
-<# 
-    .SYNOPSIS
-    Alias commands for Unix-like Powershell commands.
-#>
 function uptime {
-    ## Print system uptime
+    ## Mimic Unix 'uptime' command in PowerShell
 
-    if ($PSVersionTable.PSVersion.Major -eq 5) {
-        Get-WmiObject win32_operatingsystem |
-        Select-Object @{ expression = { $_.ConverttoDateTime($_.lastbootuptime) } } | Format-Table -HideTableHeaders
+    try {
+        $OS = Get-WmiObject Win32_OperatingSystem -ComputerName $env:COMPUTERNAME -ErrorAction Stop
+        $Uptime = (Get-Date) - $OS.ConvertToDateTime($OS.LastBootUpTime)
+        [PSCustomObject]@{
+            ComputerName = $env:COMPUTERNAME
+            LastBoot     = $OS.ConvertToDateTime($OS.LastBootUpTime)
+            Uptime       = ([String]$Uptime.Days + " Days " + $Uptime.Hours + " Hours " + $Uptime.Minutes + " Minutes")
+        } | Format-Table
+ 
     }
-    else {
-        net statistics workstation | Select-String 'since' | ForEach-Object { $_.ToString().Replace('Statistics since ','') }
+    catch {
+        [PSCustomObject]@{
+            ComputerName = $env:COMPUTERNAME
+            LastBoot     = "Unable to Connect"
+            Uptime       = $_.Exception.Message.Split('.')[0]
+        }
+ 
+    }
+    finally {
+        $null = $OS
+        $null = $Uptime
     }
 }
 
@@ -29,7 +40,7 @@ function unzip {
     )
     $dirname = (Get-Item $file).BaseName
 
-    Write-Output ("Extracting",$file,"to",$dirname)
+    Write-Output ("Extracting", $file, "to", $dirname)
 
     New-Item -Force -ItemType directory -Path $dirname
     Expand-Archive $file -OutputPath $dirname -ShowProgress
@@ -57,7 +68,7 @@ function sed {
         [string]$find,
         [string]$replace
     )
-    (Get-Content $file).Replace("$find",$replace) | Set-Content $file
+    (Get-Content $file).Replace("$find", $replace) | Set-Content $file
     # [System.IO.File]::ReadAllText("$($file)").Replace("$find", "$replace") | Set-Content $file
 }
 

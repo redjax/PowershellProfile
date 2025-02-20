@@ -15,6 +15,11 @@ $AliasesPath = $PSScriptRoot + $DirectorySeparator + "Aliases"
 ## Regular expression to match function definitions
 $functionRegex = 'function\s+([^\s{]+)\s*\{'
 
+## Import Unix.ps1 if it exists
+if (Test-Path -Path "$($PublicFunctionsPath)Unix.ps1") {
+    . $PublicFunctionsPath"Unix.ps1"
+}
+
 ## Get list of .ps1 files in Public/ recursively
 $PublicFunctions = Get-ChildItem -Path $PublicFunctionsPath -Recurse -Filter *.ps1
 
@@ -24,11 +29,13 @@ if (Test-Path "$($PrivateFunctionsPath)") {
 
     ## Load all private/internal Powershell functions from script files
     $PrivateFunctions | ForEach-Object {
+        Write-Debug "Sourcing private function: $($_.FullName)"
         .$_.FullName
     }
 }
 
 $PublicFunctions | ForEach-Object {
+    Write-Debug "Sourcing public function: $($_.FullName)"
     .$_.FullName
 }
 
@@ -38,7 +45,7 @@ $PublicFunctionNames = @()
 foreach ($script in $PublicFunctions) {
     $scriptContent = Get-Content -Path $script.FullName -Raw
     # $ScriptContent = [System.IO.File]::ReadAllText($script.FullName)
-    $SearchMatches = [regex]::Matches($scriptContent,$functionRegex)
+    $SearchMatches = [regex]::Matches($scriptContent, $functionRegex)
 
     foreach ($match in $SearchMatches) {
         $functionName = $match.Groups[1].Value
@@ -48,6 +55,7 @@ foreach ($script in $PublicFunctions) {
 
 ## Export each public function individually
 $PublicFunctionNames | ForEach-Object {
+    Write-Debug "Exporting public function: $($_)"
     Export-ModuleMember -Function $_
 }
 
@@ -59,6 +67,7 @@ if (Test-Path -Path $AliasesFilePath) {
     $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
 
     $Aliases | ForEach-Object {
+        Write-Debug "Exporting alias: $($_.Name)"
         Export-ModuleMember -Alias $_.Name
     }
 }
@@ -69,6 +78,7 @@ if (Test-Path -Path $AliasesPath) {
 
     foreach ($AliasFile in $AliasFiles) {
         # Source each .ps1 file in the Aliases directory
+        Write-Debug "Sourcing alias file: $($_.FullName)"
         .$AliasFile.FullName
     }
 
@@ -77,6 +87,7 @@ if (Test-Path -Path $AliasesPath) {
 
     ## Export each alias
     $Aliases | ForEach-Object {
+        Write-Debug "Exporting alias: $($_.Name)"
         Export-ModuleMember -Alias $_.Name
     }
 }
