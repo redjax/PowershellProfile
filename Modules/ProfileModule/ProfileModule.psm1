@@ -29,11 +29,13 @@ if (Test-Path "$($PrivateFunctionsPath)") {
 
     ## Load all private/internal Powershell functions from script files
     $PrivateFunctions | ForEach-Object {
+        Write-Debug "Sourcing private function: $($_.FullName)"
         .$_.FullName
     }
 }
 
 $PublicFunctions | ForEach-Object {
+    Write-Debug "Sourcing public function: $($_.FullName)"
     .$_.FullName
 }
 
@@ -53,6 +55,7 @@ foreach ($script in $PublicFunctions) {
 
 ## Export each public function individually
 $PublicFunctionNames | ForEach-Object {
+    Write-Debug "Exporting public function: $($_)"
     Export-ModuleMember -Function $_
 }
 
@@ -64,6 +67,7 @@ if (Test-Path -Path $AliasesFilePath) {
     $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
 
     $Aliases | ForEach-Object {
+        Write-Debug "Exporting alias: $($_.Name)"
         Export-ModuleMember -Alias $_.Name
     }
 }
@@ -74,6 +78,7 @@ if (Test-Path -Path $AliasesPath) {
 
     foreach ($AliasFile in $AliasFiles) {
         # Source each .ps1 file in the Aliases directory
+        Write-Debug "Sourcing alias file: $($_.FullName)"
         .$AliasFile.FullName
     }
 
@@ -82,6 +87,7 @@ if (Test-Path -Path $AliasesPath) {
 
     ## Export each alias
     $Aliases | ForEach-Object {
+        Write-Debug "Exporting alias: $($_.Name)"
         Export-ModuleMember -Alias $_.Name
     }
 }

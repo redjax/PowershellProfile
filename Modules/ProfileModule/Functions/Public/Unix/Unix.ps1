@@ -1,48 +1,12 @@
 function uptime {
     ## Mimic Unix 'uptime' command in PowerShell
 
-    $currentTime = Get-Date -Format "HH:mm:ss"
+    # Get the last boot time using CIMInstance
+    $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
 
-    # Get system uptime
-    if ($PSVersionTable.PSVersion.Major -eq 5) {
-        $lastBoot = Get-WmiObject Win32_OperatingSystem | Select-Object -ExpandProperty LastBootUpTime
-    }
-    else {
-        $lastBoot = [datetime]::Parse((net statistics workstation | Select-String 'since' | ForEach-Object { $_.ToString() -replace 'Statistics since ', '' }))
-    }
-
-    $uptimeSpan = (Get-Date) - $lastBoot
-
-    # Extract uptime components
-    $years = [math]::Floor($uptimeSpan.Days / 365)
-    $remainingDays = $uptimeSpan.Days % 365
-    $months = [math]::Floor($remainingDays / 30)
-    $remainingDays %= 30
-    $weeks = [math]::Floor($remainingDays / 7)
-    $days = $remainingDays % 7
-    $hours = $uptimeSpan.Hours
-    $minutes = $uptimeSpan.Minutes
-    $seconds = $uptimeSpan.Seconds
-
-    # Construct uptime string based on available time units
-    $uptimeString = @()
-    if ($years -gt 0) { $uptimeString += "$years year" + ($years -gt 1 ? "s" : "") }
-    if ($months -gt 0) { $uptimeString += "$months month" + ($months -gt 1 ? "s" : "") }
-    if ($weeks -gt 0) { $uptimeString += "$weeks week" + ($weeks -gt 1 ? "s" : "") }
-    if ($days -gt 0) { $uptimeString += "$days day" + ($days -gt 1 ? "s" : "") }
-    if ($hours -gt 0 -or $minutes -gt 0 -or $seconds -gt 0) {
-        $uptimeString += "$hours`:$("{0:D2}" -f $minutes)`:$("{0:D2}" -f $seconds)"
-    }
-
-    # Convert array to string
-    $uptimeFormatted = $uptimeString -join ", "
-
-    # Get logged-in users
-    $users = (query user 2>$null | Measure-Object).Count
-
-    Write-Output "$currentTime up $uptimeFormatted,  $users users"
+    # Output the last boot time
+    Write-Output "Last Boot Time: $lastBoot"
 }
-
 
 function touch {
     ## Create a blank file at $file path
