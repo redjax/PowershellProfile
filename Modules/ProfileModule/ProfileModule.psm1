@@ -15,6 +15,11 @@ $AliasesPath = $PSScriptRoot + $DirectorySeparator + "Aliases"
 ## Regular expression to match function definitions
 $functionRegex = 'function\s+([^\s{]+)\s*\{'
 
+## Import Unix.ps1 if it exists
+if (Test-Path -Path "$($PublicFunctionsPath)Unix.ps1") {
+    . $PublicFunctionsPath"Unix.ps1"
+}
+
 ## Get list of .ps1 files in Public/ recursively
 $PublicFunctions = Get-ChildItem -Path $PublicFunctionsPath -Recurse -Filter *.ps1
 
@@ -38,7 +43,7 @@ $PublicFunctionNames = @()
 foreach ($script in $PublicFunctions) {
     $scriptContent = Get-Content -Path $script.FullName -Raw
     # $ScriptContent = [System.IO.File]::ReadAllText($script.FullName)
-    $SearchMatches = [regex]::Matches($scriptContent,$functionRegex)
+    $SearchMatches = [regex]::Matches($scriptContent, $functionRegex)
 
     foreach ($match in $SearchMatches) {
         $functionName = $match.Groups[1].Value
