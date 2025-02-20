@@ -2,11 +2,11 @@ function Invoke-ModuleManifestUpdate {
     Param(
         [string]$ModuleAuthor = $env:USERNAME,
         [string]$ModuleName = "ProfileModule",
-        [string]$RepoModulesDir = "$($PSScriptRoot)\Modules",
+        [string]$RepoModulesDir = "$(Get-Location)\Modules",
         [string]$ModuleRoot = (Join-Path $RepoModulesDir $ModuleName),
         [string]$FunctionsPath = (Join-Path $ModuleRoot "Functions"),
         [string]$AliasesPath = (Join-Path $ModuleRoot "Aliases"),
-        [string]$ManifestPath = (Join-Path $ModuleRoot "$ModuleName.psd1"),
+        [string]$ManifestPath = "$ModuleName.psd1",
         [string]$GUIDFilePath = (Join-Path $ModuleRoot "guid.txt"),
         [string]$AuthorFilePath = (Join-Path $ModuleRoot "author.txt"),
         [string]$VersionFilePath = (Join-Path $ModuleRoot "version.txt")

@@ -1,8 +1,4 @@
-<# 
-    .SYNOPSIS
-    Alias commands for Unix-like Powershell commands.
-#>
-function uptime {
+function Show-MachineUptime {
     ## Mimic Unix 'uptime' command in PowerShell
 
     $currentTime = Get-Date -Format "HH:mm:ss"

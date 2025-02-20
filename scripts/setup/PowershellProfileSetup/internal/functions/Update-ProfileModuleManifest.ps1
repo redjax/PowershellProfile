@@ -1,7 +1,7 @@
 function Update-ProfileModuleManifest {
     param(
         [string]$Author,
-        [string]$RepoModulesDir = "$($PSScriptRoot)\Modules",
+        [string]$RepoModulesDir = "$(Get-Location)\Modules",
         [string]$ModuleRoot = (Join-Path $RepoModulesDir "ProfileModule"),
         [string]$FunctionsPath = (Join-Path $ModuleRoot "Functions"),
         [string]$AliasesPath = (Join-Path $ModuleRoot "Aliases"),
@@ -83,7 +83,7 @@ function Update-ProfileModuleManifest {
     else {
         Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
         $manifest = @{
-            RootModule        = ".\ProfileModule.psm1"
+            RootModule        = "ProfileModule.psm1"
             ModuleVersion     = $version
             GUID              = $guid
             Author            = $Author
@@ -214,7 +214,7 @@ function Update-ProfileModuleManifest {
     $manifest.AliasesToExport = $AliasesArray
 
     # Make sure that the RootModule, ModuleVersion, GUID, and Author are populated
-    $manifest.RootModule = ".\ProfileModule.psm1" # You can change this if necessary
+    $manifest.RootModule = "ProfileModule.psm1" # You can change this if necessary
     $manifest.ModuleVersion = $version
     $manifest.GUID = $guid
     $manifest.Author = $Author
