@@ -1,4 +1,4 @@
-function Show-MachineUptime {
+function uptime {
     ## Mimic Unix 'uptime' command in PowerShell
 
     $currentTime = Get-Date -Format "HH:mm:ss"

@@ -13,6 +13,8 @@ function Update-ProfileModuleManifest {
         # [switch]$Verbose
     )
 
+    Write-Debug "`$RepoModulesDir=$($RepoModulesDir), `$ModuleRoot=$($ModuleRoot), `$ManifestPath=$($ManifestPath)"
+
     if ($Debug) {
         $DebugPreference = "Continue"
     }
@@ -46,6 +48,8 @@ function Update-ProfileModuleManifest {
         Write-Debug "Loading GUID from file: $($GUIDFilePath)"
         $guid = Get-Content -Path $GUIDFilePath
         # $guid = [System.IO.File]::ReadAllText($GUIDFilePath)
+
+        # Write-Host "Loaded GUID file for module from path: $($GUIDFilePath)" -ForegroundColor Green
     }
 
     ## Save author if provided
@@ -61,6 +65,8 @@ function Update-ProfileModuleManifest {
         Write-Debug "Loading author from file: $($AuthorFilePath)"
         $Author = Get-Content -Path $AuthorFilePath
         # $Author = [System.IO.File]::ReadAllText($AuthorFilePath)
+
+        # Write-Host "Loaded author file for module from path: $($AuthorFilePath)" -ForegroundColor Green
     }
 
     ## Set version if it doesn't exist
@@ -73,12 +79,16 @@ function Update-ProfileModuleManifest {
         Write-Debug "Loading module version from file '$($VersionFilePath)'."
         $version = Get-Content -Path $VersionFilePath
         # $version = [System.IO.File]::ReadAllText($VersionFilePath)
+
+        # Write-Host "Loaded version file for module from path: $($VersionFilePath)" -ForegroundColor Green
     }
 
     ## Import existing module manifest if it exists
     if (Test-Path -Path $ManifestPath) {
         Write-Debug "Loading module manifest contents from path '$($ManifestPath)'"
         $manifest = Import-PowerShellDataFile -Path $ManifestPath
+
+        # Write-Host "Imported module manifest from path: $($ManifestPath)" -ForegroundColor Green
     }
     else {
         Write-Debug "Did not find module manifest at path '$($ManifestPath)'. Initializing new manifest."
@@ -165,6 +175,8 @@ function Update-ProfileModuleManifest {
                 $scriptContent = Get-Content -Path $script.FullName -Raw
                 $Functions += Get-FunctionsFromScript -scriptContent $scriptContent
             }
+
+            # Write-Host "Total functions discovered: $($Functions.Count)" -ForegroundColor Cyan
         }
         else {
             Write-Warning "No functions found in script: $($script.FullName)"
@@ -234,6 +246,7 @@ function Update-ProfileModuleManifest {
     VariablesToExport   = @()
 }
 "@
+        # Write-Host "Module manifest: $($manifestContent | ConvertTo-Json -Depth 3)"
         Set-Content -Path $ManifestPath -Value $manifestContent
 
         Write-Host "Module manifest updated successfully." -ForegroundColor Green

@@ -6,7 +6,7 @@ function Invoke-ModuleManifestUpdate {
         [string]$ModuleRoot = (Join-Path $RepoModulesDir $ModuleName),
         [string]$FunctionsPath = (Join-Path $ModuleRoot "Functions"),
         [string]$AliasesPath = (Join-Path $ModuleRoot "Aliases"),
-        [string]$ManifestPath = "$ModuleName.psd1",
+        [string]$ManifestPath = (Join-Path $ModuleRoot "$ModuleName.psd1"),
         [string]$GUIDFilePath = (Join-Path $ModuleRoot "guid.txt"),
         [string]$AuthorFilePath = (Join-Path $ModuleRoot "author.txt"),
         [string]$VersionFilePath = (Join-Path $ModuleRoot "version.txt")
