@@ -37,14 +37,15 @@ function Get-OpenIPAddress {
 }
 
 function Get-PublicIP {
-<#
+    <#
         .SYNOPSIS
         Return your public IP address by making an HTTP request to ifconfig.me/ip.
     #>
     Write-Output "Making request to https://ifconfig.me/ip"
     try {
         (Invoke-WebRequest https://ifconfig.me/ip).Content
-    } catch {
+    }
+    catch {
         Write-Error "Error requesting public IP. Details: $($_.Exception.Message)"
         return $_.Exception
     }
@@ -53,16 +54,18 @@ function Get-PublicIP {
 function Get-HTTPSiteAvailable {
     param(
         [string]$Site = "https://www.google.com",
-        [string]$RequestSleep = 5
+        [string]$RequestSleep = 5,
+        [string]$Method = "Head"
     )
     while ($true) {
         try {
             ## Make HTTP HEAD request
-            $response = Invoke-WebRequest -Uri "$($Site)" -Method Head
+            $response = Invoke-WebRequest -Uri "$($Site)" -Method $Method
 
             ## Output HTTP status code
             Write-Output "$(Get-Date) Ping site '$($Site)': [$($response.StatusCode): $($response.StatusDescription)]"
-        } catch {
+        }
+        catch {
             Write-Error "$(Get-Date): Request failed. Error: $($_.Exception.Message)"
         }
 
