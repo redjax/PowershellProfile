@@ -23,3 +23,5 @@ Set-Alias -Name profiles -Value Show-PSProfilePaths
 ## lg -> lazygit
 Set-Alias -Name lg -Value lazygit
 
+## bwu -> bw unlock
+Set-Alias -Name bwu -Value Unlock-BitwardenVault
