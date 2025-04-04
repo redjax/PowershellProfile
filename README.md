@@ -37,7 +37,7 @@ This repository includes a module named [`ProfileModule`](./Modules/ProfileModul
 
 All Profiles load from a [common base profile](./docs/Developing.md#base-template).
 
-**WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`.
+**WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`. To restore it later, run `Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)`.
 
 ## Table of Contents <!-- omit in toc -->
 
