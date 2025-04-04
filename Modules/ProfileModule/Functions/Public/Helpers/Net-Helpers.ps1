@@ -156,9 +156,39 @@ function Start-Ping {
         return Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     }
 
+    ## Function to format duration string
+    ## Function to format duration string
+    function Get-DurationString {
+        Param(
+            [Parameter(Mandatory = $false, HelpMessage = "The duration of the ping")]
+            [TimeSpan]$Duration
+        )
+
+        ## Format the duration
+        if ($Duration.TotalHours -lt 24) {
+            ## Duration <24 hours
+            $DurationStr = "{0:D2}:{1:D2}:{2:D2}" -f $Duration.Hours, $Duration.Minutes, $Duration.Seconds
+        }
+        else {
+            ## Duration >24 hours
+            $Days = [Math]::Floor($Duration.TotalDays)
+            $Hours = $Duration.Hours
+            $Minutes = $Duration.Minutes
+            $Seconds = $Duration.Seconds
+        
+            $DurationStr = "$Days day(s) $Hours hour(s) $Minutes minute(s) $Seconds second(s)"
+        }
+
+        return $DurationStr
+    }
+
     ## Function to print results message
     function Show-ResultsMessage {
         Param(
+            [Parameter(Mandatory = $false, HelpMessage = "The start time of the ping")]
+            [datetime]$StartTime,
+            [Parameter(Mandatory = $false, HelpMessage = "The end time of the ping")]
+            [datetime]$EndTime,
             [Parameter(Mandatory = $false, HelpMessage = "The target hostname, IP, or FQDN to ping.")]
             [string]$Target,
             [Parameter(Mandatory = $false, HelpMessage = "The total number of pings")]
@@ -169,8 +199,16 @@ function Start-Ping {
             [int]$Failures
         )
 
+        ## Calculate ping duration
+        $PingDuration = New-TimeSpan -Start $StartTime -End $EndTime
+
+        $DurationStr = Get-DurationString -Duration $PingDuration
+
         Write-Host "`n============[ PING RESULTS ]============`n" -ForegroundColor Yellow
         
+        Write-Host "  Duration: " -NoNewline ; `
+            Write-Host "$DurationStr" -ForegroundColor Yellow
+        Write-Host ""
         Write-Host "  Target: " -NoNewline ; `
             Write-Host "$Target " -ForegroundColor Cyan
         Write-Host "  Pings: " -NoNewline ; 
@@ -205,6 +243,9 @@ function Start-Ping {
             Write-Host "$Target" -ForegroundColor Cyan -NoNewline ; `
             Write-Host " (indefinite | sleep duration: $Sleep)" -ForegroundColor Magenta
     }
+
+    ## Get start time
+    $StartTime = Get-Date
 
     ## Loop pings
     try {
@@ -262,6 +303,8 @@ function Start-Ping {
         Write-Host "Error while pinging $Target : $($_.Exception.Message)"
     }
     finally {
-        Show-ResultsMessage -Target $Target -TotalPings $i -Successes $Successes -Failures $Failures
+        $EndTime = Get-Date
+
+        Show-ResultsMessage -Target $Target -TotalPings $i -Successes $Successes -Failures $Failures -StartTime $StartTime -EndTime $EndTime
     }
 }
