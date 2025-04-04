@@ -1,6 +1,3 @@
-## Set alias for Greet-User function
-Set-Alias -Name ghu -Value Invoke-Greeting
-
 ## Alias network connectivity test
 Set-Alias -Name tn -Value Test-NetConnection
 
@@ -26,3 +23,5 @@ Set-Alias -Name profiles -Value Show-PSProfilePaths
 ## lg -> lazygit
 Set-Alias -Name lg -Value lazygit
 
+## bwu -> bw unlock
+Set-Alias -Name bwu -Value Unlock-BitwardenVault

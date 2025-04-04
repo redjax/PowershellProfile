@@ -58,12 +58,12 @@ function Get-Prompt {
 
     if ($RunTime -ge 60) {
         $ts = [timespan]::fromseconds($RunTime)
-        $min,$sec = ($ts.ToString("mm\:ss")).Split(":")
-        $ElapsedTime = -join ($min," min ",$sec," sec")
+        $min, $sec = ($ts.ToString("mm\:ss")).Split(":")
+        $ElapsedTime = -join ($min, " min ", $sec, " sec")
     }
     else {
-        $ElapsedTime = [math]::Round(($RunTime),2)
-        $ElapsedTime = -join (($ElapsedTime.ToString())," sec")
+        $ElapsedTime = [math]::Round(($RunTime), 2)
+        $ElapsedTime = -join (($ElapsedTime.ToString()), " sec")
     }
 
     #Decorate the CMD Prompt
@@ -83,9 +83,9 @@ function Get-Prompt {
 ## Set default parameters on various commands based on Powershell version
 if ($PSVersionTable.PSVersion -ge '3.0') {
     $PSDefaultParameterValues = @{
-        'Format-Table:AutoSize' = $True;
+        'Format-Table:AutoSize'       = $True;
         'Send-MailMessage:SmtpServer' = $SMTPserver;
-        'Help:ShowWindow' = $True;
+        'Help:ShowWindow'             = $True;
     }
     ## Prevents the ActiveDirectory module from auto creating the AD: PSDrive
     $Env:ADPS_LoadDefaultDrive = 0
@@ -124,7 +124,7 @@ elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
     ## Powershell ISE
     $host.PrivateData.IntellisenseTimeoutInSeconds = 5
     ## Import ISE modules for more interactive sessions
-    $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
+    $ISEModules = 'ISEScriptingGeek', 'PsISEProjectExplorer'
     Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
 }
 elseif ($host.Name -eq 'Visual Studio Code Host') {
@@ -182,6 +182,17 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
 ) | ForEach-Object {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
 } | Out-Null
+
+## Shell completions
+
+if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
+    try {
+        op completion powershell | Out-String | Invoke-Expression
+    }
+    catch {
+        Write-Warning "Unable to initialize 1Password shell completion. Your execution policy must be set to RemoteSigned."
+    }
+}
 
 if ($ClearOnInit) {
     Clear-Host
