@@ -134,14 +134,20 @@ function Start-Ping {
 
         .EXAMPLE
         Start-Ping -Target "192.168.1.1" -Count 5 -Sleep 2
+
+        .EXAMPLE
+        Start-Ping -t "192.168.1.13" -c 15 -s 5
     #>
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true, HelpMessage = "The target hostname, IP, or FQDN to ping.")]
+        [Alias("t")]
         [string]$Target,
         [Parameter(Mandatory = $false, HelpMessage = "The number of times to ping. Default: 3, 0 for infinite.")]
+        [Alias("c")]
         [int]$Count = 3,
         [Parameter(Mandatory = $false, HelpMessage = "The number of seconds to wait between pings. Default: 1")]
+        [Alias("s")]
         [int]$Sleep = 1
     )
 
@@ -168,7 +174,7 @@ function Start-Ping {
         Write-Host "  Target: " -NoNewline ; `
             Write-Host "$Target " -ForegroundColor Cyan
         Write-Host "  Pings: " -NoNewline ; 
-        Write-Host "$TotalPings" -ForegroundColor Magenta
+        Write-Host "$TotalPings" -ForegroundColor Blue
         Write-Host "  Successes: " -NoNewline ; `
             Write-Host "$Successes" -ForegroundColor Green
         Write-Host "  Failures: " -NoNewline ; `
@@ -215,7 +221,15 @@ function Start-Ping {
             }
 
             ## Do ping
-            $PingResult = Test-Connection -ComputerName $Target -Count 1 -Quiet
+            try {
+                $PingResult = Test-Connection -ComputerName $Target -Count 1 -Quiet -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "[$(Get-Timestamp)] $AttemptStr Network issues while pinging target: $Target. Error: $($_.Exception.Message)"
+
+                $Failures++
+                continue
+            }
 
             ## Print success message
             if ($PingResult) {
