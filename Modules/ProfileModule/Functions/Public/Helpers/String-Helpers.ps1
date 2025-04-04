@@ -70,3 +70,7 @@ function Convert-ToTitlecase {
     ## Return title-cased string
     $textInfo.ToTitleCase($InputString.ToLower())
 }
+
+function Get-NewGuid {
+    return [guid]::NewGuid().ToString()
+}
