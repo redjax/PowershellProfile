@@ -43,7 +43,8 @@
 		'Invoke-ModuleManifestUpdate',
 		'Set-PowershellProfile',
 		'Invoke-BaseProfileInstall',
-		'Install-ProfileModule'
+		'Install-ProfileModule',
+		'Install-CustomModules'
 	)
 	
 	# Cmdlets to export from this module
