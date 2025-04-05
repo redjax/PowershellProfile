@@ -33,5 +33,3 @@ function Install-CustomModules {
 
     ## Get all modules in local modules directory
 }
-
-Install-CustomModules -RepoModulesDir C:\scripts\PowershellProfile\Modules
