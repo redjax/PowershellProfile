@@ -112,7 +112,7 @@ $RepoCustomModules | ForEach-Object {
 
     ## Check if response was affirmative (y/yes)
     if ($UserResponse -match '^(y|yes)$') {
-        Write-Output "➕ Adding module '$($ModulePath)' to install list"
+        Write-Output "+ Adding module '$($ModulePath)' to install list"
         $InstallModules += $ModulePath
     }
     else {
