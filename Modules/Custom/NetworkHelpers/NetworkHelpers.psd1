@@ -43,7 +43,8 @@
 		'Get-PublicIP',
 		'Start-UpMonitor',
 		'Get-HTTPSiteAvailable',
-		'Start-Ping'
+		'Start-Ping',
+		'Get-RandomUAString'
 	)
 	
 	# Cmdlets to export from this module
