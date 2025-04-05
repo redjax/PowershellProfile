@@ -4,7 +4,7 @@ function unzip {
     )
     $dirname = (Get-Item $file).BaseName
 
-    Write-Output ("Extracting",$file,"to",$dirname)
+    Write-Output ("Extracting", $file, "to", $dirname)
 
     New-Item -Force -ItemType directory -Path $dirname
     Expand-Archive $file -OutputPath $dirname -ShowProgress

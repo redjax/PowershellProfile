@@ -5,11 +5,11 @@ function New-CustomModulesDir {
         [string]$CustomModulesPath
     )
 
-    if ( -Not ( Test-Path -Path $CustomModulesPath ) ) {
+    if ( -Not ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) ) {
         Write-Output "Creating custom modules directory: $($CustomModulesPath)"
 
         try {
-            New-Item -Path $CustomModulesPath -ItemType Directory -Force
+            New-Item -Path $CustomModulesPath -ItemType Directory -Force -ErrorAction SilentlyContinue
             Write-Output "Created custom modules directory: $($CustomModulesPath)"
         }
         catch {
