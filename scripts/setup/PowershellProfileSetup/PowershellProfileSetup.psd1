@@ -44,7 +44,8 @@
 		'Set-PowershellProfile',
 		'Invoke-BaseProfileInstall',
 		'Install-ProfileModule',
-		'Install-CustomModules'
+		'Install-CustomModules',
+		'Invoke-CustomModulesPathInit'
 	)
 	
 	# Cmdlets to export from this module

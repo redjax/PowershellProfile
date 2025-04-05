@@ -10,7 +10,7 @@ function Get-ModuleNameFromPath {
         return $null
     }
 
-    $ModuleName = [System.IO.Path]::GetFileNameWithoutExtension($_)
+    $ModuleName = [System.IO.Path]::GetFileNameWithoutExtension($ModulePath)
 
     $ModuleName
 }

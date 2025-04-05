@@ -43,7 +43,7 @@ Write-Output "`n--[ Validate Environment"
 
 ## Run Install-CustomModules
 try {
-    Install-CustomModules -RepoModulesDir $HostPSModulesDir -ErrorAction SilentlyContinue | Out-Null
+    Invoke-CustomModulesPathInit -RepoModulesDir $HostPSModulesDir -ErrorAction SilentlyContinue | Out-Null
     $CustomModulesDirCreatedStatus = $true
 }
 catch {
@@ -60,7 +60,7 @@ Write-Output "✅ Found repository custom Powershell modules at path: $RepoCusto
 Write-Output "✅ Found host Powershell modules at path: $HostPSModulesDir"
 Write-Output "✅ Found custom Powershell modules directory at path: $HostCustomModulesPath"
 
-Write-Output "`n--[ Install custom Powershell modules"
+Write-Output "`n--[ Pick Custom Modules to Install"
 
 ## Store list of modules to install
 $InstallModules = @()
@@ -97,9 +97,19 @@ $RepoCustomModules | ForEach-Object {
 
 }
 
-Write-Output "Installing $($InstallModules.Count) module(s)"
-
 $InstallModules | ForEach-Object {
     $ModuleName = [System.IO.Path]::GetFileNameWithoutExtension($_)
     Write-Debug "Module to install: $ModuleName"
+}
+
+Write-Output "--[ Installing $($InstallModules.Count) Powershell Module(s)"
+
+## Run Install-CustomModules
+try {
+    Install-CustomModules -Modules $InstallModules -ErrorAction Stop | Out-Null
+    Write-Output "✅ Successfully installed custom Powershell modules."
+}
+catch {
+    Write-Error "❌ Error installing custom Powershell modules. Details: $($_.Exception.Message)"
+    exit(1)
 }
