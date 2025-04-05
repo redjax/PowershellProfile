@@ -1,9 +1,6 @@
 function Show-UnixAliases {
-    ## Get module root path
-    $ModuleRoot = Split-Path -Path $PSScriptRoot -Parent
-
     ## Get internal path to aliases
-    $AliasesPath = (Join-Path -Path $ModuleRoot -ChildPath "functions\Aliases\")
+    $AliasesPath = Join-Path -Path $PSScriptRoot -ChildPath "Aliases"
 
     ## Ensure directory exists
     if ( -not ( Test-Path $AliasesPath ) ) {
@@ -42,9 +39,5 @@ function Show-UnixAliases {
         Write-Warning "Could not find any aliases in UnixAliases module's Aliases directory ($($AliasesPath))."
     }
 
-    ForEach ( $DiscoveredAlias in $DiscoveredAliases ) {
-        Write-Output $DiscoveredAlias
-    }
-
-    return $DiscoveredAliases
+    $DiscoveredAliases
 }
