@@ -45,7 +45,8 @@
 		'Invoke-BaseProfileInstall',
 		'Install-ProfileModule',
 		'Install-CustomModules',
-		'Invoke-CustomModulesPathInit'
+		'Invoke-CustomModulesPathInit',
+		'Set-CustomPSModulesPath'
 	)
 	
 	# Cmdlets to export from this module

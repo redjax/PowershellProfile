@@ -16,7 +16,7 @@ function Set-CustomPSModulesPath {
 
     Write-Debug "Found custom modules path: $CustomModulesPath"
     if ($env:PSModulePath -notlike "*$CustomModulesDir*") {
-        Write-Output "Adding '$CustomModulesDir' to PSModulePath"
+        Write-Debug "Adding '$CustomModulesDir' to PSModulePath"
         try {
             $env:PSModulePath += ";$CustomModulesDir"
             Write-Debug "Appended custom modules path to PSModules path var"
