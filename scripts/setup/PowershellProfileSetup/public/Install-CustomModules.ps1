@@ -39,19 +39,19 @@ function Install-CustomModules {
     }
 
     ## Get all modules in custom modules directory
-    $CustomModules = Get-ChildItem -Path $CustomModulesPath -Filter *.psm1
+    # $CustomModules = Get-ChildItem -Path $CustomModulesPath -Filter *.psm1
 
-    $CustomModules | ForEach-Object {
-        Write-Output "Installing custom Powershell module: $($_.FullName)"
-        # try {
-        #     Import-Module -Name $_.FullName -ErrorAction Stop
-        #     Write-Output "Installed custom Powershell module: $($_.FullName)"
-        # }
-        # catch {
-        #     Write-Error "Error installing custom Powershell module: $($_.FullName). Details: $($_.Exception.Message)"
-        #     return $false
-        # }
-    }
+    # $CustomModules | ForEach-Object {
+    #     Write-Output "Installing custom Powershell module: $($_.FullName)"
+    # try {
+    #     Import-Module -Name $_.FullName -ErrorAction Stop
+    #     Write-Output "Installed custom Powershell module: $($_.FullName)"
+    # }
+    # catch {
+    #     Write-Error "Error installing custom Powershell module: $($_.FullName). Details: $($_.Exception.Message)"
+    #     return $false
+    # }
+    # }
 
     return $true
 }

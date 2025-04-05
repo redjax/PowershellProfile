@@ -61,3 +61,45 @@ Write-Output "✅ Found host Powershell modules at path: $HostPSModulesDir"
 Write-Output "✅ Found custom Powershell modules directory at path: $HostCustomModulesPath"
 
 Write-Output "`n--[ Install custom Powershell modules"
+
+## Store list of modules to install
+$InstallModules = @()
+
+## Get list of modules in repo custom modules path
+$RepoCustomModules = Get-ChildItem $RepoCustomModulesDir -Filter "*.psm1" -Recurse
+
+$RepoCustomModules | ForEach-Object {
+    $ModuleName = $_.BaseName
+    $ModulePath = $_.FullName
+    
+    Write-Debug "Found module: $ModuleName"
+
+    ## Reset $UserResponse each loop
+    $UserResponse = $null
+
+    while ($UserResponse -notmatch '^(y|yes|n|no)$') {
+        $UserResponse = Read-Host -Prompt "Install module: $ModuleName (y/n)"
+
+        if ($UserResponse -notmatch '^(y|yes|n|no)$') {
+            Write-Warning "Invalid response. Please enter 'y', 'yes', 'n', or 'no'."
+        }
+        else {
+            # Normalize input to lowercase for easier comparison
+            $UserResponse = $UserResponse.ToLower()
+        }
+    }
+
+    ## Check if response was affirmative
+    if ( $UserResponse -match '^(y|yes)$' ) {
+        Write-Output "➕ Adding module '$($ModulePath)' to install list"
+        $InstallModules += $ModulePath
+    }
+
+}
+
+Write-Output "Installing $($InstallModules.Count) module(s)"
+
+$InstallModules | ForEach-Object {
+    $ModuleName = [System.IO.Path]::GetFileNameWithoutExtension($_)
+    Write-Debug "Module to install: $ModuleName"
+}
