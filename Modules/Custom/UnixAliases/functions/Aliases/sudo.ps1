@@ -13,5 +13,3 @@ function sudo {
 
     return $true
 }
-
-Export-ModuleMember -Function sudo

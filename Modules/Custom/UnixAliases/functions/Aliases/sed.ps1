@@ -7,5 +7,3 @@ function sed {
     (Get-Content $file).Replace("$find", $replace) | Set-Content $file
     # [System.IO.File]::ReadAllText("$($file)").Replace("$find", "$replace") | Set-Content $file
 }
-
-Export-ModuleMember -Function sed

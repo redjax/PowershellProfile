@@ -6,5 +6,3 @@ function touch {
 
     '' | Out-File $file -Encoding ASCII
 }
-
-Export-ModuleMember -Function touch

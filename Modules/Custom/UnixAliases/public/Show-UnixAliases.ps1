@@ -1,11 +1,14 @@
 function Show-UnixAliases {
+    ## Get module root path
+    $ModuleRoot = Split-Path -Path $PSScriptRoot -Parent
+
     ## Get internal path to aliases
-    $AliasesPath = (Join-Path -Path $PSScriptRoot -ChildPath "..\functions\Aliases\")
+    $AliasesPath = (Join-Path -Path $ModuleRoot -ChildPath "functions\Aliases\")
 
     ## Ensure directory exists
     if ( -not ( Test-Path $AliasesPath ) ) {
         Write-Error "Could not find UnixAliases module's Aliases directory."
-        return $false
+        return
     }
 
     ## Find all .ps1 files in aliases path
@@ -13,7 +16,7 @@ function Show-UnixAliases {
 
     if ( $AliasFiles.Count -eq 0 ) {
         Write-Error "Could not find any alias files in UnixAliases module's Aliases directory."
-        return $false
+        return
     }
 
     ## Array to store discovered aliases
@@ -26,21 +29,17 @@ function Show-UnixAliases {
         ## Dot source file to load its contents
         try {
             . $AliasFile.FullName
+
+            $DiscoveredAliases += $AliasFile.BaseName
         }
         catch {
             Write-Error "Failed to load Unix alias functions from path: $($AliasFile.FullName). Details: $($_.Exception.Message)"
             continue
         }
-
-        ## Add function names to discovered aliases array
-        Get-Command -CommandType Function | Where-Object { $_.Source -eq $File.FullName } | ForEach-Object {
-            $DiscoveredAliases += $_.Name
-        }
     }
 
     if ( $DiscoveredAliases.Count -eq 0 ) {
-        Write-Error "Could not find any aliases in UnixAliases module's Aliases directory."
-        return $false
+        Write-Warning "Could not find any aliases in UnixAliases module's Aliases directory ($($AliasesPath))."
     }
 
     ForEach ( $DiscoveredAlias in $DiscoveredAliases ) {

@@ -24,5 +24,3 @@ function uptime {
         $null = $Uptime
     }
 }
-
-Export-ModuleMember -Function uptime

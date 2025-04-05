@@ -9,5 +9,3 @@ function grep {
     }
     $input | Select-String $regex
 }
-
-Export-ModuleMember -Function grep

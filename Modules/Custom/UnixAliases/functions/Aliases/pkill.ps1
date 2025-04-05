@@ -4,5 +4,3 @@ function pkill {
     )
     Get-Process $name -ErrorAction SilentlyContinue | Stop-Process
 }
-
-Export-ModuleMember -Function pkill

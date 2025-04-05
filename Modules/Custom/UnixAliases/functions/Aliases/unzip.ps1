@@ -9,5 +9,3 @@ function unzip {
     New-Item -Force -ItemType directory -Path $dirname
     Expand-Archive $file -OutputPath $dirname -ShowProgress
 }
-
-Export-ModuleMember -Function unzip
