@@ -133,17 +133,18 @@ catch {
 }
 
 ## Append host's custom Powershell modules path to PSModulePath
-Write-Output "`n--[ Add Custom Powershell Modules Path to `$PSModulePath"
+#  Recommended approach is to import custom modules on each profile session init
+# Write-Output "`n--[ Add Custom Powershell Modules Path to `$PSModulePath"
 
-try {
-    Set-CustomPSModulesPath -CustomModulesPath $HostCustomModulesPath -ErrorAction Stop | Out-Null
-    Write-Output "Successfully added custom Powershell modules path to `$PSModulePath."
-    Write-Debug "Added path '$($HostCustomModulesPath)' to `$PSModulePath."
-    Write-Debug "New `$PSModulePath: $env:PSModulePath"
-}
-catch {
-    Write-Error "`nError adding custom Powershell modules path to `$PSModulePath. Details: $($_.Exception.Message)"
-    exit(1)
-}
+# try {
+#     Set-CustomPSModulesPath -CustomModulesPath $HostCustomModulesPath -ErrorAction Stop | Out-Null
+#     Write-Output "Successfully added custom Powershell modules path to `$PSModulePath."
+#     Write-Debug "Added path '$($HostCustomModulesPath)' to `$PSModulePath."
+#     Write-Debug "New `$PSModulePath: $env:PSModulePath"
+# }
+# catch {
+#     Write-Error "`nError adding custom Powershell modules path to `$PSModulePath. Details: $($_.Exception.Message)"
+#     exit(1)
+# }
 
 Write-Output "`nFinished installing custom Powershell modules."
