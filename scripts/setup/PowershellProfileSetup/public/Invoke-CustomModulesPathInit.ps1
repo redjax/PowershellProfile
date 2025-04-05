@@ -21,7 +21,7 @@ function Invoke-CustomModulesPathInit {
     Write-Debug "Powershell modules directory: $PSModulesDir"
 
     ## Build custom modules path str
-    $CustomModulesPath = (Join-Path -Path $PSModulesDir -ChildPath "Modules" -AdditionalChildPath "$($CustomModulesDir)")
+    $CustomModulesPath = (Join-Path -Path (Join-Path -Path $PSModulesDir -ChildPath "Modules") -ChildPath "$($CustomModulesDir)")
 
     Write-Debug "Custom modules path: $CustomModulesPath"
 

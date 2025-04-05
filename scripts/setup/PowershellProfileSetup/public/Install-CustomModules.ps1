@@ -14,7 +14,7 @@ function Install-CustomModules {
     $FailInstalled = @()
 
     if ( -not ( Test-Path -Path $HostCustomModulesPath -ErrorAction SilentlyContinue ) ) {
-        Write-Warning "⚠️ Host install path not found: $($HostCustomModulesPath)"
+        Write-Warning "Host install path not found: $($HostCustomModulesPath)"
 
         try {
             New-Item -Path $HostCustomModulesPath -ItemType Directory -Force -ErrorAction Stop | Out-Null
@@ -35,7 +35,7 @@ function Install-CustomModules {
         $TargetPath = Join-Path -Path $HostCustomModulesPath -ChildPath $ModuleName
 
         if ( Test-Path -Path $TargetPath ) {
-            Write-Warning "⚠️ Module already installed at path and will be overwritten: $TargetPath"
+            Write-Warning "Module already installed at path and will be overwritten: $TargetPath"
         }
 
         try {
