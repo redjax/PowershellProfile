@@ -24,6 +24,8 @@ $ProfileStartTime = Get-Date
 
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
+## Create  a ManualResetEvent object for the CustomModules import state
+$Global:CustomModulesImported = New-Object System.Threading.ManualResetEvent $false
 
 ## Set TLS to 1.2 on Powershell 5 prompts
 if ($PSVersionTable.PSVersion.Major -eq 5) {
@@ -31,7 +33,7 @@ if ($PSVersionTable.PSVersion.Major -eq 5) {
 }
 
 ## Path to Powershell profile's Modules\Custom
-$CustomModulesPath = ( Join-Path -Path (Join-Path -Path (Split-Path -Path $PROFILE -Parent ) -ChildPath "Modules" ) -ChildPath "Custom" )
+$CustomModulesPath = ( Join-Path -Path (Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
 
 function Import-CustomPSModules {
     <#
@@ -219,16 +221,44 @@ if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
 ## Import custom modules
 if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
     
-    try {
-        Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
-    }
-    catch {
-        Write-Warning "Failed to import custom Powershell modules. Details: $($_.Exception.Message)"
-    }
+    # try {
+    #     Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
+    # }
+    # catch {
+    #     Write-Warning "Failed to import custom Powershell modules. Details: $($_.Exception.Message)"
+    # }
 
-    if ($ClearOnInit) {
-        Clear-Host
-    }
+    # if ($ClearOnInit) {
+    #     Clear-Host
+    # }
+
+    @(
+        {
+            try {
+                # Import all custom modules from the CustomModules directory
+                Get-ChildItem -Path $CustomModulesPath -Directory | ForEach-Object {
+                    try {
+                        Import-Module -Name $_.FullName -Global -ErrorAction Stop
+                        Write-Output "Successfully imported module: $($_.Name)"
+                    }
+                    catch {
+                        Write-Warning "Failed to import module: $($_.Name). Details: $($_.Exception.Message)"
+                    }
+                }
+
+                ## Signal successful import
+                $Global:CustomModulesImported = $true
+                $Global:CustomModulesImported.Set()
+            }
+            catch {
+                Write-Error "Error loading custom modules from path: $CustomModulesPath. Details: $($_.Exception.Message)"
+                ## Signal even if there's an error
+                $Global:CustomModulesImported.Set()
+            }
+        }
+    ) | ForEach-Object {
+        Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+    } | Out-Null
 
 }
 

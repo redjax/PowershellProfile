@@ -1,13 +1,11 @@
 ## Path vars
 $ProfileSetupModulePath = "$PSScriptRoot/scripts/setup/PowershellProfileSetup"
 $RepoCustomModulesDir = Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath "Modules") -ChildPath "Custom"
-$HostPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "Modules"
-$HostCustomModulesPath = Join-Path -Path $HostPSModulesDir -ChildPath "Custom"
+$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
 Write-Verbose "`$ProfileSetupModulePath=$($ProfileSetupModulePath)"
 Write-Verbose "`$RepoCustomModulesDir=$($RepoCustomModulesDir)"
-Write-Verbose "`$HostPSModulesDir=$($HostPSModulesDir)"
-Write-Verbose "`$HostCustomModulesPath=$($HostCustomModulesPath)"
+Write-Verbose "`$HostCustomPSModulesDir=$($HostCustomPSModulesDir)"
 
 # Helper function to prompt user for valid input
 function Start-UserModuleInstallPrompt {
@@ -72,7 +70,7 @@ Write-Output "`n--[ Validate Environment"
 
 ## Initialize custom modules directory
 try {
-    Invoke-CustomModulesPathInit -RepoModulesDir $HostPSModulesDir -ErrorAction SilentlyContinue | Out-Null
+    Invoke-CustomModulesPathInit -RepoModulesDir $HostCustomPSModulesDir -ErrorAction SilentlyContinue | Out-Null
     $CustomModulesDirCreatedStatus = $true
 }
 catch {
@@ -81,13 +79,13 @@ catch {
 }
 
 if (-not $CustomModulesDirCreatedStatus) {
-    Write-Error "Did not find custom modules directory at path: $HostCustomModulesPath."
+    Write-Error "Did not find custom modules directory at path: $HostCustomPSModulesDir."
     exit(1)
 }
 
 Write-Output "Found repository custom Powershell modules at path: $RepoCustomModulesDir"
-Write-Output "Found host Powershell modules at path: $HostPSModulesDir"
-Write-Output "Found custom Powershell modules directory at path: $HostCustomModulesPath"
+Write-Output "Found host Powershell modules at path: $HostCustomPSModulesDir"
+Write-Output "Found custom Powershell modules directory at path: $HostCustomPSModulesDir"
 
 Write-Output "`n--[ Pick Custom Modules to Install"
 
@@ -124,7 +122,7 @@ Write-Output "`n--[ Installing $($InstallModules.Count) Powershell Module(s)"
 
 ## Run Install-CustomModules
 try {
-    Install-CustomModules -Modules $InstallModules -HostCustomModulesPath $HostCustomModulesPath -ErrorAction Stop | Out-Null
+    Install-CustomModules -Modules $InstallModules -HostCustomModulesPath $HostCustomPSModulesDir -ErrorAction Stop | Out-Null
     Write-Output "Successfully installed custom Powershell modules."
 }
 catch {
@@ -133,17 +131,18 @@ catch {
 }
 
 ## Append host's custom Powershell modules path to PSModulePath
-Write-Output "`n--[ Add Custom Powershell Modules Path to `$PSModulePath"
+#  Recommended approach is to import custom modules on each profile session init
+# Write-Output "`n--[ Add Custom Powershell Modules Path to `$PSModulePath"
 
-try {
-    Set-CustomPSModulesPath -CustomModulesPath $HostCustomModulesPath -ErrorAction Stop | Out-Null
-    Write-Output "Successfully added custom Powershell modules path to `$PSModulePath."
-    Write-Debug "Added path '$($HostCustomModulesPath)' to `$PSModulePath."
-    Write-Debug "New `$PSModulePath: $env:PSModulePath"
-}
-catch {
-    Write-Error "`nError adding custom Powershell modules path to `$PSModulePath. Details: $($_.Exception.Message)"
-    exit(1)
-}
+# try {
+#     Set-CustomPSModulesPath -CustomModulesPath $HostCustomPSModulesDir -ErrorAction Stop | Out-Null
+#     Write-Output "Successfully added custom Powershell modules path to `$PSModulePath."
+#     Write-Debug "Added path '$($HostCustomPSModulesDir)' to `$PSModulePath."
+#     Write-Debug "New `$PSModulePath: $env:PSModulePath"
+# }
+# catch {
+#     Write-Error "`nError adding custom Powershell modules path to `$PSModulePath. Details: $($_.Exception.Message)"
+#     exit(1)
+# }
 
 Write-Output "`nFinished installing custom Powershell modules."
