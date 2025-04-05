@@ -42,6 +42,7 @@ All Profiles load from a [common base profile](./docs/Developing.md#base-templat
 ## Table of Contents <!-- omit in toc -->
 
 - [Usage](#usage)
+- [Custom Modules](#custom-modules)
 - [Developing](#developing)
 - [Notes](#notes)
 - [Links](#links)
@@ -64,11 +65,19 @@ All Profiles load from a [common base profile](./docs/Developing.md#base-templat
       - The [default custom profile](./Profiles/Default.ps1) imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
       - To use a different profile, pass a `-ProfileName <profilename>`, where `<profilename>` is the name of a file in the [`Profiles/`](./Profiles/) directory without the `.ps1` file extension.
         - i.e. `-ProfileName Default` would use [`./Profiles/Default.ps1`](./Profiles/Default.ps1)
+- (Optional) Run `Install-CustomPSModules.ps1` to run through a list of this repository's [custom modules](./Modules/Custom/).
+  - You will be prompted for `y`/`n` answers to install each module, allowing control over what is added to your `$PROFILE`
 - Restart your shell
 
 To see a full list of the functions exported by this module, run: `Get-Command -Module ProfileModule -Commandtype Function`.
 
 To see a ful list of the aliases exported by this module, run: `Get-Command -Module ProfileModule -CommandType Alias`.
+
+## Custom Modules
+
+This repository has a number of "helper" modules in the [Modules/Custom](./Modules/Custom/) path. These modules can add additional functionality to your `$PROFILE`. The [`_Base.ps1`](./Profiles/_Base.ps1) profile detects a folder `CustomModules/` at the `$PROFILE` path; if present, it will import any modules within, adding extra functionality to your `$PROFILE`.
+
+You can install custom modules from this repository using the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1), which finds all custom modules in the [`Modules/Custom/`](./Modules/Custom/) path and prompts you if you want to install it. Next time you reload your shell, functions from these modules will show up in `Show-ProfileModuleFunctions` and will be available for use in your session.
 
 ## Developing
 
