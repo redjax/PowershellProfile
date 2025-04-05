@@ -1,0 +1,12 @@
+﻿TOPIC
+	about_ActiveDirectoryHelpers
+	
+SHORT DESCRIPTION
+	A short synopsis of ActiveDirectoryHelpers
+
+LONG DESCRIPTION
+	A more detailed description of ActiveDirectoryHelpers,
+	Should tell the user how to get started with this module.
+	
+KEYWORDS
+	module development debugging
