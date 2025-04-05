@@ -146,4 +146,4 @@ catch {
     exit(1)
 }
 
-Write-Output "`n⭐ Finished installing custom Powershell modules."
+Write-Output "`nFinished installing custom Powershell modules."
