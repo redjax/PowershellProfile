@@ -1,11 +1,26 @@
 function uptime {
-    ## Print system uptime
+    ## Mimic Unix 'uptime' command in PowerShell
 
-    if ($PSVersionTable.PSVersion.Major -eq 5) {
-        Get-WmiObject win32_operatingsystem |
-        Select-Object @{ expression = { $_.ConverttoDateTime($_.lastbootuptime) } } | Format-Table -HideTableHeaders
+    try {
+        $OS = Get-WmiObject Win32_OperatingSystem -ComputerName $env:COMPUTERNAME -ErrorAction Stop
+        $Uptime = (Get-Date) - $OS.ConvertToDateTime($OS.LastBootUpTime)
+        [PSCustomObject]@{
+            ComputerName = $env:COMPUTERNAME
+            LastBoot     = $OS.ConvertToDateTime($OS.LastBootUpTime)
+            Uptime       = ([String]$Uptime.Days + " Days " + $Uptime.Hours + " Hours " + $Uptime.Minutes + " Minutes")
+        } | Format-Table
+ 
     }
-    else {
-        net statistics workstation | Select-String 'since' | ForEach-Object { $_.ToString().Replace('Statistics since ','') }
+    catch {
+        [PSCustomObject]@{
+            ComputerName = $env:COMPUTERNAME
+            LastBoot     = "Unable to Connect"
+            Uptime       = $_.Exception.Message.Split('.')[0]
+        }
+ 
+    }
+    finally {
+        $null = $OS
+        $null = $Uptime
     }
 }
