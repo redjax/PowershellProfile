@@ -1,8 +1,30 @@
+## Path vars
 $ProfileSetupModulePath = "$PSScriptRoot/scripts/setup/PowershellProfileSetup"
 $RepoCustomModulesDir = Join-Path -Path $PSScriptRoot -ChildPath "Modules" -AdditionalChildPath "Custom"
 $HostPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "Modules"
 $HostCustomModulesPath = Join-Path -Path $HostPSModulesDir -ChildPath "Custom"
 
+# Helper function to prompt user for valid input
+function Start-UserModuleInstallPrompt {
+    param (
+        [string]$ModuleName
+    )
+
+    while ($true) {
+        $UserResponse = Read-Host -Prompt "Install module: $ModuleName (y/n)"
+        # Normalize input to lowercase for easier comparison
+        $UserResponse = $UserResponse.ToLower()
+
+        if ($UserResponse -match '^(y|yes|n|no)$') {
+            return $UserResponse
+        }
+        else {
+            Write-Warning "Invalid response. Please enter 'y', 'yes', 'n', or 'no'."
+        }
+    }
+}
+
+## Ensure PowershellProfileSetup module is available
 if (-not ( Test-Path $ProfileSetupModulePath ) ) {
     Write-Error "❌ PowershellProfileSetup module not found at path: $ProfileSetupModulePath"
     exit(1)
@@ -14,6 +36,7 @@ if ( -not ( Get-ChildItem "$PSScriptRoot/scripts/setup/PowershellProfileSetup" -
     exit(1)
 }
 
+## Ensure repository custom Powershell modules are available
 if ( -not ( Test-Path -Path $RepoCustomModulesDir -ErrorAction SilentlyContinue ) ) {
     Write-Error "❌ Repository custom Powershell modules not found at path '$RepoCustomModulesDir'."
     exit(1)
@@ -31,6 +54,7 @@ if (-not (Get-Command Install-CustomModules -ErrorAction SilentlyContinue)) {
     }
 }
 
+## Check if Install-CustomModules is available after importing ProfileSetup module
 if (-not (Get-Command Install-CustomModules -ErrorAction SilentlyContinue)) {
     Write-Error "❌ Install-CustomModules command is not available after importing module."
     exit(1)
@@ -41,17 +65,17 @@ else {
 
 Write-Output "`n--[ Validate Environment"
 
-## Run Install-CustomModules
+## Initialize custom modules directory
 try {
     Invoke-CustomModulesPathInit -RepoModulesDir $HostPSModulesDir -ErrorAction SilentlyContinue | Out-Null
     $CustomModulesDirCreatedStatus = $true
 }
 catch {
-    Write-Error "❌ Error installing custom Powershell modules. Details: $($_.Exception.Message)"
+    Write-Error "❌ Error initializing custom Powershell modules path. Details: $($_.Exception.Message)"
     $CustomModulesDirCreatedStatus = $false
 }
 
-if ( -not $CustomModulesDirCreatedStatus ) {
+if (-not $CustomModulesDirCreatedStatus) {
     Write-Error "❌ Did not find custom modules directory at path: $HostCustomModulesPath."
     exit(1)
 }
@@ -65,44 +89,33 @@ Write-Output "`n--[ Pick Custom Modules to Install"
 ## Store list of modules to install
 $InstallModules = @()
 
-## Get list of modules in repo custom modules path
-$RepoCustomModules = Get-ChildItem $RepoCustomModulesDir -Filter "*.psm1" -Recurse
+## Get list of directories in repo custom modules path
+$RepoCustomModules = Get-ChildItem -Path $RepoCustomModulesDir -Directory | Where-Object {
+    ## Check if .psm1 file exists directly beneath module parent directory
+    Test-Path (Join-Path -Path $_.FullName -ChildPath "*.psm1")
+}
 
+## Prompt user for each module
 $RepoCustomModules | ForEach-Object {
     $ModuleName = $_.BaseName
     $ModulePath = $_.FullName
-    
+
     Write-Debug "Found module: $ModuleName"
 
-    ## Reset $UserResponse each loop
-    $UserResponse = $null
+    ## Prompt user for input using helper function
+    $UserResponse = Start-UserModuleInstallPrompt -ModuleName $ModuleName
 
-    while ($UserResponse -notmatch '^(y|yes|n|no)$') {
-        $UserResponse = Read-Host -Prompt "Install module: $ModuleName (y/n)"
-
-        if ($UserResponse -notmatch '^(y|yes|n|no)$') {
-            Write-Warning "Invalid response. Please enter 'y', 'yes', 'n', or 'no'."
-        }
-        else {
-            # Normalize input to lowercase for easier comparison
-            $UserResponse = $UserResponse.ToLower()
-        }
-    }
-
-    ## Check if response was affirmative
-    if ( $UserResponse -match '^(y|yes)$' ) {
+    ## Check if response was affirmative (y/yes)
+    if ($UserResponse -match '^(y|yes)$') {
         Write-Output "➕ Adding module '$($ModulePath)' to install list"
         $InstallModules += $ModulePath
     }
-
+    else {
+        Write-Output "❌ Skipping module: $ModuleName"
+    }
 }
 
-$InstallModules | ForEach-Object {
-    $ModuleName = [System.IO.Path]::GetFileNameWithoutExtension($_)
-    Write-Debug "Module to install: $ModuleName"
-}
-
-Write-Output "--[ Installing $($InstallModules.Count) Powershell Module(s)"
+Write-Output "`n--[ Installing $($InstallModules.Count) Powershell Module(s)"
 
 ## Run Install-CustomModules
 try {
