@@ -24,10 +24,63 @@ $ProfileStartTime = Get-Date
 
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
+## Create  a ManualResetEvent object for the CustomModules import state
+$Global:CustomModulesImported = New-Object System.Threading.ManualResetEvent $false
 
 ## Set TLS to 1.2 on Powershell 5 prompts
 if ($PSVersionTable.PSVersion.Major -eq 5) {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+}
+
+## Path to Powershell profile's Modules\Custom
+$CustomModulesPath = ( Join-Path -Path (Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
+
+function Import-CustomPSModules {
+    <#
+        .SYNOPSIS
+        Import custom Powershell modules from a directory.
+
+        .DESCRIPTION
+        Import custom Powershell modules from a directory.
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false, HelpMessage = "Path to repository's Modules directory")]
+        $CustomModules = ( Join-Path -Path (Join-Path -Path (Split-Path -Path $PROFILE -Parent ) -ChildPath "Modules" ) -ChildPath "Custom" )
+    )    
+
+    ## Import custom modules
+    if ( Test-Path -Path $CustomModules ) {
+        Write-Debug "Importing custom Powershell modules from path: $($CustomModules)"
+
+        ## Find all custom modules
+        $ModuleDirectories = Get-ChildItem -Path $CustomModules -Directory | Where-Object {
+            Test-Path (Join-Path -Path $_.FullName -ChildPath "*.psm1")
+        }
+
+        ## Import custom modules
+        foreach ($ModuleDir in $ModuleDirectories) {
+            $ModuleName = $ModuleDir.Name
+            $ModuleFile = Get-ChildItem -Path $ModuleDir.FullName -Filter "*.psm1" | Select-Object -First 1
+
+            if ($ModuleFile) {
+                try {
+                    Write-Debug "Importing module '$($ModuleName)' from file '$($ModuleFile.FullName)'"
+                    Import-Module -Name $ModuleFile.FullName -Force
+                    Write-Debug "Successfully imported module: $($ModuleName)"
+                }
+                catch {
+                    Write-Error "Failed to import module: $($ModuleName). Details: $($_.Exception.Message)"
+                }
+            }
+            else {
+                Write-Warning "No .psm1 file found in directory: $($ModuleDir.FullName)"
+            }
+        }
+    }
+    else {
+        Write-Warning "Could not find custom Powershell modules directory at path: $CustomModules"
+    }
 }
 
 function Get-Prompt {
@@ -136,35 +189,6 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
-    # {
-    #     ## Alter shell based on environment
-    #     if ($host.Name -eq 'ConsoleHost') {
-    #         ## Powershell console/Windows Terminal
-
-    #         if ($PSVersionTable.PSVersion -ge '3.0') {
-    #             ## Import PSReadLine interactive terminal
-    #             Import-Module -Name 'PSReadLine' -ErrorAction SilentlyContinue
-    #             ## Set keyboard key for accepting suggestions
-    #             Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
-    #             ## Set Enter to its normal/expected behavior
-    #             Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
-    #             ## Disable audio bells
-    #             Set-PSReadLineOption -BellStyle None
-    #         }
-    #     }
-    #     elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
-    #         ## Powershell ISE
-    #         $host.PrivateData.IntellisenseTimeoutInSeconds = 5
-    #         ## Import ISE modules for more interactive sessions
-    #         $ISEModules = 'ISEScriptingGeek','PsISEProjectExplorer'
-    #         Import-Module -Name $ISEModules -ErrorAction SilentlyContinue
-    #     }
-    #     elseif ($host.Name -eq 'Visual Studio Code Host') {
-    #         ## Load VSCode modules for Powershell for debugging & other integrations
-    #         Import-Module -Name 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-    #         Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
-    #     }
-    # },
     {
         try {
             Import-Module ProfileModule
@@ -194,8 +218,48 @@ if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
     }
 }
 
-if ($ClearOnInit) {
-    Clear-Host
+## Import custom modules
+if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
+    
+    # try {
+    #     Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
+    # }
+    # catch {
+    #     Write-Warning "Failed to import custom Powershell modules. Details: $($_.Exception.Message)"
+    # }
+
+    # if ($ClearOnInit) {
+    #     Clear-Host
+    # }
+
+    @(
+        {
+            try {
+                # Import all custom modules from the CustomModules directory
+                Get-ChildItem -Path $CustomModulesPath -Directory | ForEach-Object {
+                    try {
+                        Import-Module -Name $_.FullName -Global -ErrorAction Stop
+                        Write-Output "Successfully imported module: $($_.Name)"
+                    }
+                    catch {
+                        Write-Warning "Failed to import module: $($_.Name). Details: $($_.Exception.Message)"
+                    }
+                }
+
+                ## Signal successful import
+                $Global:CustomModulesImported = $true
+                $Global:CustomModulesImported.Set()
+            }
+            catch {
+                Write-Error "Error loading custom modules from path: $CustomModulesPath. Details: $($_.Exception.Message)"
+                ## Signal even if there's an error
+                $Global:CustomModulesImported.Set()
+            }
+        }
+    ) | ForEach-Object {
+        Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+    } | Out-Null
+
 }
 
 ## End profile initialization timer

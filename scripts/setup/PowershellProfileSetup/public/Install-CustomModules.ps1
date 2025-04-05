@@ -1,38 +1,80 @@
 function Install-CustomModules {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false, HelpMessage = "Path where custom Powershell moduless will be installed")]
-        [string]$CustomModulesDir = "Custom",
         [Parameter(Mandatory = $false, HelpMessage = "Path to repository's Modules directory")]
         [string]$RepoModulesDir = $PSScriptRoot,
         [Parameter(Mandatory = $false, HelpMessage = "List of modules to install")]
-        [string[]]$Modules = @()
+        [string[]]$Modules = @(),
+        [Parameter(Mandatory = $false, HelpMessage = "Path where custom modules should be installed")]
+        [string]$HostCustomModulesPath
     )
 
-    $CustomModulesPath = (Join-Path -Path $RepoModulesDir -ChildPath "$($CustomModulesDir)")
+    ## Arrays to hold module install success/failure
+    $SuccessInstalled = @()
+    $FailInstalled = @()
 
-    New-CustomModulesDir -CustomModulesPath $CustomModulesPath
+    if ( -not ( Test-Path -Path $HostCustomModulesPath -ErrorAction SilentlyContinue ) ) {
+        Write-Warning "Host install path not found: $($HostCustomModulesPath)"
 
-    ## Get path to Powershell modules directory
-    $PSModulesDir = (Split-Path $PROFILE -Parent)
-    Write-Output "Powershell modules directory: $PSModulesDir"
-
-    ## Build custom modules path str
-    $CustomModulesPath = (Join-Path -Path $PSModulesDir -ChildPath "Modules" -AdditionalChildPath "$($CustomModulesDir)")
-
-    Write-Debug "Custom modules path: $CustomModulesPath"
-
-    ## Create custom modules directory
-    Write-Debug "Custom Powershell modules path: $CustomModulesPath"
-    try {
-        New-CustomModulesDir -CustomModulesPath $CustomModulesPath -ErrorAction SilentlyContinue
+        try {
+            New-Item -Path $HostCustomModulesPath -ItemType Directory -Force -ErrorAction Stop | Out-Null
+            Write-Debug "Created custom modules directory: $HostCustomModulesPath"
+        }
+        catch {
+            Write-Error "Error creating custom modules directory: $HostCustomModulesPath. Details: $($_.Exception.Message)"
+            return $false
+        }
     }
-    catch {
-        Write-Error "Error creating custom Powershell modules directory at path: $CustomModulesPath. Details: $($_.Exception.Message)"
+
+    ## Install custom modules
+    foreach ($Module in $Modules) {
+        Write-Debug "Installing custom Powershell module: $Module"
+
+        ## Extract module name and target path
+        $ModuleName = Split-Path -Path $Module -Leaf
+        $TargetPath = Join-Path -Path $HostCustomModulesPath -ChildPath $ModuleName
+
+        if ( Test-Path -Path $TargetPath ) {
+            Write-Warning "Module already installed at path and will be overwritten: $TargetPath"
+
+            Write-Debug "Removing path: $TargetPath"
+            try {
+                Remove-Item -Path $TargetPath -Recurse -Force -ErrorAction Stop | Out-Null
+            }
+            catch {
+                Write-Error "Error removing path: $TargetPath. Details: $($_.Exception.Message)"
+                continue
+            }
+        }
+
+        try {
+            ## Copy the entire module directory
+            Copy-Item -Path $Module -Destination $TargetPath -Recurse -Force
+
+            ## Track successful installation
+            Write-Debug "Successfully installed module: $ModuleName"
+
+            $SuccessInstalled += $Module
+        }
+        catch {
+            ## Track failed installation and log error
+            Write-Error "Error installing custom Powershell module: $Module. Details: $($_.Exception.Message)"
+            $FailInstalled += $Module
+        }
+    }
+
+    Write-Debug "Installed $($SuccessInstalled.Count) custom Powershell modules successfully"
+    
+    if ( $FailInstalled.Count -gt 0 ) {
+        $FailInstalled | ForEach-Object {
+            $ModuleName = Get-ModuleNameFromPath -ModulePath $_
+            Write-Error "Failed to install custom Powershell module: $ModuleName"
+        }
+
         return $false
     }
 
-    ## Get all modules in local modules directory
+    return $true
 }
 
 Export-ModuleMember -Function Install-CustomModules

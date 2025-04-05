@@ -5,11 +5,11 @@ Set-Alias -Name tn -Value Test-NetConnection
 Set-Alias -Name lock -Value Lock-Machine
 
 ## Set aliases for Start-AsAdmin
-Set-Alias -Name su -Value Start-AsAdmin
-Set-Alias -Name sudo -Value Start-AsAdmin
+# Set-Alias -Name su -Value Start-AsAdmin
+# Set-Alias -Name sudo -Value Start-AsAdmin
 
 ## which -> Get-Command
-Set-Alias -Name which -Value Get-Command
+# Set-Alias -Name which -Value Get-Command
 
 ## reload -> Restart-Shell
 Set-Alias -Name reload -Value Restart-ShellSession

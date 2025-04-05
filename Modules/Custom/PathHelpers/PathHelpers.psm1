@@ -1,8 +1,7 @@
 ﻿$script:ModuleRoot = $PSScriptRoot
 
 #region Helper function
-function Import-ModuleFile
-{
+function Import-ModuleFile {
 	<#
 		.SYNOPSIS
 			Loads files into the module on module import.
@@ -36,13 +35,11 @@ function Import-ModuleFile
 . Import-ModuleFile -Path "$ModuleRoot\internal\scripts\preimport.ps1"
 
 #region Load functions
-foreach ($function in (Get-ChildItem "$ModuleRoot\internal\functions" -Recurse -File -Filter "*.ps1"))
-{
+foreach ($function in (Get-ChildItem "$ModuleRoot\internal\functions" -Recurse -File -Filter "*.ps1")) {
 	. Import-ModuleFile -Path $function.FullName
 }
 
-foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Recurse -File -Filter "*.ps1"))
-{
+foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Recurse -File -Filter "*.ps1")) {
 	. Import-ModuleFile -Path $function.FullName
 }
 #endregion Load functions
@@ -51,8 +48,13 @@ foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Recurse -File -Fil
 . Import-ModuleFile -Path "$ModuleRoot\internal\scripts\postimport.ps1"
 
 ## Export each function
-foreach ( in (Get-ChildItem "/public" -Recurse -File -Filter "*.ps1")) {
-	. Import-ModuleFile -Path .FullName
-	 = .BaseName
-	Export-ModuleMember -Function 
+foreach ($file in (Get-ChildItem "$ModuleRoot\public" -Recurse -File -Filter "*.ps1")) {
+	# Import the file
+	. Import-ModuleFile -Path $file.FullName
+
+	# Extract the base name of the file (assumed to be the function name)
+	$functionName = $file.BaseName
+
+	# Export the function
+	Export-ModuleMember -Function $functionName
 }

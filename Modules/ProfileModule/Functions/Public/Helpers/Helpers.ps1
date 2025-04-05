@@ -5,40 +5,40 @@ function Test-IsAdmin {
     return $isAdmin
 }
 
-function Start-AsAdmin {
-    <#
-        .SYNOPSIS
-        Pipe a command through an elevated Powershell prompt.
+# function Start-AsAdmin {
+#     <#
+#         .SYNOPSIS
+#         Pipe a command through an elevated Powershell prompt.
 
-        .PARAMETER Command
-        The Powershell command to run in the elevated shell.
-    #>
-    param(
-        [string]$Command
-    )
+#         .PARAMETER Command
+#         The Powershell command to run in the elevated shell.
+#     #>
+#     param(
+#         [string]$Command
+#     )
 
-    # Check if the script is running as admin
-    $isAdmin = [bool](New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+#     # Check if the script is running as admin
+#     $isAdmin = [bool](New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-    if (-not $isAdmin) {
-        # Prompt to run as administrator if not already running as admin
-        $arguments = "-Command `"& {$command}`""
-        Write-Debug "Running command: Start-Process powershell -ArgumentList $($arguments) -Verb RunAs"
+#     if (-not $isAdmin) {
+#         # Prompt to run as administrator if not already running as admin
+#         $arguments = "-Command `"& {$command}`""
+#         Write-Debug "Running command: Start-Process powershell -ArgumentList $($arguments) -Verb RunAs"
 
-        try {
-            Start-Process powershell -ArgumentList $arguments -Verb RunAs
-            return $true # Indicate that the script was elevated and the command will run
-        }
-        catch {
-            Write-Error "Error executing command as admin. Details: $($_.Exception.Message)"
-        }
-    }
-    else {
-        # If already running as admin, execute the command
-        Invoke-Expression $command
-        return $false # Indicate that the command was run without elevation
-    }
-}
+#         try {
+#             Start-Process powershell -ArgumentList $arguments -Verb RunAs
+#             return $true # Indicate that the script was elevated and the command will run
+#         }
+#         catch {
+#             Write-Error "Error executing command as admin. Details: $($_.Exception.Message)"
+#         }
+#     }
+#     else {
+#         # If already running as admin, execute the command
+#         Invoke-Expression $command
+#         return $false # Indicate that the command was run without elevation
+#     }
+# }
 
 function New-PSProfile {
     if (!(Test-Path -Path $PROFILE)) {
@@ -155,13 +155,68 @@ function Lock-Machine {
 }
 
 function Show-ProfileModuleFunctions {
+    ## Path to custom Powershell modules
+    $CustomModulesPath = ( Join-Path -Path ( Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
+    Write-Debug "Custom modules path: $CustomModulesPath"
+
+    ## Initialize an array of PSCustomObjects for discovered functions
+    $DiscoveredFunctions = @()
+
+    ## Get ProfileModule functions
     try {
-        Get-Command -Module ProfileModule -CommandType Function
+        $ProfileModuleFunctions = Get-Command -Module ProfileModule -CommandType Function
+
+        ForEach ( $Function in $ProfileModuleFunctions ) {
+            $DiscoveredFunctions += [PSCustomObject]@{
+                Module   = "ProfileModule"
+                Function = $Function.Name
+            }
+        }
     }
     catch {
         Write-Error "Unable to show ProfileModule functions. Details: $($_.Exception.Message)"
         exit 1
     }
+
+    ## Get custom module functions
+    if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
+        Write-Debug "Custom modules path exists: $CustomModulesPath"
+
+        try {
+            ## Get all currently imported custom modules
+            $ImportedModules = Get-Module | Where-Object {
+                $_.Path -like "$CustomModulesPath*"
+            }
+
+            ## Iterate through each custom module and get its commands
+            ForEach ($Module in $ImportedModules) {
+                ## Get module functions
+                $ModuleFunctions = Get-Command -Module $Module.Name -CommandType Function
+
+                ForEach ($Function in $ModuleFunctions) {
+                    $DiscoveredFunctions += [PSCustomObject]@{
+                        Module   = $Module.Name
+                        Function = $Function.Name
+                    }
+                }
+            }
+        }
+        catch {
+            Write-Error "Unable to show custom module functions. Details: $($_.Exception.Message)"
+            continue
+        }
+    }
+    else {
+        Write-Warning "Custom modules directory not found at: $CustomModulesPath"
+    }
+
+    ## Print discovered functions
+    # Write-Output "`nDiscovered Functions:"
+    # ForEach ( $Item in $DiscoveredFunctions ) {
+    #     Write-Output "Module: $($Item.Module), Function: $($Item.Function)"
+    # }
+
+    $DiscoveredFunctions
 }
 
 function Show-ProfileModuleAliases {
