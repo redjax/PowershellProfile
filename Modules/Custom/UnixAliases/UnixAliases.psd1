@@ -39,7 +39,18 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'Show-UnixAliases'
+		'Show-UnixAliases',
+		'df',
+		'export',
+		'grep',
+		'pgrep',
+		'pkill',
+		'sed',
+		'sudo',
+		'touch',
+		'unzip',
+		'uptime',
+		'which'
 	)
 	
 	# Cmdlets to export from this module

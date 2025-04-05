@@ -1,24 +1,24 @@
 ﻿@{
 	# Script module or binary module file associated with this manifest
-	RootModule = 'NetworkHelpers.psm1'
+	RootModule        = 'NetworkHelpers.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0'
+	ModuleVersion     = '1.0.0'
 	
 	# ID used to uniquely identify this module
-	GUID = '378d2b7b-5ed7-41b3-a982-8f092f517688'
+	GUID              = '378d2b7b-5ed7-41b3-a982-8f092f517688'
 	
 	# Author of this module
-	Author = 'jack'
+	Author            = 'jack'
 	
 	# Company or vendor of this module
-	CompanyName = 'MyCompany'
+	CompanyName       = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright = 'Copyright (c) 2025 jack'
+	Copyright         = 'Copyright (c) 2025 jack'
 	
 	# Description of the functionality provided by this module
-	Description = 'Utility functions for network operations.'
+	Description       = 'Utility functions for network operations.'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
 	PowerShellVersion = '5.0'
@@ -41,23 +41,25 @@
 	FunctionsToExport = @(
 		'Get-OpenIPAddress',
 		'Get-PublicIP',
-		'Start-UpMonitor'
+		'Start-UpMonitor',
+		'Get-HTTPSiteAvailable',
+		'Start-Ping'
 	)
 	
 	# Cmdlets to export from this module
-	CmdletsToExport = ''
+	CmdletsToExport   = ''
 	
 	# Variables to export from this module
 	VariablesToExport = ''
 	
 	# Aliases to export from this module
-	AliasesToExport = ''
+	AliasesToExport   = ''
 	
 	# List of all files packaged with this module
-	FileList = @()
+	FileList          = @()
 	
 	# Private data to pass to the module specified in ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-	PrivateData = @{
+	PrivateData       = @{
 		
 		#Support for PowerShellGet galleries.
 		PSData = @{
