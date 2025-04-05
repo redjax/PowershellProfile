@@ -19,6 +19,7 @@ function Install-CustomModules {
 
     ## Build custom modules path str
     $CustomModulesPath = (Join-Path -Path $PSModulesDir -ChildPath "Modules" -AdditionalChildPath "$($CustomModulesDir)")
+
     Write-Debug "Custom modules path: $CustomModulesPath"
 
     ## Create custom modules directory
