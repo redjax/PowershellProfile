@@ -41,11 +41,26 @@ All Profiles load from a [common base profile](./docs/Developing.md#base-templat
 
 ## Table of Contents <!-- omit in toc -->
 
+- [Description](#description)
 - [Usage](#usage)
 - [Custom Modules](#custom-modules)
 - [Developing](#developing)
 - [Notes](#notes)
 - [Links](#links)
+
+## Description
+
+This is my custom Powershell profile. All profiles share a common ["base" profile](./Profiles/_Base.ps1). This is a `$PROFILE` that handles initializing my common, shared code, like importing [custom modules](./Modules/Custom/), setting options based on which Powershell environment is running (PS5, PS7,  Powershell ISE, etc), and importing the [`ProfileModule`](./Modules/ProfileModule/).
+
+The `ProfileModule` adds some helper methods and aliases to each Powershell session it is imported into.
+
+By editing the [`config.json` file](./config.example.json), you can control which [custom profile](./Profiles/) is installed. Each custom profile sources the `_Base.ps1` profile, then builds on top of it. For example, the [`Starship` profile](./Profiles/Starship.ps1) automatically initializes [Starship](https://starship.rs) if it is installed.
+
+In addition to each custom `$PROFILE`, there are [custom modules](./Modules/Custom/) you can install with the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1). Each module enhances the custom `$PROFILE` with extra functionality. These custom modules are modular, meaning you can add only the modules with functionality you want in your `$PROFILE`.
+
+For example, on a work machine, you might want [Azure helpers](./Modules/Custom/AzureHelpers/) and [Active Directory helpers](./Modules/Custom/ActiveDirectoryHelpers/), but not the silly [WeatherMod](./Modules/Custom/WeatherMod/), which wraps HTTP calls to [`wttr.in`](https://wttr.in).
+
+To skip installing certain modules, just answer `n` when prompted by the `Install-CustomPSModules.ps1` script.
 
 ## Usage
 
