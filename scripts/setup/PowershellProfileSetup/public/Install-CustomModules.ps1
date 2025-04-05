@@ -19,17 +19,20 @@ function Install-CustomModules {
 
     ## Build custom modules path str
     $CustomModulesPath = (Join-Path -Path $PSModulesDir -ChildPath "Modules" -AdditionalChildPath "$($CustomModulesDir)")
-    Write-Host "Custom modules path: $CustomModulesPath"
+
+    Write-Debug "Custom modules path: $CustomModulesPath"
 
     ## Create custom modules directory
     Write-Debug "Custom Powershell modules path: $CustomModulesPath"
     try {
-        New-CustomModulesDir -CustomModulesDir $CustomModulesPath -ErrorAction SilentlyContinue
+        New-CustomModulesDir -CustomModulesPath $CustomModulesPath -ErrorAction SilentlyContinue
     }
     catch {
         Write-Error "Error creating custom Powershell modules directory at path: $CustomModulesPath. Details: $($_.Exception.Message)"
-        exit(1)
+        return $false
     }
 
     ## Get all modules in local modules directory
 }
+
+Export-ModuleMember -Function Install-CustomModules
