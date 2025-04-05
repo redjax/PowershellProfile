@@ -36,6 +36,15 @@ function Install-CustomModules {
 
         if ( Test-Path -Path $TargetPath ) {
             Write-Warning "Module already installed at path and will be overwritten: $TargetPath"
+
+            Write-Debug "Removing path: $TargetPath"
+            try {
+                Remove-Item -Path $TargetPath -Recurse -Force -ErrorAction Stop | Out-Null
+            }
+            catch {
+                Write-Error "Error removing path: $TargetPath. Details: $($_.Exception.Message)"
+                continue
+            }
         }
 
         try {
