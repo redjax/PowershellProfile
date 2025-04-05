@@ -5,3 +5,5 @@ function export {
     )
     Set-Item -Force -Path "env:$name" -Value $value;
 }
+
+Export-ModuleMember -Function export

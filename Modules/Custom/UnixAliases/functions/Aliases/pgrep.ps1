@@ -4,3 +4,5 @@ function pgrep {
     )
     Get-Process $name
 }
+
+Export-ModuleMember -Function pgrep
