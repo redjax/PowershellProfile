@@ -156,7 +156,7 @@ function Lock-Machine {
 
 function Show-ProfileModuleFunctions {
     ## Path to custom Powershell modules
-    $CustomModulesPath = (Join-Path ( Join-Path -Path (Split-Path -Path $PROFILE -Parent) -ChildPath "Modules" ) -ChildPath "Custom")
+    $CustomModulesPath = ( Join-Path -Path ( Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
     Write-Debug "Custom modules path: $CustomModulesPath"
 
     ## Initialize an array of PSCustomObjects for discovered functions
