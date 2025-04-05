@@ -61,21 +61,23 @@ function Get-Weather {
     ## Construct the location part of the URL
     if ( $Location ) {
         $locationPath = "/$($Location -replace ' ', '+')"
-    } else {
+    }
+    else {
         $locationPath = ""
     }
     ## Construct the query parameters
     $queryParams = @()
     if ($Units) { $queryParams += $Units }
     
-    if ( $Format ) {$queryParams += "format=$Format" }
+    if ( $Format ) { $queryParams += "format=$Format" }
     
     if ($Language) { $queryParams += "lang=$Language" }
     
     ## If PNG is requested, modify the URL accordingly
     if ($PNG) {
         $url = "$baseUrl$locationPath""_$(($queryParams -join '') -replace '[?&]', '_').png" 
-    } else {
+    }
+    else {
         $url = "$baseUrl$locationPath"
         if ($queryParams.Count -gt 0) {
             $url += "?" + ($queryParams -join "&")
@@ -90,13 +92,15 @@ function Get-Weather {
         Write-Information "Fetching weather for $Location"
         Invoke-RestMethod -Uri $url
         return
-    } else {
+    }
+    else {
         Write-Information "Fetching weather from wttr.in"
     }
     
     if ( $PNG ) {
         Start-Process $url
-    } else {
+    }
+    else {
         Invoke-RestMethod -Uri $url
         return
     }
