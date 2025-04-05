@@ -23,8 +23,8 @@ param (
 
 # Ensure we're in the repository root
 $RepoRoot = Split-Path -Parent $PSScriptRoot
-$ModulesPath = Join-Path $RepoRoot "modules"
-$ModulePath = Join-Path $ModulesPath $Name
+$ModulesPath = ( Join-Path -Path ( Join-Path -Path $RepoRoot -ChildPath "Modules" ) -ChildPath "Custom" )
+$ModulePath = Join-Path -Path $ModulesPath -ChildPath $Name
 
 if ( -Not ( Test-Path -Path $ModulesPath ) ) {
     Write-Warning "Modules path '$($ModulesPath)' does not exist. Creating path."
