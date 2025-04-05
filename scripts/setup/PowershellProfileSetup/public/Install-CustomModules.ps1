@@ -11,11 +11,17 @@ function Install-CustomModules {
 
     $CustomModulesPath = (Join-Path -Path $RepoModulesDir -ChildPath "$($CustomModulesDir)")
 
-    New-CustomModulesDir -CustomModulesPath $CustomModulesPath
+    try {
+        New-CustomModulesDir -CustomModulesPath $CustomModulesPath -ErrorAction SilentlyContinue
+    }
+    catch {
+        Write-Error "Error creating custom modules path at path: $CustomModulesPath. Details: $($_.Exception.Message)"
+        return $false
+    }
 
     ## Get path to Powershell modules directory
     $PSModulesDir = (Split-Path $PROFILE -Parent)
-    Write-Output "Powershell modules directory: $PSModulesDir"
+    Write-Debug "Powershell modules directory: $PSModulesDir"
 
     ## Build custom modules path str
     $CustomModulesPath = (Join-Path -Path $PSModulesDir -ChildPath "Modules" -AdditionalChildPath "$($CustomModulesDir)")
@@ -32,7 +38,22 @@ function Install-CustomModules {
         return $false
     }
 
-    ## Get all modules in local modules directory
+    ## Get all modules in custom modules directory
+    $CustomModules = Get-ChildItem -Path $CustomModulesPath -Filter *.psm1
+
+    $CustomModules | ForEach-Object {
+        Write-Output "Installing custom Powershell module: $($_.FullName)"
+        # try {
+        #     Import-Module -Name $_.FullName -ErrorAction Stop
+        #     Write-Output "Installed custom Powershell module: $($_.FullName)"
+        # }
+        # catch {
+        #     Write-Error "Error installing custom Powershell module: $($_.FullName). Details: $($_.Exception.Message)"
+        #     return $false
+        # }
+    }
+
+    return $true
 }
 
 Export-ModuleMember -Function Install-CustomModules
