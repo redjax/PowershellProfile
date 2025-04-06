@@ -20,7 +20,7 @@ function Install-ProfileModule {
         }
         catch {
             Write-Error "Error removing path '$ProfileModTar'. Details: $($_.Exception.Message)"
-            exit 1
+            return
         }
     }
 
@@ -29,10 +29,10 @@ function Install-ProfileModule {
     try {
         Copy-Item -Recurse -Path $ProfileModSrc -Destination $ProfileModTar
         Write-Host "[SUCCESS] Powershell profile module installed at path: $ProfileModTar" -ForegroundColor Green
-        exit 0
+        return
     }
     catch {
         Write-Error "[ERROR] Failed to install/update Powershell profile module. Details: $($_.Exception.Message)"
-        exit 1
+        return
     }
 }
