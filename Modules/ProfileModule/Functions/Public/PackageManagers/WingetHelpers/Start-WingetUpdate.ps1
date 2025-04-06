@@ -116,12 +116,12 @@ function Start-WinGetUpdate {
             break
         }
     }
-    atesotes wes e-nenown
-    hg t  lt 
-    "Error Line:}"$($_.InvocationInfo.Line)`n
-    "@
-}
-}   try {
+    # Starts to check if you have any softwares that needs to be updated
+    Write-Output "Checks if any software needs to be updated"
+    try {
+        WinGet.exe upgrade --all --silent --force --accept-source-agreements --disable-interactivity --include-unknown
+        Write-Output "Everything is now completed, you can close this window"
+    }
     catch {
         Write-Error @"
    "Message: "$($_.Exception.Message)`n
