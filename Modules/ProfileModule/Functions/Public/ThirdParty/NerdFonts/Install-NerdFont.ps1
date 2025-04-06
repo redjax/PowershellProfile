@@ -1,6 +1,3 @@
-## Valid package managers
-$ValidPackageManagers = @("winget", "choco", "scoop")
-
 ## Supported NerdFonts and their package names for scoop & choco
 $ValidNerdFonts = @"
 {
@@ -27,50 +24,55 @@ $ValidNerdFonts = @"
 }
 "@
 
-## Load fonts as JSON data
-$FontsJson = $ValidNerdFonts | ConvertFrom-Json
-
-Function Test-IsAdministrator {
+function Get-SupportedNerdFonts {
     <#
-    .SYNOPSIS
-    Check if the current user is an administrator.
+        .SYNOPSIS
+        Get a list of supported nerd fonts.
     #>
 
-    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-    $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    $ValidNerdFonts | Format-List
 }
 
-function Test-CommandExists {
+function Start-NerdFontInstall {
     <#
-    .SYNOPSIS
-    Check if a command exists/executes.
-
-    .PARAMETER Command
-    The command to check.
-
-    .EXAMPLE
-    Test-CommandExists "winget"
+        .SYNOPSIS
+        Install a supported nerd font from the command line
     #>
-
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
-        [string]$Command
-    )
-
-    $CmdExists = ($null -ne (Get-Command $Command -ErrorAction SilentlyContinue))
-    Write-Verbose "Command '$Command' exists: $CmdExists."
-
-    return $CmdExists
-}
-
-function Test-ValidPackageManager() {
-    Param(
+        [string]$Font,
         [Parameter(Mandatory = $true)]
-        $PkgManager
+        [ValidateSet("scoop", "choco")]
+        [string]$PkgManager
     )
 
-    ## Return $True/$False if $PkgManager is in $ValidPackageManagers
-    return $ValidPackageManagers -contains $PkgManager
+    switch ($PkgManager) {
+        "scoop" {
+            if ( -Not ( Get-Command scoop -ErrorAction SilentlyContinue ) ) {
+                Write-Error "Scoop is not installed."
+                exit(1)
+            }
+            Write-Debug "Using scoop package manager"
+        }
+        "choco" {
+            if ( -Not ( Get-Command choco -ErrorAction SilentlyContinue ) ) {
+                Write-Error "Chocolatey is not installed."
+                exit(1)
+            }
+            Write-Debug "Using chocolatey package manager"
+        }
+    }
+
+    Write-Output "Installing NerdFont: $($Font)"
+
+    try {
+        Invoke-NerdFontInstall -PkgManager $PkgManager -FontName $Font
+    }
+    catch {
+        Write-Error "Failed to install NerdFont: $($Font)"
+        exit(1)
+    }
+
+    Write-Output "Installed NerdFont: $($Font)"
 }
