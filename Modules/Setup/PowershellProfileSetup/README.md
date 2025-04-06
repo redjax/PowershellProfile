@@ -4,10 +4,10 @@ This module is part of the PowerShell monorepo.
 
 ## Installation
 
-\\\powershell
+```powershell
 Import-Module (Join-Path $(PSScriptRoot) PowershellProfileSetup.psm1)
-\\\
+```
 
 ## Description
 
-TODO: Describe the module.
+A module with functions to help with configuring & installing the [`ProfileModule`](../../ProfileModule/).

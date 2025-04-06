@@ -1,5 +1,5 @@
 ## Path vars
-$ProfileSetupModulePath = "$PSScriptRoot/scripts/setup/PowershellProfileSetup"
+$ProfileSetupModulePath = "$PSScriptRoot/Modules/Setup/PowershellProfileSetup"
 $RepoCustomModulesDir = Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath "Modules") -ChildPath "Custom"
 $HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
@@ -34,8 +34,8 @@ if (-not ( Test-Path $ProfileSetupModulePath ) ) {
 }
 
 ## Ensure there is a .psm1 file at the module path
-if ( -not ( Get-ChildItem "$PSScriptRoot/scripts/setup/PowershellProfileSetup" -Filter *.psm1 ) ) {
-    Write-Error "Path is not a module directory: $PSScriptRoot/scripts/setup/PowershellProfileSetup"
+if ( -not ( Get-ChildItem "$ProfileSetupModulePath" -Filter *.psm1 ) ) {
+    Write-Error "Path is not a module directory: $ProfileSetupModulePath"
     exit(1)
 }
 
