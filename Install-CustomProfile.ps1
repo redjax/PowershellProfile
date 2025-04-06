@@ -1,6 +1,6 @@
 Param(
     [Parameter(mandatory = $false, HelpMessage = "The path to the JSON config file to use for script execution.")]
-    [string]$ConfigFile = "config.json",
+    [string]$ConfigFile = (Join-Path -Path $PSScriptRoot -ChildPath "config.json"),
     [Parameter(mandatory = $false, HelpMessage = "Name of module")]
     [string]$ModuleName = "ProfileModule",
     [Parameter(mandatory = $false, HelpMessage = "Path to repo modules directory")]
@@ -10,8 +10,10 @@ Param(
 )
 
 ## Vars
-$SetupModuleFilename = "PowershellProfileSetup"
-$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
+[string]$SetupModuleFilename = "PowershellProfileSetup"
+[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
+# $ModuleInstallScriptPath = Join-Path -Path "scripts" -Childpath "Install-CustomPSModules.ps1"
+[string]$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
 ## Import setup module
 Write-Host "Importing PowershellProfileSetup module from: $SetupModulePath" -ForegroundColor Cyan
@@ -68,6 +70,39 @@ try {
 }
 catch {
     Write-Error "Error installing module. Details: $($_.Exception.Message)"
+    exit 1
+}
+
+## Install modules
+# if ( -not ( Test-Path -Path $ModuleInstallScriptPath -ErrorAction SilentlyContinue ) ) {
+#     Write-Error "Module install script not found at path '$ModuleInstallScriptPath'. Custom modules will not be installed."
+
+# }
+# else {
+#     Write-Host "Installing custom Powershell modules" -ForegroundColor Cyan
+#     try {
+#         . $ModuleInstallScriptPath -ConfigFile $ConfigFile
+#         Write-Host "Installed custom modules" -ForegroundColor Green
+#     }
+#     catch {
+#         Write-Error "Error installing custom modules. Details: $($_.Exception.Message)"
+#         exit 1
+#     }
+# }
+
+Write-Host "Installing custom Powershell modules" -ForegroundColor Cyan
+try {
+    Install-CustomModules `
+        -ConfigFile $ConfigFile `
+        -RepoCustomModulesDir (Join-Path -Path $RepoModulesDir -ChildPath "Custom") `
+        -HostCustomPSModulesDir $HostCustomPSModulesDir `
+        -SetupModulePath $SetupModulePath `
+        -ErrorAction Stop `
+    | Out-Null
+    Write-Host "Installed custom modules" -ForegroundColor Green
+}
+catch {
+    Write-Error "Error installing custom modules. Details: $($_.Exception.Message)"
     exit 1
 }
 

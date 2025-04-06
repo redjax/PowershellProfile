@@ -6,5 +6,13 @@
     "repo": {
         "author": "redjax",
         "profile_base": "_Base.ps1"
-    }
+    },
+    "custom_modules": [
+        "DatetimeHelpers",
+        "NetworkHelpers",
+        "PathHelpers",
+        "SecurityHelpers",
+        "UnixAliases",
+        "Weathermod"
+    ]
 }

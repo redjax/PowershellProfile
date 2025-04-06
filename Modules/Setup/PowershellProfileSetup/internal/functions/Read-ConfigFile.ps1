@@ -22,14 +22,15 @@ function Read-ConfigFile {
 
     ## Config schema
     $defaultConfig = [PSCustomObject]@{
-        profile   = [PSCustomObject]@{
+        profile        = [PSCustomObject]@{
             name = "Default"
         }
-        log_level = "INFO"
-        repo      = [PSCustomObject]@{
+        log_level      = "INFO"
+        repo           = [PSCustomObject]@{
             author       = "redjax"
             profile_base = "_Base.ps1"
         }
+        custom_modules = @()
     }
 
     if ( -Not ( Test-Path -Path $ProfileConfig -PathType Leaf ) ) {
@@ -60,14 +61,15 @@ function Read-ConfigFile {
     ## Create config object
     try {
         $Config = [PSCustomObject]@{
-            profile   = [PSCustomObject]@{
+            profile        = [PSCustomObject]@{
                 name = $ConfigJson.profile.name
             }
-            log_level = $ConfigJson.log_level
-            repo      = [PSCustomObject]@{
+            log_level      = $ConfigJson.log_level
+            repo           = [PSCustomObject]@{
                 author       = $ConfigJson.repo.author
                 profile_base = $ConfigJson.repo.profile_base
             }
+            custom_modules = $ConfigJson.custom_modules
         }
     }
     catch {
