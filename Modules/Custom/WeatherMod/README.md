@@ -4,10 +4,10 @@ This module is part of the PowerShell monorepo.
 
 ## Installation
 
-\\\powershell
+```powershell
 Import-Module (Join-Path $(PSScriptRoot) WeatherMod.psm1)
-\\\
+```
 
 ## Description
 
-TODO: Describe the module.
+Weather-related helper functions, for example requesting the current weather from [`wttr.in`](https://wttr.in)
