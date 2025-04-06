@@ -30,5 +30,5 @@ function Get-SupportedNerdFonts {
         Get a list of supported nerd fonts.
     #>
 
-    $ValidNerdFonts | Format-List
+    $ValidNerdFonts
 }
