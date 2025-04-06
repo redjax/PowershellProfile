@@ -3,12 +3,21 @@ Param(
     [string]$ConfigFile = "config.json"
 )
 
-[string]$RepoModulesDir = "$($PSScriptRoot)\Modules"
-[string]$RepoCustomModulesDir = Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath "Modules") -ChildPath "Custom"
+[string]$RepoDir = Split-Path -Path $PSScriptRoot -Parent
+
+# [string]$RepoModulesDir = "$($PSScriptRoot)\Modules"
+[string]$RepoModulesDir = Join-Path -Path $RepoDir -ChildPath "Modules"
+[string]$RepoCustomModulesDir = Join-Path -Path (Join-Path -Path $RepoDir -ChildPath "Modules") -ChildPath "Custom"
 [string]$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
 [string]$SetupModuleFilename = "PowershellProfileSetup"
 [string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
+
+Write-Output "`$RepoModulessDir=$($RepoModulesDir)"
+Write-Output "`$RepoCustomModulesDir=$($RepoCustomModulesDir)"
+Write-Output "`$HostCustomPSModulesDir=$($HostCustomPSModulesDir)"
+Write-Output "`$SetupModuleFilename=$($SetupModuleFilename)"
+Write-Output "`$SetupModulePath=$($SetupModulePath)"
 
 Write-Verbose "`$RepoCustomModulesDir=$($RepoCustomModulesDir)"
 Write-Verbose "`$HostCustomPSModulesDir=$($HostCustomPSModulesDir)"
