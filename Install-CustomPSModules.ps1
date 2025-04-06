@@ -34,8 +34,8 @@ if (-not ( Test-Path $ProfileSetupModulePath ) ) {
 }
 
 ## Ensure there is a .psm1 file at the module path
-if ( -not ( Get-ChildItem "$PSScriptRoot/scripts/setup/PowershellProfileSetup" -Filter *.psm1 ) ) {
-    Write-Error "Path is not a module directory: $PSScriptRoot/scripts/setup/PowershellProfileSetup"
+if ( -not ( Get-ChildItem "$ProfileSetupModulePath" -Filter *.psm1 ) ) {
+    Write-Error "Path is not a module directory: $ProfileSetupModulePath"
     exit(1)
 }
 
