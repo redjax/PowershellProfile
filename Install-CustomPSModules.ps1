@@ -1,5 +1,5 @@
 ## Path vars
-$ProfileSetupModulePath = "$PSScriptRoot/scripts/setup/PowershellProfileSetup"
+$ProfileSetupModulePath = "$PSScriptRoot/Modules/Setup/PowershellProfileSetup"
 $RepoCustomModulesDir = Join-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath "Modules") -ChildPath "Custom"
 $HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
