@@ -1,6 +1,6 @@
 Param(
     [Parameter(mandatory = $false, HelpMessage = "The path to the JSON config file to use for script execution.")]
-    [string]$ConfigFile = "config.json",
+    [string]$ConfigFile = (Join-Path -Path $PSScriptRoot -ChildPath "config.json"),
     [Parameter(mandatory = $false, HelpMessage = "Name of module")]
     [string]$ModuleName = "ProfileModule",
     [Parameter(mandatory = $false, HelpMessage = "Path to repo modules directory")]
@@ -11,7 +11,7 @@ Param(
 
 ## Vars
 $SetupModuleFilename = "PowershellProfileSetup"
-$SetupModulePath = Join-Path -Path $PSScriptRoot "setup/$($SetupModuleFilename)"
+$SetupModulePath = ( Join-Path -Path ( Join-Path -Path $RepoModulesDir -ChildPath "Setup" ) -ChildPath "$($SetupModuleFilename)" ) 
 
 ## Import setup module
 Write-Host "Importing PowershellProfileSetup module from: $SetupModulePath" -ForegroundColor Cyan
