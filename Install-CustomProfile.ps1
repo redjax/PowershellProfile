@@ -11,7 +11,7 @@ Param(
 
 ## Vars
 $SetupModuleFilename = "PowershellProfileSetup"
-$SetupModulePath = Join-Path -Path $PSScriptRoot "scripts/setup/$($SetupModuleFilename)"
+$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
 
 ## Import setup module
 Write-Host "Importing PowershellProfileSetup module from: $SetupModulePath" -ForegroundColor Cyan
