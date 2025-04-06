@@ -1,35 +1,23 @@
-function Install-Winget {
-    $WingetIsInstalled = Get--Command -CommandName "winget"
-
-    if (-not $WingetIsInstalled) {
-        Write-Host "Installing Winget using Add-AppxPackage"
-        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
-    }
-    else {
-        Write-Host "Winget is already installed"
-    }
-}
-
 function Start-WinGetUpdate {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false,HelpMessage = "Decide if you want to skip the WinGet version check, default it set to false")]
+        [Parameter(Mandatory = $false, HelpMessage = "Decide if you want to skip the WinGet version check, default it set to false")]
         [switch]$SkipVersionCheck = $false
     )
-    #Check if script was started as Administrator
+    Check if script was started as Administrator
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")) {
         Write-Error ("{0} needs admin privileges, exiting now...." -f $MyInvocation.MyCommand)
         break
     }
-    # =================================
-    #         Static Variables
-    # =================================
+    #   # =================================
+    Static Variables   #
+    =================================
     #
-    # GitHub url for the latest release
+    #   # GitHub url for the latest release
     [string]$GitHubUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
     # The headers and API version for the GitHub API
     [hashtable]$GithubHeaders = @{
-        "Accept" = "application/vnd.github.v3+json"
+        "Accept"               = "application/vnd.github.v3+json"
         "X-GitHub-Api-Version" = "2022-11-28"
     }
     #
@@ -82,16 +70,16 @@ function Start-WinGetUpdate {
         # Collecting information from GitHub regarding latest version of WinGet
         try {
             if ($PSVersionTable.PSVersion.Major -ge 7) {
-                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 -HttpVersion 3.0 | Select-Object -Property assets,tag_name
+                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 -HttpVersion 3.0 | Select-Object -Property assets, tag_name
             }
             else {
-                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 | Select-Object -Property assets,tag_name
+                [System.Object]$GithubInfoRestData = Invoke-RestMethod -Uri $GitHubUrl -Method Get -Headers $GithubHeaders -TimeoutSec 10 | Select-Object -Property assets, tag_name
             }
             [string]$latestVersion = $GithubInfoRestData.tag_name.Substring(1)
             [System.Object]$GitHubInfo = [pscustomobject]@{
-                Tag = $latestVersion
+                Tag         = $latestVersion
                 DownloadUrl = $GithubInfoRestData.assets | Where-Object { $_.Name -like "*.msixbundle" } | Select-Object -ExpandProperty browser_download_url
-                OutFile = "$env:TEMP\WinGet_$($latestVersion).msixbundle"
+                OutFile     = "$env:TEMP\WinGet_$($latestVersion).msixbundle"
             }
         }
         catch {
