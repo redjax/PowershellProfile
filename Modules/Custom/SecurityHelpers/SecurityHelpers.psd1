@@ -39,7 +39,8 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'New-SelfSignedCert'
+		'New-SelfSignedCert',
+		'Disable-DefenderRealtimeMonitoring'
 	)
 	
 	# Cmdlets to export from this module
