@@ -1,29 +1,19 @@
-function Install-Winget {
-    if ( -not ( Get-Command -CommandName "winget" -ErrorAction SilentlyContinue ) ) {
-        Write-Host "Installing Winget using Add-AppxPackage"
-        Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
-    }
-    else {
-        Write-Host "Winget is already installed"
-    }
-}
-
 function Start-WinGetUpdate {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false, HelpMessage = "Decide if you want to skip the WinGet version check, default it set to false")]
         [switch]$SkipVersionCheck = $false
     )
-    #Check if script was started as Administrator
+    Check if script was started as Administrator
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")) {
         Write-Error ("{0} needs admin privileges, exiting now...." -f $MyInvocation.MyCommand)
         break
     }
-    # =================================
-    #         Static Variables
-    # =================================
+    #   # =================================
+    Static Variables   #
+    =================================
     #
-    # GitHub url for the latest release
+    #   # GitHub url for the latest release
     [string]$GitHubUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
     # The headers and API version for the GitHub API
     [hashtable]$GithubHeaders = @{
@@ -126,12 +116,12 @@ function Start-WinGetUpdate {
             break
         }
     }
-    # Starts to check if you have any softwares that needs to be updated
-    Write-Output "Checks if any software needs to be updated"
-    try {
-        WinGet.exe upgrade --all --silent --force --accept-source-agreements --disable-interactivity --include-unknown
-        Write-Output "Everything is now completed, you can close this window"
-    }
+    atesotes wes e-nenown
+    hg t  lt 
+    "Error Line:}"$($_.InvocationInfo.Line)`n
+    "@
+}
+}   try {
     catch {
         Write-Error @"
    "Message: "$($_.Exception.Message)`n
