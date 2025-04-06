@@ -1,38 +1,3 @@
-## Supported NerdFonts and their package names for scoop & choco
-$ValidNerdFonts = @"
-{
-    "FiraMono": {
-        "scoop": "FiraMono-NF",
-        "choco": "nerd-font-FiraMono"
-    },
-    "FiraCode": {
-        "scoop": "FiraCode-NF",
-        "choco": "nerd-font-FiraCode"
-    },
-    "HackMono": {
-        "scoop": "Hack-NF-Mono",
-        "choco": "nerdfont-hack"
-    },
-    "IosevkaTerm": {
-        "scoop": "IosevkaTerm-NF-Mono",
-        "choco": "nerd-fonts-IosevkaTerm"
-    },
-    "UbuntuMono": {
-        "scoop": "UbuntuMono-NF-Mono",
-        "choco": "nerd-fonts-UbuntuMono"
-    }
-}
-"@
-
-function Get-SupportedNerdFonts {
-    <#
-        .SYNOPSIS
-        Get a list of supported nerd fonts.
-    #>
-
-    $ValidNerdFonts | Format-List
-}
-
 function Start-NerdFontInstall {
     <#
         .SYNOPSIS
@@ -40,12 +5,22 @@ function Start-NerdFontInstall {
     #>
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [string]$Font,
         [Parameter(Mandatory = $true)]
         [ValidateSet("scoop", "choco")]
         [string]$PkgManager
     )
+
+    if ( $null -eq $Font ) {
+        Write-Warning "A font name is required. Available options:"
+        Get-SupportedNerdFonts
+    }
+
+    if ( $null -eq $PkgManager ) {
+        Write-Warning "Must specify a package manager. Available options: scoop, choco"
+        exit(1)
+    }
 
     switch ($PkgManager) {
         "scoop" {
