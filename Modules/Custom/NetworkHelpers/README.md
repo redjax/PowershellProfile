@@ -4,10 +4,10 @@ This module is part of the PowerShell monorepo.
 
 ## Installation
 
-\\\powershell
+```powershell
 Import-Module (Join-Path $(PSScriptRoot) NetworkHelpers.psm1)
-\\\
+```
 
 ## Description
 
-TODO: Describe the module.
+Helper functions for network operations.
