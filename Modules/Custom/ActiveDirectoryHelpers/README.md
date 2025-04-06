@@ -1,6 +1,6 @@
 # ActiveDirectoryHelpers
 
-Helper functions for Microsoft Active Directory.
+This module is part of the PowerShell monorepo.
 
 ## Installation
 
@@ -10,4 +10,4 @@ Import-Module (Join-Path $(PSScriptRoot) ActiveDirectoryHelpers.psm1)
 
 ## Description
 
-Functions for interacting with Microsoft Active Directory.
+Helper functions for Microsoft Active Directory.
