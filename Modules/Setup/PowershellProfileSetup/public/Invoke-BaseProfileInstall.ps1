@@ -6,29 +6,31 @@ function Invoke-BaseProfileInstall {
         [string]$ProfileBase = "_Base.ps1"
     )
     Write-Verbose "Profile base install `$InstallPath: $InstallPath"
-    Write-Verbose "Profile base install `$ProfileBase: $ProfileBase"
+    Write-Verbose "Profile base install `$ProfileBasea: $ProfileBase"
+
+    ## Build full path to base profile directory
+    $ProfileBasePath = Join-Path -Path "Profiles" -ChildPath "Bases"
+    Write-Host "`n`$ProfileBasePath: $ProfileBasePath`n"
+
+    ## Resolve $ProfileBase correctly
+    if ([System.IO.Path]::IsPathRooted($ProfileBase)) {
+        # If $ProfileBase is already an absolute path, use it as-is
+        Write-Debug "$ProfileBase is an absolute path."
+    }
+    else {
+        ## If $ProfileBase is relative, combine it with $ProfileBasePath
+        Write-Debug "$ProfileBase is a relative path. Resolving full path."
+        $ProfileBase = Join-Path -Path $ProfileBasePath -ChildPath $ProfileBase
+    }
+    
 
     if ( -Not $ProfileBase ) {
         Write-Error "-ProfileBase cannot be null"
         exit 1
     }
 
-    ## Resolve ProfileBase Path
-    if ([System.IO.Path]::IsPathRooted($ProfileBase)) {
-        # If ProfileBase is already an absolute path, use it directly
-        Write-Debug "Using absolute path for ProfileBase: $($ProfileBase)"
-    }
-    else {
-        # If ProfileBase is relative, combine it with ProfilesDir/Bases
-        $ProfilesDir = Join-Path -Path $PSScriptRoot -ChildPath "Profiles"
-        $BasesDir = Join-Path -Path $ProfilesDir -ChildPath "Bases"
-        $ProfileBase = Join-Path -Path $BasesDir -ChildPath $ProfileBase
-        Write-Debug "Resolved relative ProfileBase to: $($ProfileBase)"
-    }
-
-    ## Validate ProfileBase Path
-    if (-Not (Test-Path -Path $ProfileBase)) {
-        Write-Error "Profile base not found at path: $($ProfileBase)"
+    if ( -Not ( Test-Path -Path $ProfileBase -ErrorAction SilentlyContinue ) ) {
+        Write-Error "Profile base not found at path: $ProfileBase"
         return
     }
 
