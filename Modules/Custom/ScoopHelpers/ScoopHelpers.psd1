@@ -1,24 +1,24 @@
 @{
 	# Script module or binary module file associated with this manifest
-	RootModule = 'ScoopHelpers.psm1'
+	RootModule        = 'ScoopHelpers.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0'
+	ModuleVersion     = '1.0.0'
 	
 	# ID used to uniquely identify this module
-	GUID = 'd44f8c0a-46d6-4069-b412-39fb97b95ab2'
+	GUID              = 'd44f8c0a-46d6-4069-b412-39fb97b95ab2'
 	
 	# Author of this module
-	Author = 'jack'
+	Author            = 'jack'
 	
 	# Company or vendor of this module
-	CompanyName = 'MyCompany'
+	CompanyName       = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright = 'Copyright (c) 2025 jack'
+	Copyright         = 'Copyright (c) 2025 jack'
 	
 	# Description of the functionality provided by this module
-	Description = 'Wrappers for the scoop CLI (https://scoop.sh)'
+	Description       = 'Wrappers for the scoop CLI (https://scoop.sh)'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
 	PowerShellVersion = '5.0'
@@ -38,22 +38,25 @@
 	# FormatsToProcess = @('xml\ScoopHelpers.Format.ps1xml')
 	
 	# Functions to export from this module
-	FunctionsToExport = @('Initialize-ScoopCli')
+	FunctionsToExport = @(
+		'Initialize-ScoopCli'
+		'Install-ScoopCli'
+	)
 	
 	# Cmdlets to export from this module
-	CmdletsToExport = ''
+	CmdletsToExport   = ''
 	
 	# Variables to export from this module
 	VariablesToExport = ''
 	
 	# Aliases to export from this module
-	AliasesToExport = ''
+	AliasesToExport   = ''
 	
 	# List of all files packaged with this module
-	FileList = @()
+	FileList          = @()
 	
 	# Private data to pass to the module specified in ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-	PrivateData = @{
+	PrivateData       = @{
 		
 		#Support for PowerShellGet galleries.
 		PSData = @{
