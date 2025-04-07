@@ -5,6 +5,8 @@
 
 ## Uncomment to enable profile tracing
 # Set-PSDebug -Trace 1
+## Uncomment to enable debug logging
+# $DebugPreference = "Continue"
 
 ## Manually set this to $false to keep profile outputs on-screen after initializing
 $ClearOnInit = $true

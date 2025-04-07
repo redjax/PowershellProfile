@@ -11,7 +11,7 @@ Set-Alias -Name lock -Value Lock-Machine
 ## which -> Get-Command
 # Set-Alias -Name which -Value Get-Command
 
-## reload -> Restart-Shell
+## reload -> Restart-ShellSession
 Set-Alias -Name reload -Value Restart-ShellSession
 
 ## profiles -> Show-PSProfilePaths

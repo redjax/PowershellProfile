@@ -60,35 +60,44 @@ $PublicFunctionNames | ForEach-Object {
     Export-ModuleMember -Function $_
 }
 
-## Source the Aliases.ps1 file if it exists
-if (Test-Path -Path $AliasesFilePath) {
-    .$AliasesFilePath
-
-    ## Export aliases after sourcing the Aliases.ps1
-    $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
-
-    $Aliases | ForEach-Object {
-        Write-Debug "Exporting alias: $($_.Name)"
-        Export-ModuleMember -Alias $_.Name
-    }
-}
-
 ## Load and export aliases from the Aliases directory
 if (Test-Path -Path $AliasesPath) {
     $AliasFiles = Get-ChildItem -Path $AliasesPath -Recurse -Filter *.ps1
-
+    
+    # Source all alias files first
     foreach ($AliasFile in $AliasFiles) {
-        # Source each .ps1 file in the Aliases directory
-        Write-Debug "Sourcing alias file: $(AliasFile)"
-        . $AliasFile
+        Write-Debug "Sourcing alias file: $($AliasFile.FullName)"
+        try {
+            . $AliasFile.FullName
+        }
+        catch {
+            Write-Error "Error sourcing alias file: $($AliasFile.FullName). Details: $($_.Exception.Message)"
+            continue
+        }
     }
 
-    ## Get all aliases defined in the module
+    # Gather all aliases defined in the module
     $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
 
-    ## Export each alias
-    $Aliases | ForEach-Object {
-        Write-Debug "Exporting alias: $($_.Name)"
-        Export-ModuleMember -Alias $_.Name
+    # Track already exported aliases to avoid double-exporting
+    $ExportedAliases = @()
+
+    ## Export each alias only if it hasn't been exported yet
+    if ( $Aliases ) {
+        foreach ( $Alias in $Aliases ) {
+            if ( $ExportedAliases -notcontains $Alias.Name ) {
+                Write-Debug "Exporting alias: $($Alias.Name)"
+                Export-ModuleMember -Alias $Alias.Name
+
+                ## Add alias to the list of exported aliases
+                $ExportedAliases += $Alias.Name
+            }
+            else {
+                Write-Debug "Skipping duplicate export for alias: $($Alias.Name)"
+            }
+        }
+    }
+    else {
+        Write-Warning "No aliases found to export."
     }
 }
