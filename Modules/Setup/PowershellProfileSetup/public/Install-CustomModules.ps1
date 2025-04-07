@@ -156,7 +156,13 @@ function Install-CustomModules {
             }
 
             ## Copy the entire module folder to the destination directory
-            Copy-Item -Path $SourcePath -Destination $DestinationPath -Recurse -Force
+            try {
+                Copy-Item -Path $SourcePath -Destination $DestinationPath -Recurse -Force
+            }
+            catch {
+                Write-Error "Error copying module from '$SourcePath' to '$DestinationPath'. Details: $($_.Exception.Message)"
+                continue
+            }
 
             Write-Host "Installed module '$ModuleName' to '$DestinationPath'" -ForegroundColor Green
         }
