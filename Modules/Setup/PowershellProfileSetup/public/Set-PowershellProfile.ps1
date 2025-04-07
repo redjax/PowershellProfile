@@ -2,15 +2,16 @@ function Set-PowershellProfile {
     param(
         [string]$RepoProfilesDir = "Profiles",
         [string]$ProfilePath = $PROFILE,
-        [string]$PSModulesPath = "$(Split-Path $ProfilePath -Parent)\Modules",
         [string]$ProfileName = "Default"
     )
 
+    Write-Verbose "Repository profiles path: $($RepoProfilesDir)"
     Write-Verbose "Powershell profile path: $($ProfilePath)"
-    Write-Verbose "Powershell modules path: $($PSModulesPath)"
+    Write-Verbose "Profile name: $($ProfileName)"
+    
 
     ## Repository profiles path
-    $RepoProfilesDir = Join-Path (Get-Location) "$($RepoProfilesDir)"
+    # $RepoProfilesDir = Join-Path (Get-Location) "$($RepoProfilesDir)"
     ## Define the source path for ProfileName.ps1 (in the root of the git repository)
     $RepoProfilePath = Join-Path $RepoProfilesDir "$($ProfileName).ps1"
     Write-Verbose "Repository Profile path: $($RepoProfilePath)"
@@ -18,7 +19,7 @@ function Set-PowershellProfile {
     ## Check if the profile exists
     if (Test-Path $ProfilePath) {
         ## Backup the existing profile by copying it to $PROFILE.bak (overwriting if exists)
-        Write-Output "Backing up existing profile."
+        Write-Host "Backing up existing profile." -ForegroundColor Magenta
         Write-Debug "Move $($ProfilePath) -> $($ProfilePath).bak"
 
         try {
@@ -32,18 +33,19 @@ function Set-PowershellProfile {
     else {
 
         ## If no profile exists, create one by copying ProfileName.ps1 to the correct path
-        Write-Output "No profile found. Creating a new profile."
+        Write-Warning "No profile found. Creating a new profile."
     }
 
     ## Check if ProfileName.ps1 exists
     if (Test-Path $RepoProfilePath) {
-        Write-Output "Install Powershell profile from repository"
+        Write-Host "Install Powershell profile from repository" -ForegroundColor Cyan
         Write-Debug "Copy '$($RepoProfilePath)' to '$($ProfilePath)'"
 
         Copy-Item -Path $RepoProfilePath -Destination $ProfilePath -Force
-        Write-Output "New profile created from $($ProfileName).ps1."
+        Write-Host "New profile created from $($ProfileName).ps1." -ForegroundColor Green
     }
     else {
-        Write-Output "$($ProfileName).ps1 not found at the repository root."
+        Write-Warning "$($ProfileName).ps1 not found at path: $($RepoProfilePath)"
+        return
     }
 }
