@@ -1,7 +1,10 @@
 function y {
     <#
         .SYNOPSIS
-        Function for Yazii
+        Alias-like function for yazi
+
+        .DESCRIPTION
+        Wrap the yazi command to pass args & handle non-existent directories.
     #>
     if ( Get-Command yazi -ErrorAction SilentlyContinue ) {   
         $tmp = [System.IO.Path]::GetTempFileName()
