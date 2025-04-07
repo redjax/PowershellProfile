@@ -48,6 +48,8 @@ try {
         -ModuleAuthor $ProfileConfig.repo.author `
         -ModuleName $ModuleName `
         -RepoModulesDir $RepoModulesDir
+    
+    Write-Host "Updated '$($ModuleName)' module's manifest" -ForegroundColor Green
 }
 catch {
     Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
@@ -55,15 +57,18 @@ catch {
 }
 
 ## Install Base $PROFILE
+Write-Host "Installing base profile" -ForegroundColor Cyan
 try {
     Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/Bases/$($ProfileConfig.repo.profile_base)"
+    Write-Host "Installed base profile to: $(Split-Path $PROFILE -Parent)\_Base.ps1" -ForegroundColor Green
 }
 catch {
     Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
     exit 1
 }
 
-## Install $PROFILE
+## Install ProfileModule
+Write-Host "Installing custom profile module" -ForegroundColor Cyan
 try {
     Install-ProfileModule -RepositoryPath $PSScriptRoot
     Write-Host "Installed $($ModuleName) module" -ForegroundColor Green
@@ -74,22 +79,6 @@ catch {
 }
 
 ## Install modules
-# if ( -not ( Test-Path -Path $ModuleInstallScriptPath -ErrorAction SilentlyContinue ) ) {
-#     Write-Error "Module install script not found at path '$ModuleInstallScriptPath'. Custom modules will not be installed."
-
-# }
-# else {
-#     Write-Host "Installing custom Powershell modules" -ForegroundColor Cyan
-#     try {
-#         . $ModuleInstallScriptPath -ConfigFile $ConfigFile
-#         Write-Host "Installed custom modules" -ForegroundColor Green
-#     }
-#     catch {
-#         Write-Error "Error installing custom modules. Details: $($_.Exception.Message)"
-#         exit 1
-#     }
-# }
-
 Write-Host "Installing custom Powershell modules" -ForegroundColor Cyan
 try {
     Install-CustomModules `
@@ -103,6 +92,22 @@ try {
 }
 catch {
     Write-Error "Error installing custom modules. Details: $($_.Exception.Message)"
+    exit 1
+}
+
+## Install profile
+Write-Host "Installing custom Powershell profile" -ForegroundColor Cyan
+try {
+    ## Call the Set-PowershellProfile function
+    Set-PowershellProfile `
+        -RepoProfilesDir $ProfilesDir `
+        -ProfilePath $PROFILE `
+        -ProfileName $ProfileConfig.profile.name
+
+    Write-Host "Installed custom Powershell profile" -ForegroundColor Green
+}
+catch {
+    Write-Error "Error installing custom Powershell profile. Details: $($_.Exception.Message)"
     exit 1
 }
 
