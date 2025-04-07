@@ -32,5 +32,10 @@ function Search-ScoopPackage {
         $PackageExists = $false
     }
 
-    return $PackageExists
+    Write-Host "Package '" -NoNewline ; `
+        Write-Host "$($Package)" -ForegroundColor Cyan -NoNewline ; `
+        Write-Host "' exists in scoop's repos: " -NoNewline ; `
+        if ( $PackageExists ) { Write-Host "TRUE" -ForegroundColor Green } else { Write-Host "FALSE" -ForegroundColor Red }
+
+    return
 }
