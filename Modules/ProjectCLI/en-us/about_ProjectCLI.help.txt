@@ -1,0 +1,12 @@
+﻿TOPIC
+	about_ProjectCLI
+	
+SHORT DESCRIPTION
+	A short synopsis of ProjectCLI
+
+LONG DESCRIPTION
+	A more detailed description of ProjectCLI,
+	Should tell the user how to get started with this module.
+	
+KEYWORDS
+	module development debugging
