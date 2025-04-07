@@ -17,6 +17,9 @@ $ProfileStartTime = Get-Date
 $ScriptRoot = $PSScriptRoot
 $BaseProfile = "$($ScriptRoot)\_StarshipBase.ps1"
 
+Write-Verbose "Profile script root: $($ScriptRoot)"
+Write-Host "Base profile: $($BaseProfile)"
+
 ## Create a ManualResetEvent object for starship's init state
 $Global:StarshipInitialized = New-Object System.Threading.ManualResetEvent $false
 
