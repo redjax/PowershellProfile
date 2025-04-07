@@ -16,6 +16,9 @@
 ## Uncomment to enable profile tracing
 # Set-PSDebug -Trace 1
 
+## Uncomment to enable debug logging
+# $DebugPreference = "Continue"
+
 ## Manually set this to $false to keep profile outputs on-screen after initializing
 $ClearOnInit = $false
 
@@ -32,8 +35,8 @@ if ($PSVersionTable.PSVersion.Major -eq 5) {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 }
 
-## Path to Powershell profile's Modules\Custom
-$CustomModulesPath = ( Join-Path -Path (Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
+## Path to Powershell profile's CustomModules
+$CustomModulesPath = ( Join-Path -Path ( Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
 
 function Import-CustomPSModules {
     <#
@@ -46,8 +49,9 @@ function Import-CustomPSModules {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false, HelpMessage = "Path to repository's Modules directory")]
-        $CustomModules = ( Join-Path -Path (Join-Path -Path (Split-Path -Path $PROFILE -Parent ) -ChildPath "Modules" ) -ChildPath "Custom" )
-    )    
+        $CustomModules = $CustomModulesPath
+    )
+
 
     ## Import custom modules
     if ( Test-Path -Path $CustomModules ) {
