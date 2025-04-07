@@ -51,6 +51,7 @@ Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)"
 - [Description](#description)
 - [Usage](#usage)
 - [Custom Modules](#custom-modules)
+  - [Remove custom modules](#remove-custom-modules)
 - [Developing](#developing)
 - [Notes](#notes)
 - [Links](#links)
@@ -123,6 +124,10 @@ To see a ful list of the aliases exported by this module, run: `Get-Command -Mod
 This repository includes a number of custom modules in the [Modules/Custom](./Modules/Custom/) path. These modules can add additional functionality to your `$PROFILE`. The [`_Base.ps1`](./Profiles/_Base.ps1) profile detects a folder `CustomModules/` at the `$PROFILE` path on your host; if present, it will import any modules within, adding extra functionality to your `$PROFILE`. Keeping modules in this separate `CustomModules/` directory prevents them from being auto-initialized by Powershell, allowing you to control module imports with the selected profile.
 
 You can control which modules are installed automatically by the [`Install-CustomProfile.ps1` script](./Install-CustomProfile.ps1) by editing the `custom_modules: []` key in your [`config.json`](./config.example.json). This key is a list of module names you want to install with your profile, corresponding to a directory in the [custom modules path of this repository](./Modules/Custom/).
+
+### Remove custom modules
+
+Run the [Remove-CustomModulesDir.ps1` script](./scripts/Remove-CustomModulesDir.ps1) to uninstall all custom modules. This does not affect your custom profile, only the modules in the profile path's `CustomModules/` directory.
 
 ## Developing
 
