@@ -1,12 +1,18 @@
 function Invoke-BaseProfileInstall {
     Param(
         [Parameter(Mandatory = $false, HelpMessage = "The path where the base profile will be installed.")]
-        [string]$InstallPath = "$(Split-Path $PROFILE -Parent)\_Base.ps1",
+        [string]$InstallPath = (Join-Path -Path ( Split-Path $PROFILE -Parent ) -ChildPath "\_Base.ps1"),
         [Parameter(Mandatory = $false, HelpMessage = "The path to the .ps1 file to use as the base profile.")]
-        [string]$ProfileBase = "$PSScriptRoot\Profiles\$($ProfileBaseFilename)"
+        [string]$ProfileBase = "_Base.ps1"
     )
     Write-Verbose "Profile base install `$InstallPath: $InstallPath"
-    Write-Verbose "Profile base install `$ProfileBasea: $ProfileBasea"
+    Write-Verbose "Profile base install `$ProfileBasea: $ProfileBase"
+
+    ## Build full path to base profile
+    $ProfileBasePath = ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath "Profiles" ) -ChildPath "Bases" )
+    ## Re-assign $ProfileBase
+    $ProfileBase = ( Join-Path -Path $ProfileBasePath -ChildPath $ProfileBase )
+    
 
     if ( -Not $ProfileBase ) {
         Write-Error "-ProfileBase cannot be null"
