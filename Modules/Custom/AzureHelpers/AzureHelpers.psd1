@@ -40,6 +40,7 @@
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Install-AzureCLI'
+		'Search-KVSecret'
 	)
 	
 	# Cmdlets to export from this module
