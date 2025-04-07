@@ -7,20 +7,9 @@ These docs are for adding new features/modules/profiles to this repository.
 - [Table of Contents](#table-of-contents)
 - [Base template](#base-template)
 - [Add new functions and aliases](#add-new-functions-and-aliases)
+- [Add a new custom module](#add-a-new-custom-module)
 - [Update the manifest](#update-the-manifest)
 - [Linting and analyzing](#linting-and-analyzing)
-
-## ToDo <!-- omit in toc -->
-
-- [ ] Add functionality for copying to all `$PROFILE` paths
-  - [ ] `$PROFILE.AllUsersAllHosts`
-    - Affects all users and all hosts (e.g., PowerShell, VS Code integrated terminal). 
-  - [ ] `$PROFILE.AllUsersCurrentHost`
-    - Affects all users but only for the current host application (e.g., `powershell.exe`, `pwsh.exe`, or a specific editor). 
-  - [ ] `$PROFILE.CurrentUserAllHosts`
-    - Affects only the current user but applies to all host applications.
-  - [ ] `$PROFILE.CurrentUserCurrentHost`
-    - Affects only the current user and the current host application.
 
 ## Base template
 
@@ -32,6 +21,7 @@ $BaseProfile = "$($PSScriptRoot)\_Base.ps1"
 If ( -Not ( Test-Path -Path "$($BaseProfile)" ) ) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
 } else {
+  ## Source base profile
   . "$($BaseProfile)"
 }
 ```
@@ -58,19 +48,38 @@ else {
 }
 ```
 
-Keep the base template minimal. This template loads my custom [`ProfileModule`](../Modules/ProfileModule/), with all of the functions & aliases & module imports, before initializing the rest of the Powershell profile. For an example of what this looks like, check the [`Default.ps1` profile](../Profiles/Default.ps1).
+Keep the base template minimal. This template loads the [`ProfileModule`](../Modules/ProfileModule/) before initializing the rest of the Powershell profile. For an example of what this looks like, check the [`Default.ps1` profile](../Profiles/Default.ps1).
 
 ## Add new functions and aliases
 
-To add new functions to the module, consider if the function is meant to be used internally in the module (functions & aliases you do not need/want to expose to the user), or exported to the session.
+Before adding to the `ProfileModule`, consider if the new code warrants a custom module. If you are adding simple scripts, or aliases/functions you want to have available in every profile, you can add directly to the `ProfileModule`. For 3rd party applications (like [Bitwarden](../Modules/Custom/BitwardenHelpers/) or [the Azure CLI](../Modules/Custom/AzureHelpers/)), it is usually best to [create a new custom module](#add-a-new-custom-module) and keep the code contained to a module. Your profile can be modular this way, importing only the modules you need for programs you have installed, by editing the `custom_modules: []` key of [your config](../config.example.json).
+
+---
+
+To add new functions to the module, consider if the function is meant to be used internally in the module (functions & aliases you do not need/want to expose to the user), or exported to the session & made available to the user.
 
 If the script/file is meant to be accessible only from within the module, create the file in [`Functions/Private`](./Modules/ProfileModule/Functions/Private/).
 
 If you are writing a custom function or setting an alias meant to be accessible by the user when this module is imported, the file belongs in [`Functions/Public`](./Modules/ProfileModule/Functions/Public/). These files are sourced by the [module's `.psm1` file](./Modules/ProfileModule/ProfileModule.psm1), and exported with the module.
 
+You can use subdirectories in the `Public` and `Private` directories to keep code together based on logical groupings; the [manifest script](../Modules/ProfileModule/ProfileModule.psm1) sources these paths recursively.
+
 If you are setting an alias, i.e. `Set-Alias -Name tn -Value Test-NetConnection`, edit the [`Aliases.ps1`](./Modules/ProfileModule/Aliases.ps1) file.
 
-You can see all exported functions & aliases by using `Get-Module ProfileModule` after installing it.
+You can see all exported functions & aliases by using `Get-Module ProfileModule` after installing it (or the `Show-ProfileModuleFunctions`/`Show-ProfileModuleAliases` functions imported by the `ProfileModule`).
+
+## Add a new custom module
+
+Run the [`New-ModuleTemplate.ps1` script](../scripts/New-ModuleTemplate.ps1), which standardizes module creation. You can pass a module name with the `-Name` param, but if you run the script without any parameters, you will be prompted for a name & description. The script then calls the [`Invoke-PSMDTemplate` function](https://psframework.org/documentation/commands/PSModuleDevelopment/Invoke-PSMDTemplate.html) to generate scaffolding for your new module. `Invoke-PSMDTemplate` is part of the [`PowerShell Framework` project](https://psframework.org).
+
+Find your new module in the [`Modules/Custom` path](../Modules/Custom/). Use the `readme.md` files in each path to learn more about the structure of a module created with `Invoke-PSMDTemplate`. Generally, the structure of a new module can be understood as:
+
+| Module Path           | Purpose                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `internal/functions/` | Functions placed in this path (or subdirectories in this path) are available to other functions in the same module, but are not exported to the user. This path is useful for internal helper functions like elevating a command prompt or testing if a path exists & taking an action. Functions in this path are not exported to the user, but can be used accross sub-modules/paths in the same module. |
+| `internal/scripts/`   | Scripts or code blocks that serve an internal purpose, like initialization scripts or setup routines.                                                                                                                                                                                                                                                                                                      |
+| `private/`            | Similar to the `internal/` path, except they are not intended for broader use and are not avaiable to sub-components/submodules.                                                                                                                                                                                                                                                                           |
+| `public/`             | Code in this path will be exported to the user. Functions defined here are available to sessions where the module is imported, as are variables & aliases. The `Show-ProfileModuleFunctions` command will detect all imported custom modules and show the functions they provide to the current session.                                                                                                   |
 
 ## Update the manifest
 
