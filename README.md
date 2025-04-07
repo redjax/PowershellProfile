@@ -33,26 +33,38 @@ My Powershell `$PROFILE` module.
 
 [Documentation](./docs/)
 
-This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module. This repository includes swappable [Powershell profiles](./Profiles/).
+**WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously.
 
-All Profiles load from a [common base profile](./docs/Developing.md#base-template).
+You can backup your current profile with:
 
-**WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously. You can backup your current profile with: `Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"`. To restore it later, run `Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)`.
+```powershell
+Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"
+```
+
+To restore it later, run:
+```powershell
+Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)"
+```
 
 ## Table of Contents <!-- omit in toc -->
 
 - [Description](#description)
 - [Usage](#usage)
 - [Custom Modules](#custom-modules)
+  - [Remove custom modules](#remove-custom-modules)
 - [Developing](#developing)
 - [Notes](#notes)
 - [Links](#links)
 
 ## Description
 
-This is my custom Powershell profile. All profiles share a common ["base" profile](./Profiles/_Base.ps1). This is a `$PROFILE` that handles initializing my common, shared code, like importing [custom modules](./Modules/Custom/), setting options based on which Powershell environment is running (PS5, PS7,  Powershell ISE, etc), and importing the [`ProfileModule`](./Modules/ProfileModule/).
+This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module.
 
-The `ProfileModule` adds some helper methods and aliases to each Powershell session it is imported into.
+Each [custom Powershell profile](./Profiles/) loads the [common base profile](./docs/Developing.md#base-template). The base template handles any common code I want available across all profiles, like importing [custom modules](./Modules/Custom/), setting options based on which Powershell environment is running (PS5, PS7,  Powershell ISE, etc), and importing the [`ProfileModule`](./Modules/ProfileModule/).
+
+Each custom profile, i.e. the [starship profile](./Profiles/Starship.ps1), source the `_Base.ps1` file when they initialize to load that common/shared code.
+
+The [`ProfileModule`](./Modules/ProfileModule/) adds some helper methods and aliases to each Powershell session it is imported into.
 
 By editing the [`config.json` file](./config.example.json), you can control which [custom profile](./Profiles/) is installed. Each custom profile sources the `_Base.ps1` profile, then builds on top of it. For example, the [`Starship` profile](./Profiles/Starship.ps1) automatically initializes [Starship](https://starship.rs) if it is installed.
 
@@ -67,22 +79,41 @@ To skip installing certain modules, just answer `n` when prompted by the `Instal
 - Clone the repository
 - Copy [`config.example.json`](./config.example.json) to `config.json`
   - Edit the file if you want to install a profile other than [the default profile](./Profiles/Default.ps1)
-- Run `Install-CustomProfile.ps1`
-  - This script will:
-    - Import the [`PowershellProfileSetup` module](./scripts/setup/PowershellProfileSetup/)
-    - Create a backup of your existing `$PROFILE` at `$($PROFILE).bak`.
-      - You may still want to copy your old `$PROFILE`, like:
-        - `cp $PROFILE "$($PROFILE).orig"`
-        - This will prevent accidentally nuking any customizations you've made to your `$PROFILE`
-    - Update the module's [manifest file](./Modules/ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
-    - Copy the [`ProfileModule`](./Modules/ProfileModule/) directory (the custom profile module) to your Modules/ directory in the same path as your `$PROFILE`.
-    - Copy/update a [custom profile](./Profiles/) (default: [`Default.ps1`](./Profiles/Default.ps1)) to your machine's `$PROFILE` location.
-      - The [default custom profile](./Profiles/Default.ps1) imports the `ProfileModule`, loading all custom functions and setting the shell's session to my custom profile module.
-      - To use a different profile, pass a `-ProfileName <profilename>`, where `<profilename>` is the name of a file in the [`Profiles/`](./Profiles/) directory without the `.ps1` file extension.
-        - i.e. `-ProfileName Default` would use [`./Profiles/Default.ps1`](./Profiles/Default.ps1)
-- (Optional) Run `Install-CustomPSModules.ps1` to run through a list of this repository's [custom modules](./Modules/Custom/).
-  - You will be prompted for `y`/`n` answers to install each module, allowing control over what is added to your `$PROFILE`
-- Restart your shell
+  - You can also control which [custom modules](./Modules/Custom/) are installed by editing the `custom_modules` list in the `config.json` file
+    - Add only the module name, for example if you want to install the [`DatetimeHelpers` modules](./Modules/Custom/DatetimeHelpers/), just add `"DatetimeHelpers"` to the `custom_modules` list
+- Install the profile
+  - Automatic (scripted install)
+    - Run `Install-CustomProfile.ps1`
+    - This script will:
+      - Import the [`PowershellProfileSetup` module](./scripts/setup/PowershellProfileSetup/)
+      - Create a backup of your existing `$PROFILE` at `$($PROFILE).bak`.
+        - You may still want to copy your old `$PROFILE`, like: `cp $PROFILE "$($PROFILE).orig"`. This will prevent accidentally nuking any customizations you've made to your `$PROFILE`
+      - Update the module's [manifest file](./Modules/ProfileModule/ProfileModule.psd1), ensuring all functions & aliases are exported properly.
+      - Copy the [shared base profile](./Profiles/_Base.ps1) to your Powershell path
+      - Copy the [`ProfileModule`](./Modules/ProfileModule/) directory (the custom profile module) to your `CustomModules/` directory in the same path as your `$PROFILE`.
+      - Copy/update a [custom profile](./Profiles/) (default: [`Default.ps1`](./Profiles/Default.ps1)) to your machine's `$PROFILE` location.
+        - Each [custom profile](./Profiles/) imports the [`_Base.ps1` profile](./Profiles/_Base.ps1), which loads the [`ProfileModule`](./Modules/ProfileModule/) and any custom modules defined in the `config.json`'s `custom_modules` key.
+        - To use a different profile, pass a `-ProfileName <profilename>`, where `<profilename>` is the name of a file in the [`Profiles/`](./Profiles/) directory without the `.ps1` file extension.
+          - i.e. `-ProfileName Default` would use [`./Profiles/Default.ps1`](./Profiles/Default.ps1)
+  - Manual install
+    - Open your Powershell profile path (get profile path with: `split-path $PROFILE -parent`)
+      - For Powershell 5, it should be `C:\Users\<your-username>\Documents\WindowsPowerShell`
+      - For Powershell 7 on Windows, it should be `C:\Users\<you-username>\Documents\PowerShell`
+    - Copy the [`_Base.ps1` profile](./Profiles/_Base.ps1) to your Powershell path
+      - Also copy the [profile](./Profiles/) (use the [default profile](./Profiles/Default.ps1) if you are unsure).
+    - (Optional) Install [custom modules](./Modules/Custom/)
+      - Create a directory named `CustomModules/` in your Powershell profile path
+      - Copy any custom modules you want to use into this path.
+
+After first setup, restart your terminal by closing & reopening it, or reload it in-place by running:
+
+```powershell
+## Powershell 5
+& "$PSHOME\powershell.exe" -NoExit -Command "Set-Location -Path '$PWD'"
+
+## Powershell 7
+& "$PSHOME\pwsh.exe" -NoExit -Command "Set-Location -Path '$PWD'"
+```
 
 To see a full list of the functions exported by this module, run: `Get-Command -Module ProfileModule -Commandtype Function`.
 
@@ -90,9 +121,13 @@ To see a ful list of the aliases exported by this module, run: `Get-Command -Mod
 
 ## Custom Modules
 
-This repository has a number of "helper" modules in the [Modules/Custom](./Modules/Custom/) path. These modules can add additional functionality to your `$PROFILE`. The [`_Base.ps1`](./Profiles/_Base.ps1) profile detects a folder `CustomModules/` at the `$PROFILE` path; if present, it will import any modules within, adding extra functionality to your `$PROFILE`.
+This repository includes a number of custom modules in the [Modules/Custom](./Modules/Custom/) path. These modules can add additional functionality to your `$PROFILE`. The [`_Base.ps1`](./Profiles/_Base.ps1) profile detects a folder `CustomModules/` at the `$PROFILE` path on your host; if present, it will import any modules within, adding extra functionality to your `$PROFILE`. Keeping modules in this separate `CustomModules/` directory prevents them from being auto-initialized by Powershell, allowing you to control module imports with the selected profile.
 
-You can install custom modules from this repository using the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1), which finds all custom modules in the [`Modules/Custom/`](./Modules/Custom/) path and prompts you if you want to install it. Next time you reload your shell, functions from these modules will show up in `Show-ProfileModuleFunctions` and will be available for use in your session.
+You can control which modules are installed automatically by the [`Install-CustomProfile.ps1` script](./Install-CustomProfile.ps1) by editing the `custom_modules: []` key in your [`config.json`](./config.example.json). This key is a list of module names you want to install with your profile, corresponding to a directory in the [custom modules path of this repository](./Modules/Custom/).
+
+### Remove custom modules
+
+Run the [Remove-CustomModulesDir.ps1` script](./scripts/Remove-CustomModulesDir.ps1) to uninstall all custom modules. This does not affect your custom profile, only the modules in the profile path's `CustomModules/` directory.
 
 ## Developing
 
