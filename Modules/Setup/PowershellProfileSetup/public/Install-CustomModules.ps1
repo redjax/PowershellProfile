@@ -152,7 +152,16 @@ function Install-CustomModules {
             ## Destination path for the module in HostCustomPSModulesDir
             $DestinationPath = Join-Path -Path $HostCustomPSModulesDir -ChildPath (Split-Path -Leaf $SourcePath)
             if ( Test-Path -Path $DestinationPath -ErrorAction SilentlyContinue ) {
-                Write-Warning "Module '$ModuleName' already installed and will be overwritten"
+                Write-Warning "Module '$ModuleName' already installed and will be overwritten."
+                Write-Debug "Removing existing module from path '$DestinationPath'"
+
+                try {
+                    Remove-Item $DestinationPath -Recurse -Force
+                }
+                catch {
+                    Write-Error "Error removing path '$DestinationPath'. Details: $($_.Exception.Message)"
+                    continue
+                }
             }
 
             ## Copy the entire module folder to the destination directory
