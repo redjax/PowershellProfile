@@ -41,6 +41,7 @@
 	FunctionsToExport = @(
 		'Initialize-ScoopCli'
 		'Install-ScoopCli'
+		'Search-ScoopPackage'
 	)
 	
 	# Cmdlets to export from this module
