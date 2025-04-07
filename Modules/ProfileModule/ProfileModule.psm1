@@ -25,18 +25,19 @@ $PublicFunctions = Get-ChildItem -Path $PublicFunctionsPath -Recurse -Filter *.p
 
 ## Get list of .ps1 files in Private/ recursively
 if (Test-Path "$($PrivateFunctionsPath)") {
-    $PrivateFunctions = Get-ChildItem -Path $PrivateFunctionsPath -Recurse -Filter *.ps1
+    $PrivateFunctions = ( Get-ChildItem -Path $PrivateFunctionsPath -Recurse -Filter *.ps1 )
 
     ## Load all private/internal Powershell functions from script files
     $PrivateFunctions | ForEach-Object {
         Write-Debug "Sourcing private function: $($_.FullName)"
-        .$_.FullName
+
+        . "$($_.FullName)"
     }
 }
 
 $PublicFunctions | ForEach-Object {
     Write-Debug "Sourcing public function: $($_.FullName)"
-    .$_.FullName
+    . $_.FullName
 }
 
 ## Gather function names from each script in the Public folder
@@ -78,8 +79,8 @@ if (Test-Path -Path $AliasesPath) {
 
     foreach ($AliasFile in $AliasFiles) {
         # Source each .ps1 file in the Aliases directory
-        Write-Debug "Sourcing alias file: $($_.FullName)"
-        .$AliasFile.FullName
+        Write-Debug "Sourcing alias file: $(AliasFile)"
+        . $AliasFile
     }
 
     ## Get all aliases defined in the module
