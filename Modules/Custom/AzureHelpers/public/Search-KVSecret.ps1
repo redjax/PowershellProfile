@@ -1,4 +1,3 @@
-
 function Search-KVSecret {
     param (
         [Parameter(Position = 0, Mandatory = $true, ValueFromRemainingArguments = $false)]
