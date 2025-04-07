@@ -14,8 +14,7 @@ function Install-CustomModules {
 
     [string]$SetupModuleFilename = "PowershellProfileSetup"
 
-    Write-Host "`$SetupModulePath=$($SetupModulePath)" -ForegroundColor Yellow
-
+    Write-Verbose "`$SetupModulePath=$($SetupModulePath)"
     Write-Verbose "`$RepoCustomModulesDir=$($RepoCustomModulesDir)"
     Write-Verbose "`$HostCustomPSModulesDir=$($HostCustomPSModulesDir)"
 
