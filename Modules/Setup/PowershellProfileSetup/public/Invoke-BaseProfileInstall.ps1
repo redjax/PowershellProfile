@@ -8,19 +8,27 @@ function Invoke-BaseProfileInstall {
     Write-Verbose "Profile base install `$InstallPath: $InstallPath"
     Write-Verbose "Profile base install `$ProfileBasea: $ProfileBase"
 
-    ## Build full path to base profile
-    $ProfileBasePath = ( Join-Path -Path ( Join-Path -Path $PSScriptRoot -ChildPath "Profiles" ) -ChildPath "Bases" )
-    ## Re-assign $ProfileBase
-    $ProfileBase = ( Join-Path -Path $ProfileBasePath -ChildPath $ProfileBase )
-    
-
     if ( -Not $ProfileBase ) {
         Write-Error "-ProfileBase cannot be null"
         exit 1
     }
 
-    if ( -Not ( Test-Path -Path $ProfileBase -ErrorAction SilentlyContinue ) ) {
-        Write-Error "Profile base not found at path: $ProfileBase"
+    ## Resolve ProfileBase Path
+    if ([System.IO.Path]::IsPathRooted($ProfileBase)) {
+        # If ProfileBase is already an absolute path, use it directly
+        Write-Debug "Using absolute path for ProfileBase: $($ProfileBase)"
+    }
+    else {
+        # If ProfileBase is relative, combine it with ProfilesDir/Bases
+        $ProfilesDir = Join-Path -Path $PSScriptRoot -ChildPath "Profiles"
+        $BasesDir = Join-Path -Path $ProfilesDir -ChildPath "Bases"
+        $ProfileBase = Join-Path -Path $BasesDir -ChildPath $ProfileBase
+        Write-Debug "Resolved relative ProfileBase to: $($ProfileBase)"
+    }
+
+    ## Validate ProfileBase Path
+    if (-Not (Test-Path -Path $ProfileBase)) {
+        Write-Error "Profile base not found at path: $($ProfileBase)"
         return
     }
 
