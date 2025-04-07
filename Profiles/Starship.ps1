@@ -7,8 +7,6 @@
 # Set-PSDebug -Trace 1
 ## Uncomment to enable debug logging
 # $DebugPreference = "Continue"
-## Uncomment to enable debug logging
-# $DebugPreference = "Continue"
 
 ## Manually set this to $false to keep profile outputs on-screen after initializing
 $ClearOnInit = $true
@@ -19,9 +17,6 @@ $ProfileStartTime = Get-Date
 $ScriptRoot = $PSScriptRoot
 $BaseProfile = "$($ScriptRoot)\_StarshipBase.ps1"
 
-Write-Verbose "Profile script root: $($ScriptRoot)"
-Write-Host "Base profile: $($BaseProfile)"
-
 ## Create a ManualResetEvent object for starship's init state
 $Global:StarshipInitialized = New-Object System.Threading.ManualResetEvent $false
 
@@ -31,22 +26,6 @@ if (-not (Test-Path -Path "$($BaseProfile)")) {
 else {
     . "$($BaseProfile)"
 }
-
-# ## Initialize Starship in the background
-# #  Wrap slow code to run asynchronously later
-# #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
-# @(
-#     {
-#         ## Initialize Starship shell
-#         Start-StarshipInit
-#     }
-# ) | ForEach-Object {
-#     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
-# } | Out-Null
-
-# if ($ClearOnInit) {
-#     Clear-Host
-# }
 
 # ## Initialize Starship in the background
 # #  Wrap slow code to run asynchronously later
@@ -80,17 +59,6 @@ else {
             Write-Error "Error initializing Starship. Details: $($_.Exception.Message)"
             ## Signal even if there's an error
             $Global:StarshipInitialized.Set()
-        try {
-            Start-StarshipInit
-            ## Indicate to the script that the ProfileModule was imported successfully
-            $Global:StarshipInitialized = $true
-            ## Signal that the module was successfully imported
-            $Global:StarshipInitialized.Set()
-        }
-        catch {
-            Write-Error "Error initializing Starship. Details: $($_.Exception.Message)"
-            ## Signal even if there's an error
-            $Global:StarshipInitialized.Set()
         }
     }
 ) | ForEach-Object {
@@ -100,7 +68,6 @@ else {
 if ($ClearOnInit) {
     Clear-Host
 }
-
 
 
 ## End profile initialization timer
