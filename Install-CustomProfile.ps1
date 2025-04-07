@@ -56,7 +56,7 @@ catch {
 
 ## Install Base $PROFILE
 try {
-    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/$($ProfileConfig.repo.profile_base)"
+    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/Bases/$($ProfileConfig.repo.profile_base)"
 }
 catch {
     Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
