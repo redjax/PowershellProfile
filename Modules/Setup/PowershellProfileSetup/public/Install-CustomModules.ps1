@@ -18,7 +18,7 @@ function Install-CustomModules {
     Write-Verbose "`$RepoCustomModulesDir=$($RepoCustomModulesDir)"
     Write-Verbose "`$HostCustomPSModulesDir=$($HostCustomPSModulesDir)"
 
-    Write-Host "`n--[ Script Setup" -ForegroundColor Magenta
+    Write-Host "`n--[ Script Setup" -ForegroundColor Blue
 
     ## Ensure PowershellProfileSetup module is available
     if (-not ( Test-Path $SetupModulePath ) ) {
@@ -70,7 +70,7 @@ function Install-CustomModules {
         return
     }
 
-    Write-Host "`n--[ Validate Environment" -ForegroundColor Magenta
+    Write-Host "`n--[ Validate Environment" -ForegroundColor Blue
 
     ## Initialize custom modules directory
     try {
@@ -89,7 +89,7 @@ function Install-CustomModules {
 
     Write-Host "Initialized custom modules directory at path: $HostCustomPSModulesDir" -ForegroundColor Green
 
-    Write-Host "`n--[ Get Config" -ForegroundColor Magenta
+    Write-Host "`n--[ Get Config" -ForegroundColor Blue
 
     ## Read repo configuration from config.json (or another file passed with -ConfigFile)
     Write-Host "Reading config from '$($ConfigFile)'" -ForegroundColor Cyan
@@ -102,7 +102,7 @@ function Install-CustomModules {
         return
     }
 
-    Write-Host "`n--[ Prepare Modules for Installation" -ForegroundColor Magenta
+    Write-Host "`n--[ Prepare Modules for Installation" -ForegroundColor Blue
 
     ## Array to store module PSCustomObjects loaded from config file
     [PSCustomObject[]]$ConfigInstallModules = @()
@@ -137,7 +137,7 @@ function Install-CustomModules {
 
     Write-Debug "Module install paths: $($ModuleInstallPaths -join ', ')"
 
-    Write-Host "`n--[ Install Modules" -ForegroundColor Magenta
+    Write-Host "`n--[ Install Modules" -ForegroundColor Blue
 
     ForEach ( $SourcePath in $ModuleInstallPaths ) {
         $ModuleName = Split-Path -Leaf $SourcePath
@@ -182,7 +182,7 @@ function Install-CustomModules {
     }
     
 
-    Write-Host "`n--[ Finished" -ForegroundColor Magenta
+    Write-Host "`n--[ Finished Installing Custom Modules" -ForegroundColor Blue
     Write-Host "Successfully installed custom Powershell modules." -ForegroundColor Green
 
     return $LASTEXITCODE

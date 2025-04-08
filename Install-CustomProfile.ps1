@@ -15,11 +15,13 @@ Param(
 # $ModuleInstallScriptPath = Join-Path -Path "scripts" -Childpath "Install-CustomPSModules.ps1"
 [string]$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
+Write-Host "`n--[ Setup Installation Environment" -ForegroundColor Magenta
+
 ## Import setup module
 Write-Host "Importing PowershellProfileSetup module from: $SetupModulePath" -ForegroundColor Cyan
 try {
     Import-Module $SetupModulePath -Force -Scope Global
-    Write-Host "Imported $($SetupModuleFilename) module" -ForegroundColor Green
+    Write-Debug "Imported $($SetupModuleFilename) module"
 }
 catch {
     Write-Error "Error importing PowershellProfileSetup module. Details: $($_.Exception.Message)"
@@ -33,7 +35,7 @@ catch {
 Write-Host "Reading config from '$($ConfigFile)'" -ForegroundColor Cyan
 try {
     $ProfileConfig = Get-ProfileConfig -ConfigFile "config.json"
-    Write-Host "Loaded configuration" -ForegroundColor Green
+    Write-Debug "Loaded configuration"
 }
 catch {
     Write-Error "Error importing profile configuration from file: $($ConfigFile). Details: $($_.Exception.Message)"
@@ -43,6 +45,7 @@ catch {
 ## Debug print configuration object
 Write-Debug ($ProfileConfig | ConvertTo-Json -Depth 10)
 
+## Update ProfileModule manifest
 try {
     Invoke-ModuleManifestUpdate `
         -ModuleAuthor $ProfileConfig.repo.author `
@@ -56,19 +59,9 @@ catch {
     exit 1
 }
 
-## Install Base $PROFILE
-Write-Host "Installing base profile" -ForegroundColor Cyan
-try {
-    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/Bases/$($ProfileConfig.repo.profile_base)"
-    Write-Host "Installed base profile to: $(Split-Path $PROFILE -Parent)\_Base.ps1" -ForegroundColor Green
-}
-catch {
-    Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
-    exit 1
-}
+Write-Host "`n--[ Install ProfileModule" -ForegroundColor Magenta
 
 ## Install ProfileModule
-Write-Host "Installing custom profile module" -ForegroundColor Cyan
 try {
     Install-ProfileModule -RepositoryPath $PSScriptRoot
     Write-Host "Installed $($ModuleName) module" -ForegroundColor Green
@@ -78,8 +71,9 @@ catch {
     exit 1
 }
 
+Write-Host "`n--[ Install Custom Powershell Modules" -ForegroundColor Magenta
+
 ## Install modules
-Write-Host "Installing custom Powershell modules" -ForegroundColor Cyan
 try {
     Install-CustomModules `
         -ConfigFile $ConfigFile `
@@ -92,6 +86,19 @@ try {
 }
 catch {
     Write-Error "Error installing custom modules. Details: $($_.Exception.Message)"
+    exit 1
+}
+
+Write-Host "`n--[ Install Custom Powershell Profile" -ForegroundColor Magenta
+
+## Install Base $PROFILE
+Write-Host "Installing base profile" -ForegroundColor Cyan
+try {
+    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/Bases/$($ProfileConfig.repo.profile_base)"
+    Write-Host "Installed base profile to: $(Split-Path $PROFILE -Parent)\_Base.ps1" -ForegroundColor Green
+}
+catch {
+    Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
     exit 1
 }
 
@@ -111,5 +118,6 @@ catch {
     exit 1
 }
 
-Write-Host "`nPowershell profile installed. Restart your terminal for changes to take effect." -ForegroundColor Green
+Write-Host "`n--[ Finished" -ForegroundColor Magenta
+Write-Host "Powershell profile installed. Restart your terminal for changes to take effect." -ForegroundColor Green
 exit $LASTEXITCODE
