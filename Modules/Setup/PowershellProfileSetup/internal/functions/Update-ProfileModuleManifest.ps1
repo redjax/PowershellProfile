@@ -162,12 +162,12 @@ function Update-ProfileModuleManifest {
     ## Scan for functions in Public/ directory only
     $PublicFunctionsPath = Join-Path $FunctionsPath "Public"
     if (Test-Path -Path $PublicFunctionsPath -PathType Container) {
-        Write-Host "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Magenta
+        Write-Host "Scanning path '$($PublicFunctionsPath)' for script files with functions." -ForegroundColor Cyan
 
         $publicScripts = Get-ChildItem -Path $PublicFunctionsPath -Filter *.ps1 -Recurse
 
         if ($publicScripts) {
-            Write-Host "Extracting uncommented functions from public scripts." -ForegroundColor Magenta
+            Write-Host "Extracting uncommented functions from public scripts." -ForegroundColor Cyan
     
 
             foreach ($script in $publicScripts) {
@@ -185,7 +185,7 @@ function Update-ProfileModuleManifest {
 
     ## Scan for aliases
     if (Test-Path -Path $AliasesPath -PathType Container) {
-        Write-Host "Scanning path '$($AliasesPath)' for alias script files." -ForegroundColor Magenta
+        Write-Host "Scanning path '$($AliasesPath)' for alias script files." -ForegroundColor Cyan
 
         # Retrieve all .ps1 files in the Aliases directory recursively
         $aliasScripts = Get-ChildItem -Path $AliasesPath -Filter *.ps1 -Recurse
@@ -231,7 +231,7 @@ function Update-ProfileModuleManifest {
     $manifest.GUID = $guid
     $manifest.Author = $Author
 
-    Write-Host "Updating module manifest at path '$($ManifestPath)'" -ForegroundColor Cyan
+    Write-Host "Updating module manifest at path '$($ManifestPath)'" -ForegroundColor Magenta
     try {
         ## Save the updated or new manifest
         $manifestContent = @"
@@ -249,7 +249,6 @@ function Update-ProfileModuleManifest {
         # Write-Host "Module manifest: $($manifestContent | ConvertTo-Json -Depth 3)"
         Set-Content -Path $ManifestPath -Value $manifestContent
 
-        Write-Host "Module manifest updated successfully." -ForegroundColor Green
     }
     catch {
         Write-Error "Error updating module manifest file. Details: $($_.Exception.Message)"
