@@ -10,6 +10,7 @@ Things I've learned building this repository.
 - [Automatic updates to module's manifest](#automatic-updates-to-modules-manifest)
 - [Generate profile GUID](#generate-profile-guid)
 - [Pass -Verbose and -Debug to other scripts](#pass--verbose-and--debug-to-other-scripts)
+- [Dynamically set aliases](#dynamically-set-aliases)
 
 ## Check Powershell version
 
@@ -194,3 +195,26 @@ If ( $Verbose ) {
 ```
 
 Passing switches as parameters uses this syntax: `-SwitchParam:$SwitchParam`.
+
+## Dynamically set aliases
+
+When creating an alias, you can use an `if ... else ...` statement to detect the presence of a command or program, and only export the alias if it is present. For example, the code below creates an alias for `lazygit` called `"lg"`:
+
+```powershell
+## lg -> lazygit
+Set-Alias -Name lg -Value lazygit
+```
+
+You can wrap this in an `if` statement that uses `Get-Command` to test if `lazygit` is installed, and will only export the alias if `lazygit` is present in the environment:
+
+```powershell
+## lg -> lazygit
+if ( Get-Command "lazygit" -ErrorAction SilentlyContinue ) {
+    ## lazygit is installed, set the alias
+    Set-Alias -Name lg -Value lazygit
+}
+else {
+    ## lazygit is not installed, unset the alias
+    Remove-Item -Path Alias:lg -ErrorAction SilentlyContinue
+}
+```
