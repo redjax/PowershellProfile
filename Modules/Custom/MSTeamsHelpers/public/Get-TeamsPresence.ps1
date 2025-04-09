@@ -1,4 +1,23 @@
 function Get-TeamsPresence {
+    <#
+        .SYNOPSIS
+        Get the presence/status of a Teams user or array of Teams users.
+
+        .DESCRIPTION
+        Query a user/array of users' Teams presence/status using the Microsoft Graph API.
+
+        .PARAMETER UPNs
+        Array of usernames to monitor presence (username@domain.tld)
+
+        .PARAMETER LoopSleep
+        Number of seconds between each loop
+
+        .PARAMETER Repeat
+        Number of times to run the loop (default: 1, use -Result 0 for infinite loop)
+
+        .EXAMPLE
+        Get-TeamsPresence -UPNs @("username@domain.tld", "username2@domain.tld") -LoopSleep 30 -Repeat 3
+    #>
     Param(
         [CmdletBinding()]
         ## Enforce UPN format
