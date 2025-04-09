@@ -1,24 +1,24 @@
 ﻿@{
 	# Script module or binary module file associated with this manifest
-	RootModule = 'MSTeamsHelpers.psm1'
+	RootModule        = 'MSTeamsHelpers.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0'
+	ModuleVersion     = '1.0.0'
 	
 	# ID used to uniquely identify this module
-	GUID = '9f99a63a-77da-45ce-abf7-9807aa486fd0'
+	GUID              = '9f99a63a-77da-45ce-abf7-9807aa486fd0'
 	
 	# Author of this module
-	Author = 'JKenyon'
+	Author            = 'JKenyon'
 	
 	# Company or vendor of this module
-	CompanyName = 'MyCompany'
+	CompanyName       = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright = 'Copyright (c) 2025 JKenyon'
+	Copyright         = 'Copyright (c) 2025 JKenyon'
 	
 	# Description of the functionality provided by this module
-	Description = 'Helpers for interacting with Microsoft Teams.'
+	Description       = 'Helpers for interacting with Microsoft Teams.'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
 	PowerShellVersion = '5.0'
@@ -38,22 +38,24 @@
 	# FormatsToProcess = @('xml\MSTeamsHelpers.Format.ps1xml')
 	
 	# Functions to export from this module
-	FunctionsToExport = ''
+	FunctionsToExport = @(
+		'Get-TeamsPresence'
+	)
 	
 	# Cmdlets to export from this module
-	CmdletsToExport = ''
+	CmdletsToExport   = ''
 	
 	# Variables to export from this module
 	VariablesToExport = ''
 	
 	# Aliases to export from this module
-	AliasesToExport = ''
+	AliasesToExport   = ''
 	
 	# List of all files packaged with this module
-	FileList = @()
+	FileList          = @()
 	
 	# Private data to pass to the module specified in ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-	PrivateData = @{
+	PrivateData       = @{
 		
 		#Support for PowerShellGet galleries.
 		PSData = @{
