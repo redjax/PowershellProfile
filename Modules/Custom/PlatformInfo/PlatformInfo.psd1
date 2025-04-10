@@ -45,7 +45,8 @@
 		'Get-PlatformDisk',
 		'Get-PlatformGPU',
 		'Get-PlatformNetwork',
-		'Get-PlatformBIOS'
+		'Get-PlatformBIOS',
+		'Get-PlatformMotherboard'
 	)
 	
 	# Cmdlets to export from this module
@@ -55,7 +56,9 @@
 	VariablesToExport = ''
 	
 	# Aliases to export from this module
-	AliasesToExport   = ''
+	AliasesToExport   = @(
+		'Get-PlatformMobo'
+	)
 	
 	# List of all files packaged with this module
 	FileList          = @()
