@@ -9,9 +9,18 @@ function Get-PlatformOS {
             Version, `
             BuildNumber, `
             OSArchitecture, `
+            SerialNumber, `
             LastBootUpTime, `
             InstallDate, `
-            RegisteredUser
+            RegisteredUser, `
+            SystemDrive, `
+            SystemDirectory, `
+            WindowsDirectory, `
+            TotalVisibleMemorySize, `
+            FreePhysicalMemory, `
+            SizeStoredInPagingFiles, `
+            FreeVirtualMemory, `
+            FreeSpaceInPagingFiles
     }
     catch {
         Write-Error "Error getting platform OS info. Details: $($_.Exception.Message)"
