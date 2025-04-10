@@ -51,7 +51,8 @@
 		'Get-PlatformProcesses',
 		'Get-PlatformLastBoot',
 		'Get-PlatformServices',
-		'Get-PlatformEnvironment'
+		'Get-PlatformEnvironment',
+		'Get-PlatformUpdates'
 	)
 	
 	# Cmdlets to export from this module
