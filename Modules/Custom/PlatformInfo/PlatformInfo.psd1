@@ -50,7 +50,8 @@
 		'Get-PlatformUsers',
 		'Get-PlatformProcesses',
 		'Get-PlatformLastBoot',
-		'Get-PlatformServices'
+		'Get-PlatformServices',
+		'Get-PlatformEnvironment'
 	)
 	
 	# Cmdlets to export from this module
@@ -61,7 +62,8 @@
 	
 	# Aliases to export from this module
 	AliasesToExport   = @(
-		'Get-PlatformMobo'
+		'Get-PlatformMobo',
+		'Get-PlatformEnv'
 	)
 	
 	# List of all files packaged with this module
