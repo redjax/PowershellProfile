@@ -9,7 +9,7 @@ function Get-PlatformEventLogs {
     )
     
     try {
-        Get-EventLog -LogName System -Newest $MaxEntries | Select-Object -Property `
+        $Events = Get-EventLog -LogName System -Newest $MaxEntries | Select-Object -Property `
             TimeGenerated, `
             EntryType, `
             Source, `
@@ -24,4 +24,6 @@ function Get-PlatformEventLogs {
     catch {
         Write-Error "Error retrieving event logs. Details: $($_.Exception.Message)"
     }
+
+    $Events
 }
