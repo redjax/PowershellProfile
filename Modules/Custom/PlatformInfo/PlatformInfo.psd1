@@ -47,7 +47,8 @@
 		'Get-PlatformNetwork',
 		'Get-PlatformBIOS',
 		'Get-PlatformMotherboard',
-		'Get-PlatformUsers'
+		'Get-PlatformUsers',
+		'Get-PlatformProcesses'
 	)
 	
 	# Cmdlets to export from this module
