@@ -39,7 +39,8 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'Get-PlatformCPU'
+		'Get-PlatformCPU',
+		'Get-PlatformMemory'
 	)
 	
 	# Cmdlets to export from this module
