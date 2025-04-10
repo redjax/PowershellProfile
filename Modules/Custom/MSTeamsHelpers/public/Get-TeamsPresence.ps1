@@ -143,7 +143,17 @@ function Get-TeamsPresence {
             break
         }
 
-        Write-Host "`n[$(Get-Date -Format T)] Loop $i of $($Repeat -eq 0 ? '∞' : $Repeat): Getting presence for $($UPNs.Count) UPN(s)" -ForegroundColor Cyan
+        if ( $Repeat -eq 0 ) {
+            $LoopRepeatString = " Loop $i (infinite)"
+        }
+        elseif ( $Repeat -eq 1 ) {
+            $LoopRepeatString = $null
+        }
+        else {
+            $LoopRepeatString = " Loop $i"
+        }
+
+        Write-Host "`n[$(Get-Date -Format T)]$($LoopRepeatString): Getting presence for $($UPNs.Count) UPN(s)" -ForegroundColor Cyan
 
         $results = foreach ($upn in $UPNs) {
             try {
@@ -155,7 +165,7 @@ function Get-TeamsPresence {
             }
         }
 
-        Write-Host "`n--[ Results: (Loops $i) ]--`nRetrieved $($results.Count) presence(s)." -ForegroundColor Green
+        Write-Host "`n--[ Results: (Loop #$i) ]--`nRetrieved $($results.Count) presence(s)." -ForegroundColor Green
         $results | Format-Table -AutoSize
 
         if ($Repeat -eq 0 -or $i -lt $Repeat) {
