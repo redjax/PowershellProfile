@@ -9,7 +9,12 @@ function Get-PlatformMemory {
             Speed, `
             Manufacturer, `
             PartNumber, `
-            SerialNumber
+            SerialNumber, `
+            DeviceLocator, `
+            FormFactor, `
+            MemoryType, `
+            ConfiguredClockSpeed, `
+            BankLabel
     }
     catch {
         Write-Error "Error getting platform memory info. Details: $($_.Exception.Message)"
