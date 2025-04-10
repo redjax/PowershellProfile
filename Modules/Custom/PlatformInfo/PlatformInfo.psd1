@@ -46,7 +46,8 @@
 		'Get-PlatformGPU',
 		'Get-PlatformNetwork',
 		'Get-PlatformBIOS',
-		'Get-PlatformMotherboard'
+		'Get-PlatformMotherboard',
+		'Get-PlatformUsers'
 	)
 	
 	# Cmdlets to export from this module
