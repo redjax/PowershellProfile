@@ -165,7 +165,7 @@ function Get-TeamsPresence {
             }
         }
 
-        Write-Host "`n--[ Results: (Loops $i) ]--`nRetrieved $($results.Count) presence(s)." -ForegroundColor Green
+        Write-Host "`n--[ Results: (Loop #$i) ]--`nRetrieved $($results.Count) presence(s)." -ForegroundColor Green
         $results | Format-Table -AutoSize
 
         if ($Repeat -eq 0 -or $i -lt $Repeat) {
