@@ -53,7 +53,8 @@
 		'Get-PlatformServices',
 		'Get-PlatformEnvironment',
 		'Get-PlatformUpdates',
-		'Get-PlatformEventLogs'
+		'Get-PlatformEventLogs',
+		'Get-PlatformFirewallRules'
 	)
 	
 	# Cmdlets to export from this module
