@@ -54,7 +54,8 @@
 		'Get-PlatformEnvironment',
 		'Get-PlatformUpdates',
 		'Get-PlatformEventLogs',
-		'Get-PlatformFirewallRules'
+		'Get-PlatformFirewallRules',
+		'Get-SystemTimeZone'
 	)
 	
 	# Cmdlets to export from this module
