@@ -42,7 +42,8 @@
 		'Get-PlatformCPU',
 		'Get-PlatformMemory',
 		'Get-PlatformOS',
-		'Get-PlatformDisk'
+		'Get-PlatformDisk',
+		'Get-PlatformGPU'
 	)
 	
 	# Cmdlets to export from this module
