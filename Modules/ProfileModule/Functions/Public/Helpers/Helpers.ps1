@@ -40,3 +40,24 @@ function Restart-ShellSession {
     ## Exit the current session
     exit
 }
+
+function Test-PendingReboot {
+    <#
+        .SYNOPSIS
+        Check if the system requires a reboot.
+    #>
+    
+    try {
+        $PendingReboot = @{
+            ComponentBasedServicing = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
+            WindowsUpdate           = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
+            PendingFileRename       = Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations'
+            ClusterReboot           = Test-Path 'HKLM:\Cluster\Nodes'
+        }
+
+        [PSCustomObject]$PendingReboot
+    }
+    catch {
+        Write-Error "Error checking pending reboot status."
+    }
+}
