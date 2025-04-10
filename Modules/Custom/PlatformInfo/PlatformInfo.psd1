@@ -48,7 +48,8 @@
 		'Get-PlatformBIOS',
 		'Get-PlatformMotherboard',
 		'Get-PlatformUsers',
-		'Get-PlatformProcesses'
+		'Get-PlatformProcesses',
+		'Get-PlatformLastBoot'
 	)
 	
 	# Cmdlets to export from this module
