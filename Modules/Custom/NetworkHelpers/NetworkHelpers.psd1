@@ -44,7 +44,8 @@
 		'Start-UpMonitor',
 		'Get-HTTPSiteAvailable',
 		'Start-Ping',
-		'Get-RandomUAString'
+		'Get-RandomUAString',
+		'Test-PortInUse'
 	)
 	
 	# Cmdlets to export from this module
