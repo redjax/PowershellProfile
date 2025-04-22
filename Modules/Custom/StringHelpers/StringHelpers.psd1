@@ -41,7 +41,8 @@
 	FunctionsToExport = @(
 		'Convert-ToLowercase',
 		'Convert-ToTitlecase',
-		'Convert-ToUppercase'
+		'Convert-ToUppercase',
+		'Convert-ToBase64Encoded'
 	)
 	
 	# Cmdlets to export from this module
