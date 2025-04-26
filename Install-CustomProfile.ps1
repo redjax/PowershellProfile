@@ -6,7 +6,10 @@ Param(
     [Parameter(mandatory = $false, HelpMessage = "Path to repo modules directory")]
     [string]$RepoModulesDir = "$($PSScriptRoot)\Modules",
     [Parameter(mandatory = $false, HelpMessage = "Path to repo Profiles directory")]
-    [string]$ProfilesDir = "$($PSScriptRoot)\Profiles"
+    [string]$ProfilesDir = "$($PSScriptRoot)\Profiles",
+    [Parameter(Mandatory = $false, HelpMessage = "Force a clean reinstall by removing all custom modules & reimporting only the ones specified in config.json")]
+    [switch]$Clean
+
 )
 
 ## Vars
@@ -81,6 +84,7 @@ try {
         -HostCustomPSModulesDir $HostCustomPSModulesDir `
         -SetupModulePath $SetupModulePath `
         -ErrorAction Stop `
+        -Clean:$Clean
     | Out-Null
     Write-Host "Installed custom modules" -ForegroundColor Green
 }

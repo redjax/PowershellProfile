@@ -46,7 +46,8 @@
 		'Install-ProfileModule',
 		'Install-CustomModules',
 		'Invoke-CustomModulesPathInit',
-		'Set-CustomPSModulesPath'
+		'Set-CustomPSModulesPath',
+		'Remove-CustomModules'
 	)
 	
 	# Cmdlets to export from this module
