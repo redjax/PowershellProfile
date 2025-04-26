@@ -8,8 +8,9 @@ function Install-CustomModules {
         [Parameter(mandatory = $false, HelpMessage = "Path to custom modules for installation")]
         [string]$RepoCustomModulesDir,
         [Parameter(mandatory = $false, HelpMessage = "Path to host's custom moduless directory in the `$PROFILE path")]
-        [string]$HostCustomPSModulesDir
-
+        [string]$HostCustomPSModulesDir,
+        [Parameter(Mandatory = $false, HelpMessage = "Force a clean reinstall by removing all custom modules & reimporting only the ones specified in config.json")]
+        [switch]$Clean
     )
 
     [string]$SetupModuleFilename = "PowershellProfileSetup"
@@ -46,7 +47,7 @@ function Install-CustomModules {
         }
         catch {
             Write-Error "Error importing PowershellProfileSetup module. Details: $($_.Exception.Message)"
-            return
+            throw $_
         }
     }
 
@@ -85,6 +86,17 @@ function Install-CustomModules {
     if (-not $CustomModulesDirCreatedStatus) {
         Write-Error "Did not find custom modules directory at path: $HostCustomPSModulesDir."
         return
+    }
+
+    if ( $Clean ) { 
+        Write-Warning "-Clean was detected, all custom modules will be uninstalled, and only the specified modules will be reinstalled."
+        try {
+            Remove-Item -Path $HostCustomPSModulesDir -Recurse -Force
+        }
+        catch {
+            Write-Error "Could not remove custom modules directory at path: $HostCustomPSModulesDir. Details: $($_.Exception.Message)"
+            throw $_
+        }
     }
 
     Write-Host "Initialized custom modules directory at path: $HostCustomPSModulesDir" -ForegroundColor Green
