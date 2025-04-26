@@ -58,21 +58,19 @@ Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)"
 
 ## Description
 
-This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which is a package of custom functions, variables, & aliases I set in my scripts, effectively turning my `$PROFILE` into a module.
+This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which packages custom functions, variables, and aliases for use across PowerShell sessions—effectively turning `$PROFILE` into a module.
 
-Each [custom Powershell profile](./Profiles/) loads the [common base profile](./docs/Developing.md#base-template). The base template handles any common code I want available across all profiles, like importing [custom modules](./Modules/Custom/), setting options based on which Powershell environment is running (PS5, PS7,  Powershell ISE, etc), and importing the [`ProfileModule`](./Modules/ProfileModule/).
+Each [custom PowerShell profile](./Profiles/) sources a [shared base template](./docs/Developing.md#base-template), which handles common setup tasks such as importing [custom modules](./Modules/Custom/), configuring environment-specific options (e.g., PS5, PS7, PowerShell ISE), and loading the [`ProfileModule`](./Modules/ProfileModule/).
 
-Each custom profile, i.e. the [starship profile](./Profiles/Starship.ps1), source the `_Base.ps1` file when they initialize to load that common/shared code.
+Custom profiles, like the [`Starship` profile](./Profiles/Starship.ps1), build on top of this base. For example, the Starship profile automatically initializes [Starship](https://starship.rs) if it is installed.
 
-The [`ProfileModule`](./Modules/ProfileModule/) adds some helper methods and aliases to each Powershell session it is imported into.
+The [`ProfileModule`](./Modules/ProfileModule/) adds helpful aliases and functions to every session it's imported into. List the imported aliases with `Show-ProfileModuleAliases` and  the functions with `Show-ProfileModuleFunctions`.
 
-By editing the [`config.json` file](./config.example.json), you can control which [custom profile](./Profiles/) is installed. Each custom profile sources the `_Base.ps1` profile, then builds on top of it. For example, the [`Starship` profile](./Profiles/Starship.ps1) automatically initializes [Starship](https://starship.rs) if it is installed.
+You can control which profile is installed by editing the [`config.json` file](./config.example.json). Each selected profile loads the shared base, then layers on its specific functionality.
 
-In addition to each custom `$PROFILE`, there are [custom modules](./Modules/Custom/) you can install with the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1). Each module enhances the custom `$PROFILE` with extra functionality. These custom modules are modular, meaning you can add only the modules with functionality you want in your `$PROFILE`.
+Additionally, [custom modules](./Modules/Custom/) can be installed using the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1). These are modular and optional—just install what you need.
 
-For example, on a work machine, you might want [Azure helpers](./Modules/Custom/AzureHelpers/) and [Active Directory helpers](./Modules/Custom/ActiveDirectoryHelpers/), but not the silly [WeatherMod](./Modules/Custom/WeatherMod/), which wraps HTTP calls to [`wttr.in`](https://wttr.in).
-
-To skip installing certain modules, just answer `n` when prompted by the `Install-CustomPSModules.ps1` script.
+For example, on a work machine, you might want [Azure helpers](./Modules/Custom/AzureHelpers/) and [Active Directory helpers](./Modules/Custom/ActiveDirectoryHelpers/), but skip the [WeatherMod](./Modules/Custom/WeatherMod/), which wraps [`wttr.in`](https://wttr.in). To skip a module, simply answer `n` when prompted during installation.
 
 ## Usage
 
@@ -117,7 +115,7 @@ After first setup, restart your terminal by closing & reopening it, or reload it
 
 To see a full list of the functions exported by this module, run: `Get-Command -Module ProfileModule -Commandtype Function`.
 
-To see a ful list of the aliases exported by this module, run: `Get-Command -Module ProfileModule -CommandType Alias`.
+To see a full list of the aliases exported by this module, run: `Get-Command -Module ProfileModule -CommandType Alias`.
 
 ## Custom Modules
 
