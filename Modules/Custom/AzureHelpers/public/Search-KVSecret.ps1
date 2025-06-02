@@ -17,7 +17,7 @@ function Search-KVSecret {
 
     ## Connect to Keyvault and search for secret
     try {
-        $Result = az keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
+        $Result = az --% keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
     } catch {
         Write-Error "Error accessing Key Vault: $($_.Exception.Message)" -ForegroundColor Red
         return
@@ -26,9 +26,16 @@ function Search-KVSecret {
     ## Check status of last command, retry with a wider search if it failed
     if ( $LASTEXITCODE -eq 0 ) {
         Write-Host $Result -ForegroundColor DarkYellow -NoNewline
-        Set-Clipboard -Value $Result
-        Write-Host " - Value copied to clipboard" -ForegroundColor Green
-        return
+        try {
+            Set-Clipboard -Value $Result
+
+            Write-Host " - Value copied to clipboard" -ForegroundColor Green
+            return
+        } catch {
+            Write-Error "Failed to copy value to clipboard. Please check your clipboard settings." -ForegroundColor Red
+            Write-Host "Secret value: $Result" -ForegroundColor Yellow
+            return
+        }
     }
     else {
         Write-Warning "No secret found in '$Vault' that matches '$SecretName' exactly - beginning wider search."
@@ -50,9 +57,16 @@ function Search-KVSecret {
         Write-Host "Only one secret found matching - pulling value for '$($SecretList[0])' from '$Vault'" -ForegroundColor Green
         $Value = $(az keyvault secret show --vault-name "$Vault" --name "$($SecretList[0])" --query "value" -o tsv)
         Write-Host $Value -ForegroundColor DarkYellow -NoNewline
-        Set-Clipboard -Value $Value
-        Write-Host " - Value copied to clipboard" -ForegroundColor Green
-        return
+        try {
+            Set-Clipboard -Value $Value
+
+            Write-Host " - Value copied to clipboard" -ForegroundColor Green
+            return
+        } catch {
+            Write-Error "Failed to copy value to clipboard. Please check your clipboard settings." -ForegroundColor Red
+            Write-Host "Secret value: $Value" -ForegroundColor Yellow
+            return
+        }
     }
 
  
