@@ -1,13 +1,15 @@
 function Search-KVSecret {
-    param (
+    [CmdletBinding()]
+    Param (
         [Parameter(Position = 0, Mandatory = $true, ValueFromRemainingArguments = $false)]
         [string]$Vault,
         [Parameter(Position = 1, Mandatory = $true, ValueFromRemainingArguments = $true)]
         [string]$SecretName
     )
 
-    Write-Host "Searching '$Vault' for secret '$SecretName' ..." -ForegroundColor Cyan
+    Write-Host "Searching '$Vault' for secret '$SecretName' ..." -ForegroundColor Magenta
 
+    ## Connect to Keyvault and search for secret
     try {
         $Result = az keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
     } catch {
@@ -15,6 +17,7 @@ function Search-KVSecret {
         return
     }
 
+    ## Check status of last command, retry with a wider search if it failed
     if ( $LASTEXITCODE -eq 0 ) {
         Write-Host $Result -ForegroundColor DarkYellow -NoNewline
         Set-Clipboard -Value $Result
