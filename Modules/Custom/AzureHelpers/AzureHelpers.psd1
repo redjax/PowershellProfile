@@ -40,6 +40,7 @@
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Install-AzureCLI'
+		'Search-AzSiteExtensionInstalled'
 	)
 	
 	# Cmdlets to export from this module
