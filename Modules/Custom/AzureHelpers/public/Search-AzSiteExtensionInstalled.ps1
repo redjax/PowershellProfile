@@ -112,11 +112,11 @@ function Search-AzSiteExtensionInstalled {
     ## Display results
     if ( $Found ) {
         Write-Host "Found $( $Found.Count ) App Service slot(s) with the site extension:" -ForegroundColor Green
-        $Found | Format-Table -AutoSize
+        # $Found | Format-Table -AutoSize
+        
+        ## Return results if called programmatically
+        return $Found
     } else {
         Write-Host "No App Services with the site extension found" -ForegroundColor Yellow
     }
-
-    ## Return results if called programmatically
-    return $Found
 }
