@@ -8,23 +8,33 @@ function Search-KVSecret {
 
     Write-Host "Searching '$Vault' for secret '$SecretName' ..." -ForegroundColor Cyan
 
-    $result = az keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
+    try {
+        $result = az keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
+    } catch {
+        Write-Error "Error accessing Key Vault: $($_.Exception.Message)" -ForegroundColor Red
+        return
+    }
 
-    if ($LASTEXITCODE -eq 0) {
+    if ( $LASTEXITCODE -eq 0 ) {
         Write-Host $result -ForegroundColor DarkYellow -NoNewline
         Set-Clipboard -Value $result
         Write-Host " - Value copied to clipboard" -ForegroundColor Green
         return
     }
     else {
-        Write-Host "No secret found in '$Vault' that matches '$SecretName' exactly - beginning search." -ForegroundColor Cyan
+        Write-Warning "No secret found in '$Vault' that matches '$SecretName' exactly - beginning wider search."
     } 
 
-    $results = az keyvault secret list --vault-name $Vault --query "[?contains(name, '$SecretName')].name" -o tsv
+    try {
+        $results = az keyvault secret list --vault-name $Vault --query "[?contains(name, '$SecretName')].name" -o tsv
+    } catch {
+        Write-Error "Error listing secrets in Key Vault: $($_.Exception.Message)"
+        return
+    }
     $secretList = $results -split "`r`n"
 
-    if ($secretList.Length -eq 0) {
-        Write-Host "No secrets found with name containing '$SecretName'. The 'Name' field is case sensitive unless an exact name is used" -ForegroundColor Red
+    if ( $secretList.Length -eq 0 ) {
+        Write-Host "No secrets found with name containing '$SecretName'. The 'SecretName' field is case sensitive unless an exact name is used. Also make sure the vault '$($Vault)' exists." -ForegroundColor Red
         return
     }
     elseif ($secretList.Length -eq 1) {
