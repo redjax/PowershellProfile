@@ -9,15 +9,15 @@ function Search-KVSecret {
     Write-Host "Searching '$Vault' for secret '$SecretName' ..." -ForegroundColor Cyan
 
     try {
-        $result = az keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
+        $Result = az keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
     } catch {
         Write-Error "Error accessing Key Vault: $($_.Exception.Message)" -ForegroundColor Red
         return
     }
 
     if ( $LASTEXITCODE -eq 0 ) {
-        Write-Host $result -ForegroundColor DarkYellow -NoNewline
-        Set-Clipboard -Value $result
+        Write-Host $Result -ForegroundColor DarkYellow -NoNewline
+        Set-Clipboard -Value $Result
         Write-Host " - Value copied to clipboard" -ForegroundColor Green
         return
     }
@@ -26,39 +26,39 @@ function Search-KVSecret {
     } 
 
     try {
-        $results = az keyvault secret list --vault-name $Vault --query "[?contains(name, '$SecretName')].name" -o tsv
+        $Results = az keyvault secret list --vault-name $Vault --query "[?contains(name, '$SecretName')].name" -o tsv
     } catch {
         Write-Error "Error listing secrets in Key Vault: $($_.Exception.Message)"
         return
     }
-    $secretList = $results -split "`r`n"
+    $SecretList = $Results -split "`r`n"
 
-    if ( $secretList.Length -eq 0 ) {
+    if ( $SecretList.Length -eq 0 ) {
         Write-Host "No secrets found with name containing '$SecretName'. The 'SecretName' field is case sensitive unless an exact name is used. Also make sure the vault '$($Vault)' exists." -ForegroundColor Red
         return
     }
-    elseif ($secretList.Length -eq 1) {
-        Write-Host "Only one secret found matching - pulling value for '$($secretList[0])' from '$Vault'" -ForegroundColor Green
-        $value = $(az keyvault secret show --vault-name "$Vault" --name "$($secretList[0])" --query "value" -o tsv)
-        Write-Host $value -ForegroundColor DarkYellow -NoNewline
-        Set-Clipboard -Value $value
+    elseif ($SecretList.Length -eq 1) {
+        Write-Host "Only one secret found matching - pulling value for '$($SecretList[0])' from '$Vault'" -ForegroundColor Green
+        $Value = $(az keyvault secret show --vault-name "$Vault" --name "$($SecretList[0])" --query "value" -o tsv)
+        Write-Host $Value -ForegroundColor DarkYellow -NoNewline
+        Set-Clipboard -Value $Value
         Write-Host " - Value copied to clipboard" -ForegroundColor Green
         return
     }
 
  
     Write-Host "Matching Secrets:"
-    for ($i = 0; $i -lt $secretList.Count; $i++) {
-        Write-Host "[$i] $($secretList[$i])"
+    for ($i = 0; $i -lt $SecretList.Count; $i++) {
+        Write-Host "[$i] $($SecretList[$i])"
     }
 
-    $choice = Read-Host "Enter the number of the secret to view its value"
-    [int]$choiceInt = -1
-    if ([int]::TryParse($choice, [ref]$choiceInt) -and $choiceInt -ge 0 -and $choiceInt -lt $secretList.Count) {
-        Write-Host "Pulling value for $($secretList[$choiceInt]) from $Vault" -ForegroundColor Green
-        $value = $(az keyvault secret show --vault-name "$Vault" --name "$($secretList[$choiceInt])" --query "value" -o tsv)
-        Write-Host $value -ForegroundColor DarkYellow -NoNewline
-        Set-Clipboard -Value $value
+    $Choice = Read-Host "Enter the number of the secret to view its value"
+    [int]$ChoiceInt = -1
+    if ([int]::TryParse($Choice, [ref]$ChoiceInt) -and $ChoiceInt -ge 0 -and $ChoiceInt -lt $SecretList.Count) {
+        Write-Host "Pulling value for $($SecretList[$ChoiceInt]) from $Vault" -ForegroundColor Green
+        $Value = $(az keyvault secret show --vault-name "$Vault" --name "$($SecretList[$ChoiceInt])" --query "value" -o tsv)
+        Write-Host $Value -ForegroundColor DarkYellow -NoNewline
+        Set-Clipboard -Value $Value
         Write-Host " - Value copied to clipboard" -ForegroundColor Green
     }
     else {
