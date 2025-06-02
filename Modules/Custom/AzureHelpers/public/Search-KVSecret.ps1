@@ -1,4 +1,27 @@
 function Search-KVSecret {
+    <#
+        .SYNOPSIS
+        Searches for a secret in an Azure Key Vault and retrieves its value.
+
+        .DESCRIPTION
+        This function connects to an Azure Key Vault, searches for a secret by name, and retrieves its value. If an exact match is not found, it lists all secrets that contain the specified name and allows the user to select one to retrieve its value.
+        
+        The az CLI will use the sign-in user's credentials, and that user must have the necessary permissions to access the Key Vault and its secrets (Key Vault Secrets User or Key Vault Secrets Officer).
+        
+        .NOTES
+        The following Azure permissions are required for the user running this script:
+            - Key Vault Secrets User (sufficient for read-only access)
+            - Key Vault Secrets Officer (required for read/write access)
+
+        .PARAMETER Vault
+        The name of the Azure Key Vault to search in.
+
+        .PARAMETER SecretName
+        The name of the secret to search for. If an exact match is not found, it will search for secrets that contain this name.
+
+        .EXAMPLE
+        Search-KVSecret -Vault "MyKeyVault" -SecretName "MySecret"
+    #>
     [CmdletBinding()]
     Param (
         [Parameter(Position = 0, Mandatory = $true, ValueFromRemainingArguments = $false)]
