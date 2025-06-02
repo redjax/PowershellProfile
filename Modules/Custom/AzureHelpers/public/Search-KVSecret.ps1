@@ -7,6 +7,12 @@ function Search-KVSecret {
         [string]$SecretName
     )
 
+    ## Check if az cli is installed
+    if ( -not ( Get-Command az -ErrorAction SilentlyContinue ) ) {
+        Write-Error "Azure CLI is not installed or not found in the system PATH." -ForegroundColor Red
+        return
+    }
+
     Write-Host "Searching '$Vault' for secret '$SecretName' ..." -ForegroundColor Magenta
 
     ## Connect to Keyvault and search for secret
