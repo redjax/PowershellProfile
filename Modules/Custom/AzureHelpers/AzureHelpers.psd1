@@ -41,7 +41,8 @@
 	FunctionsToExport = @(
 		'Install-AzureCLI'
 		'Search-AzSiteExtensionInstalled'
-		'Search-KVSecret'
+		'Search-KVSecret',
+		'Get-KuduUrl'
 	)
 	
 	# Cmdlets to export from this module
