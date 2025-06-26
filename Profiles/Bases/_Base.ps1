@@ -25,6 +25,9 @@ $ClearOnInit = $false
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Use UTF-8 encoding for both input and output
+[console]::InputEncoding = [console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 ## Create  a ManualResetEvent object for the CustomModules import state
