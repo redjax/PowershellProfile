@@ -1,5 +1,8 @@
 *.json
 
+*.deb*
+*.rpm*
+
 !*example*
 !*example*.*
 !*.*example*.*
