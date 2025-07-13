@@ -84,7 +84,7 @@ try {
         -HostCustomPSModulesDir $HostCustomPSModulesDir `
         -SetupModulePath $SetupModulePath `
         -ErrorAction Stop `
-        -Clean:$Clean
+        -Clean:$Clean `
     | Out-Null
     Write-Host "Installed custom modules" -ForegroundColor Green
 }
