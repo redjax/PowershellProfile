@@ -1,44 +1,5 @@
 #!/bin/bash
 
-## Arg Default values
-CLEAN=false
-MODULE_NAME="ProfileModule"
-CONFIG_FILE=""
-
-## Parse arguments
-PARSED_ARGS=$(getopt -o f: --long clean,module-name:,config-file: -n "$0" -- "$@")
-if [[ $? -ne 0 ]]; then
-    ## getopt has complained about wrong arguments to stdout
-    exit 1
-fi
-
-eval set -- "$PARSED_ARGS"
-
-while true; do
-    case "$1" in
-        --clean)
-            CLEAN=true
-            shift
-            ;;
-        --module-name)
-            MODULE_NAME="$2"
-            shift 2
-            ;;
-        --config-file|-f)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 1
-            ;;
-    esac
-done
-
 ## Detect OS
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -53,9 +14,6 @@ else
 fi
 
 function deb_install_powershell {
-    echo "--[ Install Powershell: Debian" >&2
-
-    echo "Updating package list" >&2
     sudo apt update -y
 
     if ! command -v wget &>/dev/null; then
@@ -69,12 +27,6 @@ function deb_install_powershell {
     ## Get version of Debian
     source /etc/os-release
 
-    if [[ -z $VERSION_ID ]]; then
-        echo "Failed to get Debian version"
-        return $?
-    fi
-
-    echo "Downloading GPG keys" >&2
     ## Download GPG keys
     wget -q https://packages.microsoft.com/config/debian/$VERSION_ID/packages-microsoft-prod.deb
     if [[ $? -ne 0 ]]; then
@@ -82,7 +34,6 @@ function deb_install_powershell {
         return $?
     fi
 
-    echo "Registering the Microsoft repository GPG keys" >&2
     ## Register the Microsoft repository GPG keys
     sudo dpkg -i packages-microsoft-prod.deb
     if [[ $? -ne 0 ]]; then
@@ -96,7 +47,6 @@ function deb_install_powershell {
     ## Update the list of packages after we added packages.microsoft.com
     sudo apt-get update -y
 
-    echo "Install Powershell with apt-get" >&2
     ## Install Powershell
     sudo apt-get install -y powershell
 
@@ -110,12 +60,8 @@ function deb_install_powershell {
 }
 
 function ubuntu_install_powershell {
-    echo "--[ Install Powershell: Ubuntu" >&2
-
-    echo "Updating package list" >&2
     sudo apt-get update -y
 
-    echo "Installing pre-requisite packages" >&2
     ## Install pre-requisite packages.
     sudo apt-get install -y \
         wget \
@@ -125,12 +71,6 @@ function ubuntu_install_powershell {
     ## Get the version of Ubuntu
     source /etc/os-release
 
-    if [[ -z $VERSION_ID ]]; then
-        echo "Failed to get Ubuntu version"
-        return $?
-    fi
-
-    echo "Downloading GPG keys" &>/dev/null
     ## Download the Microsoft repository keys
     wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
 
@@ -139,7 +79,6 @@ function ubuntu_install_powershell {
         return $?
     fi
 
-    echo "Registering the Microsoft repository keys" >&2
     ## Register the Microsoft repository keys
     sudo dpkg -i packages-microsoft-prod.deb
 
@@ -154,7 +93,6 @@ function ubuntu_install_powershell {
     ## Update the list of packages after we added packages.microsoft.com
     sudo apt-get update -y
 
-    echo "Install Powershell with apt-get" >&2
     ## Install PowerShell
     sudo apt-get install -y powershell
 
@@ -168,15 +106,8 @@ function ubuntu_install_powershell {
 }
 
 function fedora_install_powershell {
-    echo "--[ Install Powershell: Fedora" >&2
-
-    echo "Adding Microsoft GPG key" >&2
     ## Import Microsoft GPG key
     sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
-    if [[ $? -ne 0 ]]; then
-        echo "Failed to import Microsoft GPG key"
-        return $?
-    fi
 
     ## Get Fedora version
     FEDORA_VER=$(rpm -E %fedora)
@@ -192,7 +123,6 @@ function fedora_install_powershell {
         return $?
     fi
 
-    echo "Install Powershell with dnf" >&2
     ## Install PowerShell
     sudo dnf install powershell
     if [[ $? -ne 0 ]]; then
@@ -205,9 +135,6 @@ function fedora_install_powershell {
 }
 
 function rhel_family_install_powershell {
-    echo "--[ Install Powershell: RedHat-family (RHEL, CentOS, AlmaLinux, Rocky Linux)" >&2
-
-    echo "Adding Microsoft GPG key" &>/dev/null
     # Import Microsoft GPG key
     sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 
@@ -228,7 +155,6 @@ function rhel_family_install_powershell {
         return $?
     fi
 
-    echo "Install Powershell with dnf/yum" >&2
     # Install PowerShell
     if command -v dnf &>/dev/null; then
         sudo dnf install -y powershell
@@ -246,10 +172,6 @@ function rhel_family_install_powershell {
 }
 
 function opensuse_install_powershell {
-    echo "--[ Install Powershell: OpenSUSE" >&2
-
-    echo "Installing required packages" >&2
-    
     sudo zypper refresh
     sudo zypper install -y libicu libopenssl3
 
@@ -267,10 +189,6 @@ function opensuse_install_powershell {
 }
 
 function arch_install_powershell {
-    echo "--[ Install Powershell: Arch" >&2
-
-    echo "Installing required packages" >&2
-
     if command -v yay &>/dev/null; then
         yay -S --noconfirm powershell-bin
     else
@@ -288,70 +206,43 @@ function arch_install_powershell {
 }
 
 function install_powershell {
-    echo "Installing Powershell" &>/dev/null
-
-    if [[ -z $DISTRO_ID ]]; then
-        get_distro
-        if [[ $? -ne 0 ]]; then
-            echo "Failed to get distro"
-            return $?
-        fi
-    fi
-    echo "Checking install method for distro: $DISTRO_ID"
-
-    ## Choose package manager and install powershell
-    case "$DISTRO_ID" in
-    debian)
-        deb_install_powershell
-        return $?
-        ;;
-
-    ubuntu)
-        ubuntu_install_powershell
-        return $?
-        ;;
-    fedora)
-        fedora_install_powershell
-        return $?
-        ;;
-    centos|rhel|almalinux|rocky)
-        rhel_family_install_powershell
-        return $?
-        ;;
-    opensuse*)
-        opensuse_install_powershell
-        return $?
-        ;;
-    arch)
-        arch_install_powershell
-        return $?
-        ;;
-    *)
-        echo "Unsupported or unknown distribution: $DISTRO_ID"
-        exit 2
-        ;;
-    esac
-}
-
-function main {
     if ! command -v pwsh &>/dev/null; then
-        install_powershell
-        if [[ $? -ne 0 ]]; then
-            echo "Failed to install Powershell"
+        echo "Installing Powershell" &>/dev/null
+
+        ## Choose package manager and install powershell
+        case "$DISTRO_ID" in
+        debian)
+            deb_install_powershell
             return $?
-        fi
+            ;;
+
+        ubuntu)
+            ubuntu_install_powershell
+            return $?
+            ;;
+        fedora)
+            fedora_install_powershell
+            return $?
+            ;;
+        centos|rhel|almalinux|rocky)
+            rhel_family_install_powershell
+            return $?
+            ;;
+        opensuse*)
+            opensuse_install_powershell
+            return $?
+            ;;
+        arch)
+            arch_install_powershell
+            return $?
+            ;;
+        *)
+            echo "Unsupported or unknown distribution: $DISTRO_ID"
+            exit 2
+            ;;
+        esac
     else
         echo "Powershell is already installed"
         return 0
     fi
-
-    return 0
 }
-
-main
-if [[ $? -ne 0 ]]; then
-    echo "Failed to install Powershell"
-    return $?
-else
-    exit 0
-fi
