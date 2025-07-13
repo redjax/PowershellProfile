@@ -1,5 +1,44 @@
 #!/bin/bash
 
+## Arg Default values
+CLEAN=false
+MODULE_NAME="ProfileModule"
+CONFIG_FILE=""
+
+## Parse arguments
+PARSED_ARGS=$(getopt -o f: --long clean,module-name:,config-file: -n "$0" -- "$@")
+if [[ $? -ne 0 ]]; then
+    ## getopt has complained about wrong arguments to stdout
+    exit 1
+fi
+
+eval set -- "$PARSED_ARGS"
+
+while true; do
+    case "$1" in
+        --clean)
+            CLEAN=true
+            shift
+            ;;
+        --module-name)
+            MODULE_NAME="$2"
+            shift 2
+            ;;
+        --config-file|-f)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
 ## Detect OS
 OS="$(uname -s)"
 ARCH="$(uname -m)"
