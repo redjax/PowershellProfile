@@ -5,12 +5,53 @@ Things I've learned building this repository.
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Default Powershell $PROFILE path](#default-powershell-profile-path)
+  - [Windows](#windows)
+    - [Powershell 5](#powershell-5)
+    - [Powershell 7](#powershell-7)
+  - [Linux](#linux)
 - [Check Powershell version](#check-powershell-version)
   - [Use Powershell version as a conditional](#use-powershell-version-as-a-conditional)
 - [Automatic updates to module's manifest](#automatic-updates-to-modules-manifest)
 - [Generate profile GUID](#generate-profile-guid)
 - [Pass -Verbose and -Debug to other scripts](#pass--verbose-and--debug-to-other-scripts)
 - [Dynamically set aliases](#dynamically-set-aliases)
+
+## Default Powershell $PROFILE path
+
+### Windows
+
+#### Powershell 5
+
+Current User, Current Host:
+`C:\Users\$USERNAME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1`
+
+Current User, All Hosts:
+`C:\Users\$USERNAME\Documents\WindowsPowerShell\profile.ps1`
+
+All Users, Current Host:
+`%WINDIR%\System32\WindowsPowerShell\v1.0\Microsoft.PowerShell_profile.ps1`
+
+All Users, All Hosts:
+`%WINDIR%\System32\WindowsPowerShell\v1.0\profile.ps1`
+
+#### Powershell 7
+
+Current User, Current Host:
+`C:\Users\$USERNAME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`
+
+Current User, All Hosts:
+`C:\Users\$USERNAME\Documents\PowerShell\profile.ps1`
+
+All Users, Current Host:
+`C:\Program Files\PowerShell\7\Microsoft.PowerShell_profile.ps1`
+
+All Users, All Hosts:
+`C:\Program Files\PowerShell\7\profile.ps1`
+
+### Linux
+
+`~/.config/powershell/Microsoft.PowerShell_profile.ps1`
 
 ## Check Powershell version
 
