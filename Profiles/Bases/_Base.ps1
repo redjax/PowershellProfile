@@ -263,8 +263,27 @@ if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
     ) | ForEach-Object {
         Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
     } | Out-Null
-
 }
+
+## Source completions in the background
+@(
+    {
+        try {
+            if (Get-Module -ListAvailable -Name posh-git) {
+                Import-Module posh-git -ErrorAction Stop
+                Write-Verbose "posh-git module loaded."
+            }
+            else {
+                Write-Verbose "posh-git not installed. Skipping import."
+            }
+        }
+        catch {
+            Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
+        }
+    }
+) | ForEach-Object {
+    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
+} | Out-Null
 
 ## End profile initialization timer
 $ProfileEndTime = Get-Date
