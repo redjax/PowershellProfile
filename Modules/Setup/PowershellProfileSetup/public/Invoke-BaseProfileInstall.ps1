@@ -6,7 +6,7 @@ function Invoke-BaseProfileInstall {
         [string]$ProfileBase = "_Base.ps1"
     )
     Write-Verbose "Profile base install `$InstallPath: $InstallPath"
-    Write-Verbose "Profile base install `$ProfileBasea: $ProfileBase"
+    Write-Verbose "Profile base install `$ProfileBase: $ProfileBase"
 
     if ( -Not $ProfileBase ) {
         Write-Error "-ProfileBase cannot be null"
