@@ -10,10 +10,21 @@ function Install-PoshGit {
     $TempPath      = Join-Path $env:TEMP "$ModuleName.nupkg"
     $ExtractPath   = Join-Path $env:TEMP "$ModuleName-extracted"
     $TargetPath    = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell\Modules\$ModuleName"
+    $ManifestPath  = Join-Path $TargetPath "$ModuleName.psd1"
 
     ## Clean up old paths
     Remove-Item -Path $TempPath -ErrorAction SilentlyContinue -Force
     Remove-Item -Path $ExtractPath -Recurse -ErrorAction SilentlyContinue -Force
+    
+    ## Check if the correct version is already installed at $TargetPath
+    if (Test-Path $ManifestPath) {
+        $manifest = Import-PowerShellDataFile -Path $ManifestPath
+        if ($manifest.ModuleVersion -eq $Version) {
+            Write-Host "$ModuleName v$Version is already installed in $TargetPath. Skipping reinstallation." -ForegroundColor Yellow
+            return
+        }
+    }
+
     Remove-Item -Path $TargetPath -Recurse -ErrorAction SilentlyContinue -Force
 
     try {
@@ -34,11 +45,11 @@ function Install-PoshGit {
         Copy-Item -Path "$ModuleRoot\*" -Destination $TargetPath -Recurse -Force
 
         Write-Host "`n$ModuleName v$Version installed successfully." -ForegroundColor Green
-        return $true
+        return
     }
     catch {
         Write-Error "Installation failed: $($_.Exception.Message)"
-        return $false
+        return
     }
     finally {
         ## Remove files created by script
