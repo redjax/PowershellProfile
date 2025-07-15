@@ -9,7 +9,7 @@ function Install-PoshGit {
     $GalleryURL    = "https://www.powershellgallery.com/api/v2/package/$ModuleName/$Version"
     $TempPath      = Join-Path $env:TEMP "$ModuleName.nupkg"
     $ExtractPath   = Join-Path $env:TEMP "$ModuleName-extracted"
-    $TargetPath    = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell\Modules\$ModuleName"
+    $TargetPath = Join-Path (Join-Path (Split-Path -Path $PROFILE -Parent) "Modules") $ModuleName
     $ManifestPath  = Join-Path $TargetPath "$ModuleName.psd1"
 
     ## Clean up old paths
