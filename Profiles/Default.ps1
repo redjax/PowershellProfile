@@ -1,6 +1,8 @@
 <#
     .SYNOPSIS
-    Powershell $PROFILE with Starship prompt.
+    My default Powershell $PROFILE.
+
+    Inherits from the _Base.ps1 profile copied during profile install.
 #>
 
 ## Uncomment to enable profile tracing
