@@ -130,14 +130,14 @@ function Update-ProfileModuleManifest {
         return $Functions
     }
 
-    # Helper function to extract aliases from script content
     function Get-AliasesFromScript {
         param(
             $ScriptContent
         )
 
         $Aliases = @()
-        $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+(\w+)\s+-Value\s+(\w+)'
+        # Updated regex to handle hyphens in alias names and command names
+        $aliasRegex = [regex]'(?ms)^\s*Set-Alias\s+-Name\s+([^\s]+)\s+-Value\s+([^\s]+)'
         $SearchMatches = $aliasRegex.Matches($ScriptContent)
 
         foreach ($match in $SearchMatches) {
