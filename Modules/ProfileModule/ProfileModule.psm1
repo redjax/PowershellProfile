@@ -76,24 +76,45 @@ if (Test-Path -Path $AliasesPath) {
         }
     }
 
-    # Gather all aliases defined in the module
-    $Aliases = Get-Command -CommandType Alias | Where-Object { $_.Source -eq $ModuleName }
+    # Gather all aliases that were created during module loading
+    # Get a snapshot of aliases before and after loading to identify new ones
+    $AllCurrentAliases = Get-Command -CommandType Alias
+    
+    # Get aliases that are likely defined by this module by checking against known patterns
+    # or by getting all aliases and filtering out system ones
+    $ModuleAliases = @()
+    
+    # Get aliases from the alias files we just loaded
+    foreach ($AliasFile in $AliasFiles) {
+        $AliasFileContent = Get-Content -Path $AliasFile.FullName -Raw
+        # Look for Set-Alias commands to identify aliases defined in this module
+        $SetAliasMatches = [regex]::Matches($AliasFileContent, 'Set-Alias\s+(?:-Name\s+)?([^\s]+)')
+        foreach ($Match in $SetAliasMatches) {
+            $AliasName = $Match.Groups[1].Value.Trim('"''')
+            $ModuleAliases += $AliasName
+        }
+    }
 
     # Track already exported aliases to avoid double-exporting
     $ExportedAliases = @()
 
     ## Export each alias only if it hasn't been exported yet
-    if ( $Aliases ) {
-        foreach ( $Alias in $Aliases ) {
-            if ( $ExportedAliases -notcontains $Alias.Name ) {
-                Write-Debug "Exporting alias: $($Alias.Name)"
-                Export-ModuleMember -Alias $Alias.Name
+    if ( $ModuleAliases ) {
+        foreach ( $AliasName in $ModuleAliases ) {
+            # Check if the alias actually exists and hasn't been exported yet
+            $AliasCommand = Get-Command -Name $AliasName -CommandType Alias -ErrorAction SilentlyContinue
+            if ( $AliasCommand -and $ExportedAliases -notcontains $AliasName ) {
+                Write-Debug "Exporting alias: $($AliasName)"
+                Export-ModuleMember -Alias $AliasName
 
                 ## Add alias to the list of exported aliases
-                $ExportedAliases += $Alias.Name
+                $ExportedAliases += $AliasName
+            }
+            elseif ( -not $AliasCommand ) {
+                Write-Debug "Alias not found or not available: $($AliasName)"
             }
             else {
-                Write-Debug "Skipping duplicate export for alias: $($Alias.Name)"
+                Write-Debug "Skipping duplicate export for alias: $($AliasName)"
             }
         }
     }
