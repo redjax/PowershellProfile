@@ -12,6 +12,7 @@
         "NetworkHelpers",
         "PathHelpers",
         "SecurityHelpers",
+        "SystHelpers",
         "UnixAliases",
         "Weathermod"
     ]
