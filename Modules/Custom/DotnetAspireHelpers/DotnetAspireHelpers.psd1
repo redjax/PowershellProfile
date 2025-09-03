@@ -9,13 +9,13 @@
 	GUID = 'ebfb3f63-cb41-4767-97dc-bb7738b27d1a'
 	
 	# Author of this module
-	Author = 'JKenyon'
+	Author = 'redjax'
 	
 	# Company or vendor of this module
 	CompanyName = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright = 'Copyright (c) 2025 JKenyon'
+	Copyright = 'Copyright (c) 2025 redjax'
 	
 	# Description of the functionality provided by this module
 	Description = 'Module for Dotnet Aspire'

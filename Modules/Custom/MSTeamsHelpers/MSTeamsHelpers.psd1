@@ -9,13 +9,13 @@
 	GUID              = '9f99a63a-77da-45ce-abf7-9807aa486fd0'
 	
 	# Author of this module
-	Author            = 'JKenyon'
+	Author            = 'redjax'
 	
 	# Company or vendor of this module
 	CompanyName       = 'MyCompany'
 	
 	# Copyright statement for this module
-	Copyright         = 'Copyright (c) 2025 JKenyon'
+	Copyright         = 'Copyright (c) 2025 redjax'
 	
 	# Description of the functionality provided by this module
 	Description       = 'Helpers for interacting with Microsoft Teams.'
