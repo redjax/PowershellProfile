@@ -42,6 +42,7 @@
 		'Install-AzureCLI'
 		'Search-AzSiteExtensionInstalled'
 		'Search-KVSecret',
+		'Set-KVSecret',
 		'Get-KuduUrl'
 	)
 	
