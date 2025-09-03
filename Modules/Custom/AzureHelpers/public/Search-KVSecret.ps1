@@ -40,7 +40,7 @@ function Search-KVSecret {
 
     ## Connect to Keyvault and search for secret
     try {
-        $Result = az --% keyvault secret show --vault-name "$Vault" --name "$SecretName" --query "value" -o tsv 2>&1
+        $Result = az keyvault secret show --vault-name $Vault --name $SecretName --query "value" -o tsv 2>$null
     } catch {
         Write-Error "Error accessing Key Vault: $($_.Exception.Message)" -ForegroundColor Red
         return
