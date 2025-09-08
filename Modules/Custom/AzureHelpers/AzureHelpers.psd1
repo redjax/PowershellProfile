@@ -43,7 +43,8 @@
 		'Search-AzSiteExtensionInstalled'
 		'Search-KVSecret',
 		'Set-KVSecret',
-		'Get-KuduUrl'
+		'Get-KuduUrl',
+		'Get-ApiAppRoles'
 	)
 	
 	# Cmdlets to export from this module
