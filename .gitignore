@@ -3,3 +3,7 @@
 !*example*
 !*example*.*
 !*.*example*.*
+
+!.devcontainer.json
+!.devcontainer/
+!.devcontainer/*.json
