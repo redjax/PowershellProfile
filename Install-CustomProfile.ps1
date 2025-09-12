@@ -9,12 +9,11 @@ Param(
     [string]$ProfilesDir = "$($PSScriptRoot)\Profiles",
     [Parameter(Mandatory = $false, HelpMessage = "Force a clean reinstall by removing all custom modules & reimporting only the ones specified in config.json")]
     [switch]$Clean
-
 )
 
 ## Vars
 [string]$SetupModuleFilename = "PowershellProfileSetup"
-[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
+[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "Setup/$($SetupModuleFilename)"
 # $ModuleInstallScriptPath = Join-Path -Path "scripts" -Childpath "Install-CustomPSModules.ps1"
 [string]$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
@@ -23,7 +22,7 @@ Write-Host "`n--[ Setup Installation Environment" -ForegroundColor Magenta
 ## Import setup module
 Write-Host "Importing PowershellProfileSetup module from: $SetupModulePath" -ForegroundColor Cyan
 try {
-    Import-Module $SetupModulePath -Force -Scope Global
+    Import-Module (Resolve-Path -Path $SetupModulePath) -Force -Scope Global
     Write-Debug "Imported $($SetupModuleFilename) module"
 }
 catch {
