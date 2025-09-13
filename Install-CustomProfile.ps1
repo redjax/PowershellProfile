@@ -35,7 +35,7 @@ if ( ( -Not $ProfilesDir ) -or ( $ProfilesDir = "" ) ) {
 [string]$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
 
 ## Ensure paths exist
-foreach ( $p in ( "$($RepoModulesDir)", "$($SetupModulePath)", "$($HostCustomPSModulesDir)" ) ) {
+foreach ( $p in ( "$($RepoModulesDir)", "$($SetupModulePath)" ) ) {
     if ( -not (Test-Path -Path "$p") ) {
         throw "Could not find path '$p'"
     }
