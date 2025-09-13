@@ -16,8 +16,14 @@ $ClearOnInit = $true
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Ensure custom modules are discoverable
+$moduleParent = (Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules")
+if (-not ($env:PSModulePath -split [System.IO.Path]::PathSeparator | Where-Object { $_ -eq $moduleParent })) {
+    $env:PSModulePath = "$env:PSModulePath${([System.IO.Path]::PathSeparator)}$moduleParent"
+}
+
 $ScriptRoot = $PSScriptRoot
-$BaseProfile = "$($ScriptRoot)\_Base.ps1"
+$BaseProfile = Join-Path -Path "$($ScriptRoot)" -ChildPath "_Base.ps1"
 
 Write-Output "Importing custom profile, your terminal may slow down for 1-2 seconds."
 

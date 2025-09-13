@@ -25,6 +25,9 @@ $ClearOnInit = $false
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Determine platform-specific PSModulePath separator
+$separator = [System.IO.Path]::PathSeparator
+
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 ## Create  a ManualResetEvent object for the CustomModules import state
@@ -36,7 +39,19 @@ if ($PSVersionTable.PSVersion.Major -eq 5) {
 }
 
 ## Path to Powershell profile's CustomModules
-$CustomModulesPath = ( Join-Path -Path ( Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
+# $CustomModulesPath = ( Join-Path -Path ( Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
+if ($IsWindows) {
+    $CustomModulesPath = Join-Path -Path (Join-Path $HOME 'Documents') -ChildPath 'PowerShell\Modules'
+}
+else {
+    $CustomModulesPath = Join-Path -Path $HOME -ChildPath '.local/share/powershell/Modules'
+}
+
+## Add custom modules path to PSModulePath env var
+if (-not ($env:PSModulePath -split [Regex]::Escape($separator) | Where-Object { $_ -eq $CustomModulesPath })) {
+    $env:PSModulePath = $env:PSModulePath + $separator + $CustomModulesPath
+}
+
 
 function Import-CustomPSModules {
     <#
@@ -63,27 +78,53 @@ function Import-CustomPSModules {
         }
 
         ## Import custom modules
+        #     foreach ($ModuleDir in $ModuleDirectories) {
+        #         $ModuleName = $ModuleDir.Name
+        #         $ModuleFile = Get-ChildItem -Path $ModuleDir.FullName -Filter "*.psm1" | Select-Object -First 1
+
+        #         if ($ModuleFile) {
+        #             try {
+        #                 Write-Debug "Importing module '$($ModuleName)' from file '$($ModuleFile.FullName)'"
+        #                 Import-Module -Name $ModuleFile.FullName -Force
+        #                 Write-Debug "Successfully imported module: $($ModuleName)"
+        #             }
+        #             catch {
+        #                 Write-Error "Failed to import module: $($ModuleName). Details: $($_.Exception.Message)"
+        #             }
+        #         }
+        #         else {
+        #             Write-Warning "No .psm1 file found in directory: $($ModuleDir.FullName)"
+        #         }
+        #     }
+        # }
+        # else {
+        #     Write-Warning "Could not find custom Powershell modules directory at path: $CustomModules"
+        # }
         foreach ($ModuleDir in $ModuleDirectories) {
             $ModuleName = $ModuleDir.Name
-            $ModuleFile = Get-ChildItem -Path $ModuleDir.FullName -Filter "*.psm1" | Select-Object -First 1
+            $ManifestPath = Join-Path $ModuleDir.FullName "$ModuleName.psd1"
+            $ModuleImportPath = if (Test-Path $ManifestPath) {
+                $ManifestPath
+            }
+            else {
+                (Get-ChildItem -Path $ModuleDir.FullName -Filter "*.psm1" | Select-Object -First 1).FullName
+            }
 
-            if ($ModuleFile) {
+            if ($ModuleImportPath) {
                 try {
-                    Write-Debug "Importing module '$($ModuleName)' from file '$($ModuleFile.FullName)'"
-                    Import-Module -Name $ModuleFile.FullName -Force
-                    Write-Debug "Successfully imported module: $($ModuleName)"
+                    Write-Debug "Importing module '$ModuleName' from $ModuleImportPath"
+                    Import-Module -Name $ModuleImportPath -Force -Global
+                    Write-Debug "Successfully imported module: $ModuleName"
                 }
                 catch {
-                    Write-Error "Failed to import module: $($ModuleName). Details: $($_.Exception.Message)"
+                    Write-Warning "Failed to import module: $ModuleName. Details: $_"
                 }
             }
             else {
-                Write-Warning "No .psm1 file found in directory: $($ModuleDir.FullName)"
+                Write-Warning "No manifest or .psm1 file found in $($ModuleDir.FullName)."
             }
         }
-    }
-    else {
-        Write-Warning "Could not find custom Powershell modules directory at path: $CustomModules"
+
     }
 }
 
@@ -225,16 +266,16 @@ if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
 ## Import custom modules
 if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
     
-    # try {
-    #     Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
-    # }
-    # catch {
-    #     Write-Warning "Failed to import custom Powershell modules. Details: $($_.Exception.Message)"
-    # }
+    try {
+        Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
+    }
+    catch {
+        Write-Warning "Failed to import custom Powershell modules. Details: $($_.Exception.Message)"
+    }
 
-    # if ($ClearOnInit) {
-    #     Clear-Host
-    # }
+    if ($ClearOnInit) {
+        Clear-Host
+    }
 
     @(
         {
