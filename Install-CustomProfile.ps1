@@ -1,22 +1,45 @@
 Param(
-    [Parameter(mandatory = $false, HelpMessage = "The path to the JSON config file to use for script execution.")]
+    [Parameter(Mandatory = $false, HelpMessage = "The path to the JSON config file to use for script execution.")]
     [string]$ConfigFile = (Join-Path -Path $PSScriptRoot -ChildPath "config.json"),
-    [Parameter(mandatory = $false, HelpMessage = "Name of module")]
-    [string]$ModuleName = "ProfileModule",
-    [Parameter(mandatory = $false, HelpMessage = "Path to repo modules directory")]
-    [string]$RepoModulesDir = "$($PSScriptRoot)\Modules",
-    [Parameter(mandatory = $false, HelpMessage = "Path to repo Profiles directory")]
-    [string]$ProfilesDir = "$($PSScriptRoot)\Profiles",
+    [Parameter(Mandatory = $false, HelpMessage = "Name of module")]
+    [string]$ModuleName = $null,
+    [Parameter(Mandatory = $false, HelpMessage = "Path to repo modules directory")]
+    [string]$RepoModulesDir = $null,
+    [Parameter(Mandatory = $false, HelpMessage = "Path to repo Profiles directory")]
+    [string]$ProfilesDir = $null,
     [Parameter(Mandatory = $false, HelpMessage = "Force a clean reinstall by removing all custom modules & reimporting only the ones specified in config.json")]
     [switch]$Clean
 
 )
 
+## Set defaults
+if ( ( -Not $ModuleName ) -or ( $ModuleName = "" ) ) {
+    Write-Debug "`$ModuleName is null. Defaulting to 'ProfileModule'"
+    $ModuleName = "ProfileModule"
+}
+
+if ( ( -Not $RepoModulesDir ) -or ( $RepoModulesDir = "" ) ) {
+    Write-Debug "`$RepoModulesDir is null. Defaulting to '$($PSScriptRoot)\Modules"
+    $RepoModulesDir = Join-Path -Path $PSScriptRoot -ChildPath 'Modules'
+}
+
+if ( ( -Not $ProfilesDir ) -or ( $ProfilesDir = "" ) ) {
+    Write-Debug "`$ProfilesDir is null. Defaulting to '$($PSScriptRoot)\Profiles"
+    $ProfilesDir = Join-Path -Path $PSScriptRoot -ChildPath 'Profiles'
+}
+
 ## Vars
 [string]$SetupModuleFilename = "PowershellProfileSetup"
-[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
+[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath 'Setup' -AdditionalChildPath $SetupModuleFilename
 # $ModuleInstallScriptPath = Join-Path -Path "scripts" -Childpath "Install-CustomPSModules.ps1"
 [string]$HostCustomPSModulesDir = Join-Path -Path (Split-Path $PROFILE -Parent) -ChildPath "CustomModules"
+
+## Ensure paths exist
+foreach ( $p in ( "$($RepoModulesDir)", "$($SetupModulePath)", "$($HostCustomPSModulesDir)" ) ) {
+    if ( -not (Test-Path -Path "$p") ) {
+        throw "Could not find path '$p'"
+    }
+}
 
 Write-Host "`n--[ Setup Installation Environment" -ForegroundColor Magenta
 
