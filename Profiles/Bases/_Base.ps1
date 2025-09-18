@@ -224,7 +224,7 @@ if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
 
 ## Import custom modules
 if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
-    
+
     # try {
     #     Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
     # }
@@ -280,6 +280,17 @@ if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
         catch {
             Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
         }
+    },
+    {
+        try {
+            if (Get-Command azd -ErrorAction SilentlyContinue) {
+                azd completion powershell | Out-String | Invoke-Expression
+            } else {
+                Write-Verbose "azd CLI is not installed. Skipping import."
+            }
+        } catch {
+            Write-Warning "Failed to import azd CLI completions: $($_.Exception.Message)"
+        }
     }
 ) | ForEach-Object {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
@@ -295,3 +306,4 @@ $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 
 ## Disable profile tracing
 Set-PSDebug -Trace 0
+
