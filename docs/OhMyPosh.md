@@ -1,86 +1,49 @@
-# Oh My Posh Integration - Repository Structure
+# Oh My Posh
 
-I've reorganized the Oh My Posh setup to fit your repository's structure properly.
+[OhMyPosh](https://ohmyposh.dev) is a Go utility for enhancing Powershell prompts.
 
-## ✅ Correct Structure
+## Overview
+
+The Oh My Posh integration follows a "snapshot" model where the installed profile is completely independent of the repository after installation.
+
+## File Locations
+
+### Repository (Template/Source)
+
+These files exist in the repository and serve as templates:
 
 ```
 PowershellProfile/
 ├── config/
 │   └── ohmyposh/
-│       ├── README.md          # Documentation
-│       └── theme.omp.json     # Your Oh My Posh theme
+│       ├── theme-name.omp.json      # Template theme (copied during install)
+│       └── README.md                # Documentation
 ├── Profiles/
-│   └── OhMyPosh.ps1          # Profile script (becomes $PROFILE)
-└── config.json               # Set "profile": { "name": "OhMyPosh" }
+│   └── OhMyPosh.ps1                 # Profile script (copied to $PROFILE during install)
+└── Modules/
+    └── Setup/
+        └── PowershellProfileSetup/
+            ├── public/
+            │   └── Invoke-OhMyPoshSetup.ps1          # Orchestrates setup
+            └── internal/
+                └── functions/
+                    ├── Install-OhMyPosh.ps1          # Installs oh-my-posh executable
+                    └── Initialize-OhMyPoshTheme.ps1  # Installs theme config
 ```
 
-## How It Works
+### Installed (Runtime/Host)
 
-1. **`Profiles/OhMyPosh.ps1`** - Simple profile script that:
-   - Loads your `_Base.ps1` (so all modules/functions work)
-   - Initializes Oh My Posh with theme from `config/ohmyposh/theme.omp.json`
-   - No setup code, no configuration files - just the profile
+These files exist on the user's system after installation:
 
-2. **`config/ohmyposh/`** - Configuration directory:
-   - `theme.omp.json` - Your customizable theme (version controlled)
-   - `README.md` - Documentation on usage and customization
-
-3. **Your workflow stays the same**:
-   ```powershell
-   # Edit config.json to set profile
-   { "profile": { "name": "OhMyPosh" } }
-   
-   # Install profile as always
-   .\Install-CustomProfile.ps1
-   
-   # Done!
-   ```
-
-## Why This Structure?
-
-- **`Profiles/`** = PowerShell scripts that become `$PROFILE`
-- **`config/`** = Configuration files for tools (theme files, settings, etc.)
-- **`Modules/`** = Your custom PowerShell modules
-- **`docs/`** = General documentation
-- **`scripts/`** = Utility/helper scripts
-
-This matches how you'd typically store:
-- Starship config: `config/starship/starship.toml` (if you had one)
-- Tool configs: `config/<tool>/...`
-
-## Quick Start
-
-1. **Install Oh My Posh**:
-   ```powershell
-   winget install JanDeDobbeleer.OhMyPosh
-   oh-my-posh font install
-   ```
-
-2. **Configure terminal to use Nerd Font**
-
-3. **Set profile**:
-   ```json
-   // config.json
-   { "profile": { "name": "OhMyPosh" } }
-   ```
-
-4. **Install**:
-   ```powershell
-   .\Install-CustomProfile.ps1
-   ```
-
-5. **Restart terminal**
-
-## Customizing
-
-Edit `config/ohmyposh/theme.omp.json` and commit changes to your repo!
-
-Test themes live:
-```powershell
-oh-my-posh init pwsh --config .\config\ohmyposh\theme.omp.json | Invoke-Expression
 ```
-
----
-
-**The key difference from before**: Configuration and documentation go in `config/ohmyposh/`, NOT in `Profiles/`. The `Profiles/` directory is only for the actual PowerShell profile scripts.
+$HOME/
+├── .config/
+│   └── ohmyposh/
+│       └── theme-name.omp.json               # INSTALLED theme (independent copy)
+└── Documents/
+    └── PowerShell/
+        ├── Microsoft.PowerShell_profile.ps1  # The actual $PROFILE
+        ├── _Base.ps1                         # Base profile functionality
+        └── CustomModules/                    # Custom modules
+            └── ...
+```
