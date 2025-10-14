@@ -25,6 +25,11 @@ $ClearOnInit = $false
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
+## Use UTF-8 encoding for both input and output
+[console]::InputEncoding = [console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+## Pass outputs through console to avoid converting to ASCII.
+$OutputEncoding = [Console]::OutputEncoding
+
 ## Create a ManualResetEvent object for the ProfileModule import state
 $Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent $false
 ## Create  a ManualResetEvent object for the CustomModules import state
@@ -98,7 +103,7 @@ function Get-Prompt {
         When no other prompt is available, the shell will fall back to this prompt.
     #>
 
-    #Assign Windows Title Text
+    ## Assign Windows Title Text
     $host.ui.RawUI.WindowTitle = "Current Folder: $pwd"
 
     #Configure current user, current folder and date outputs
