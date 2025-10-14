@@ -37,7 +37,7 @@ catch {
 ## Read repo configuration from config.json (or another file passed with -ConfigFile)
 Write-Host "Reading config from '$($ConfigFile)'" -ForegroundColor Cyan
 try {
-    $ProfileConfig = Get-ProfileConfig -ConfigFile "config.json"
+    $ProfileConfig = Get-ProfileConfig -ConfigFile $ConfigFile
     Write-Debug "Loaded configuration"
 }
 catch {
