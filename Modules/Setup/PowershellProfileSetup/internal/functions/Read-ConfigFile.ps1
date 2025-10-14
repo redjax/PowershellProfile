@@ -31,6 +31,9 @@ function Read-ConfigFile {
             profile_base = "_Base.ps1"
         }
         custom_modules = @()
+        ohmyposh = [PSCustomObject]@{
+            theme = "default"
+        }
     }
 
     if ( -Not ( Test-Path -Path $ProfileConfig -PathType Leaf ) ) {
@@ -70,6 +73,9 @@ function Read-ConfigFile {
                 profile_base = $ConfigJson.repo.profile_base
             }
             custom_modules = $ConfigJson.custom_modules
+            ohmyposh = [PSCustomObject]@{
+                theme = $ConfigJson.ohmyposh.theme
+            }
         }
     }
     catch {
