@@ -6,7 +6,11 @@ function Invoke-StarshipSetup {
     .DESCRIPTION
         Handles the complete setup process for Starship:
         1. Checks if Starship is installed (optionally installs it)
-        2. Provides guidance on font installation and configuration
+        2. Initializes Starship configuration from repository templates
+        3. Provides guidance on font installation and configuration
+
+    .PARAMETER RepositoryPath
+        Path to the PowerShell profile repository root.
 
     .PARAMETER AutoInstall
         Automatically install Starship if not found (without prompting).
@@ -17,19 +21,35 @@ function Invoke-StarshipSetup {
     .PARAMETER SkipFontInfo
         Skip displaying Nerd Font installation information.
 
+    .PARAMETER ConfigName
+        Name of the Starship config to use (without .toml extension).
+        Must correspond to a file in config/starship/{ConfigName}.toml.
+        If not specified, will be read from the profile config.
+
+    .PARAMETER ConfigFile
+        Path to the profile configuration JSON file.
+        If not specified, defaults to config.json.
+
     .EXAMPLE
-        Invoke-StarshipSetup -PromptForInstall
+        Invoke-StarshipSetup -RepositoryPath "C:\scripts\PowershellProfile" -PromptForInstall
         Sets up Starship, prompting to install if needed.
 
     .EXAMPLE
-        Invoke-StarshipSetup -AutoInstall
-        Automatically installs Starship if needed.
+        Invoke-StarshipSetup -RepositoryPath "C:\scripts\PowershellProfile" -AutoInstall -ConfigName "minimal"
+        Automatically installs Starship and uses the minimal configuration.
+
+    .EXAMPLE
+        Invoke-StarshipSetup -RepositoryPath $PSScriptRoot -PromptForInstall -ConfigFile "starship.json"
+        Sets up Starship using settings from starship.json.
 
     .NOTES
         This is a high-level setup function that orchestrates the complete Starship setup process.
     #>
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepositoryPath,
+
         [Parameter(Mandatory = $false)]
         [switch]$AutoInstall,
 
@@ -37,8 +57,19 @@ function Invoke-StarshipSetup {
         [switch]$PromptForInstall,
 
         [Parameter(Mandatory = $false)]
-        [switch]$SkipFontInfo
+        [switch]$SkipFontInfo,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ConfigName,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ConfigFile = "config.json"
     )
+
+    if ( -not ( $ConfigName ) ) {
+        Write-Warning "No -ConfigName detected, defaulting to 'default'"
+        $ConfigName = "default"
+    }
 
     Write-Host "`n--[ Starship Setup" -ForegroundColor Magenta
 
@@ -87,6 +118,39 @@ function Invoke-StarshipSetup {
     else {
         $version = & starship --version 2>$null
         Write-Host "Starship is installed ($version)" -ForegroundColor Green
+    }
+
+    ## Initialize Starship Configuration
+    Write-Host ""
+    Write-Host "Initializing Starship configuration..." -ForegroundColor Cyan
+    
+    try {
+        if ( $ConfigName ) {
+            Initialize-StarshipConfig -ConfigName $ConfigName -RepositoryPath $RepositoryPath
+        }
+        else {
+            ## Try to get config name from profile config
+            try {
+                $ConfigFilePath = Join-Path -Path $RepositoryPath -ChildPath $ConfigFile
+                $ProfileConfig = Get-ProfileConfig -ConfigFile $ConfigFilePath
+                if ( $ProfileConfig.starship.config ) {
+                    Write-Host "Using config from profile: $($ProfileConfig.starship.config)" -ForegroundColor Gray
+                    Initialize-StarshipConfig -ConfigName $ProfileConfig.starship.config -RepositoryPath $RepositoryPath
+                }
+                else {
+                    Write-Host "No config specified, using default" -ForegroundColor Gray
+                    Initialize-StarshipConfig -ConfigName "default" -RepositoryPath $RepositoryPath
+                }
+            }
+            catch {
+                Write-Warning "Could not read profile config. Using default Starship config."
+                Initialize-StarshipConfig -ConfigName "default" -RepositoryPath $RepositoryPath
+            }
+        }
+    }
+    catch {
+        Write-Error "Failed to initialize Starship config: $($_.Exception.Message)"
+        return $false
     }
 
     ## Font Information

@@ -1,0 +1,143 @@
+# Starship Minimal Configuration
+# Ultra-minimal, maximum performance configuration
+# Documentation: https://starship.rs/config/
+
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# No blank line between prompts
+add_newline = false
+
+# Very aggressive timeouts
+command_timeout = 250
+scan_timeout = 10
+
+# Simple, fast format - just directory and git
+format = """
+$directory$git_branch$git_status
+$character"""
+
+# Disable ALL language/runtime modules
+[nodejs]
+disabled = true
+
+[python]
+disabled = true
+
+[rust]
+disabled = true
+
+[golang]
+disabled = true
+
+[java]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[ruby]
+disabled = true
+
+[php]
+disabled = true
+
+[haskell]
+disabled = true
+
+[julia]
+disabled = true
+
+[lua]
+disabled = true
+
+[perl]
+disabled = true
+
+[swift]
+disabled = true
+
+[terraform]
+disabled = true
+
+[vagrant]
+disabled = true
+
+# Git - minimal but present
+[git_branch]
+format = '[$symbol$branch]($style) '
+symbol = ''
+style = 'purple'
+truncation_length = 30
+
+[git_status]
+format = '([$all_status]($style) )'
+style = 'red'
+ahead = '⇡${count}'
+diverged = '⇕${ahead_count}⇣${behind_count}'
+behind = '⇣${count}'
+conflicted = '='
+untracked = '?'
+stashed = '$'
+modified = '!'
+staged = '+'
+renamed = '»'
+deleted = '✘'
+
+# Disable git commit/state for speed
+[git_commit]
+disabled = true
+
+[git_state]
+disabled = true
+
+# Simple directory
+[directory]
+format = '[$path]($style) '
+style = 'cyan'
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = '…/'
+
+# Simple character
+[character]
+success_symbol = '[❯](green)'
+error_symbol = '[❯](red)'
+
+# Disable everything else for maximum performance
+[package]
+disabled = true
+
+[aws]
+disabled = true
+
+[azure]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[kubernetes]
+disabled = true
+
+[battery]
+disabled = true
+
+[cmd_duration]
+disabled = true
+
+[username]
+disabled = true
+
+[hostname]
+disabled = true
+
+[status]
+disabled = true
+
+[time]
+disabled = true
+

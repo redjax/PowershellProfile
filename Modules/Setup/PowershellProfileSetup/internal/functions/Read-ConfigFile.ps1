@@ -34,6 +34,9 @@ function Read-ConfigFile {
         ohmyposh = [PSCustomObject]@{
             theme = "default"
         }
+        starship = [PSCustomObject]@{
+            config = "default"
+        }
     }
 
     if ( -Not ( Test-Path -Path $ProfileConfig -PathType Leaf ) ) {
@@ -75,6 +78,9 @@ function Read-ConfigFile {
             custom_modules = $ConfigJson.custom_modules
             ohmyposh = [PSCustomObject]@{
                 theme = $ConfigJson.ohmyposh.theme
+            }
+            starship = [PSCustomObject]@{
+                config = $ConfigJson.starship.config
             }
         }
     }

@@ -60,7 +60,8 @@ $ProfileEndTime = Get-Date
 $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
 Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
-Write-Output "Some commands may be unavailable for 1-3 seconds while background imports finish. The Starshp prompt will load after your next command."
+Write-Output "Some commands may be unavailable for 1-3 seconds while background imports finish."
+Write-Output "The Starshp prompt will load after your next command."
 
 ## Disable profile tracing
 Set-PSDebug -Trace 0

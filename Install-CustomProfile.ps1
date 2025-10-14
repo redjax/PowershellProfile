@@ -141,11 +141,11 @@ if ($ProfileConfig.profile.name -eq "OhMyPosh") {
 if ($ProfileConfig.profile.name -eq "Starship") {
     Write-Host ""
     try {
-        Invoke-StarshipSetup -PromptForInstall
+        Invoke-StarshipSetup -RepositoryPath $PSScriptRoot -PromptForInstall -ConfigFile $ConfigFile
     }
     catch {
         Write-Warning "Starship setup encountered an error: $($_.Exception.Message)"
-        Write-Host "You can set up Starship manually later with: Invoke-StarshipSetup" -ForegroundColor Yellow
+        Write-Host "You can set up Starship manually later with: Invoke-StarshipSetup -RepositoryPath `"$PSScriptRoot`" -ConfigFile `"$ConfigFile`"" -ForegroundColor Yellow
     }
 }
 

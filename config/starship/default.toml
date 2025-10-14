@@ -1,0 +1,125 @@
+# Starship Default Configuration
+# Performance-optimized configuration for PowerShell
+# Documentation: https://starship.rs/config/
+
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Timeout for commands executed by starship (in milliseconds)
+command_timeout = 500
+
+# Timeout for starship to scan files (in milliseconds)
+scan_timeout = 30
+
+# Configure the format of the prompt
+format = """
+[┌───────────────────────────────────────────────────────────>](bold green)
+[│](bold green)$directory$git_branch$git_status$git_state
+[└─>](bold green) """
+
+# Disable modules that can be slow
+[nodejs]
+disabled = true
+
+[python]
+disabled = true
+
+[rust]
+disabled = true
+
+[golang]
+disabled = true
+
+[java]
+disabled = true
+
+[dotnet]
+disabled = true
+
+[ruby]
+disabled = true
+
+[php]
+disabled = true
+
+# Keep git but optimize it
+[git_branch]
+format = '[$symbol$branch(:$remote_branch)]($style) '
+symbol = ' '
+style = 'bold purple'
+# Only show branch name, no other info
+truncation_length = 50
+truncation_symbol = '…'
+
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+style = 'bold red'
+# Disable git status checks that require network or are slow
+disabled = false
+ahead = '⇡${count}'
+diverged = '⇕⇡${ahead_count}⇣${behind_count}'
+behind = '⇣${count}'
+# Disable these to improve performance
+windows_starship = '/mnt/c/Users/username/scoop/apps/starship/current/starship.exe'
+
+[git_commit]
+disabled = true
+
+[git_state]
+disabled = false
+format = '[\($state( $progress_current of $progress_total)\)]($style) '
+
+[directory]
+format = '[$path]($style)[$read_only]($read_only_style) '
+style = 'bold cyan'
+truncation_length = 3
+truncate_to_repo = true
+read_only = ' 󰌾'
+
+[character]
+success_symbol = '[❯](bold green)'
+error_symbol = '[❯](bold red)'
+
+# Disable modules that are slow or not needed
+[package]
+disabled = true
+
+[aws]
+disabled = true
+
+[azure]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[kubernetes]
+disabled = true
+
+[battery]
+disabled = true
+
+[username]
+disabled = true
+
+[hostname]
+disabled = true
+
+# Keep CMD duration but with higher threshold
+[cmd_duration]
+min_time = 2_000  # Show command duration only if it takes longer than 2 seconds
+format = 'took [$duration]($style) '
+style = 'bold yellow'
+
+# Status of the last command
+[status]
+disabled = false
+format = '[$symbol$status]($style) '
+symbol = '✖'
+style = 'bold red'
