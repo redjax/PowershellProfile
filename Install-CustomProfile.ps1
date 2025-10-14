@@ -37,7 +37,7 @@ catch {
 ## Read repo configuration from config.json (or another file passed with -ConfigFile)
 Write-Host "Reading config from '$($ConfigFile)'" -ForegroundColor Cyan
 try {
-    $ProfileConfig = Get-ProfileConfig -ConfigFile "config.json"
+    $ProfileConfig = Get-ProfileConfig -ConfigFile $ConfigFile
     Write-Debug "Loaded configuration"
 }
 catch {
@@ -123,7 +123,7 @@ catch {
 }
 
 ## Handle Oh My Posh setup if OhMyPosh profile is selected
-if ( $ProfileConfig.profile.name -eq "OhMyPosh" ) {
+if ($ProfileConfig.profile.name -eq "OhMyPosh") {
     Write-Host ""
     try {
         Invoke-OhMyPoshSetup `
@@ -134,6 +134,18 @@ if ( $ProfileConfig.profile.name -eq "OhMyPosh" ) {
     catch {
         Write-Warning "Oh My Posh setup encountered an error: $($_.Exception.Message)"
         Write-Host "You can set up Oh My Posh manually later with: Invoke-OhMyPoshSetup -RepositoryPath `"$PSScriptRoot`"" -ForegroundColor Yellow
+    }
+}
+
+## Handle Starship setup if Starship profile is selected
+if ($ProfileConfig.profile.name -eq "Starship") {
+    Write-Host ""
+    try {
+        Invoke-StarshipSetup -RepositoryPath $PSScriptRoot -PromptForInstall -ConfigFile $ConfigFile
+    }
+    catch {
+        Write-Warning "Starship setup encountered an error: $($_.Exception.Message)"
+        Write-Host "You can set up Starship manually later with: Invoke-StarshipSetup -RepositoryPath `"$PSScriptRoot`" -ConfigFile `"$ConfigFile`"" -ForegroundColor Yellow
     }
 }
 

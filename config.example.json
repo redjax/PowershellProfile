@@ -18,5 +18,8 @@
     ],
     "ohmyposh": {
         "theme": "default"
+    },
+    "starship": {
+        "config": "default"
     }
 }
