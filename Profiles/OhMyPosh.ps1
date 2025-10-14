@@ -4,7 +4,8 @@
 
     .DESCRIPTION
     Loads the base profile and initializes Oh My Posh with a custom theme.
-    Theme configuration is stored in the repository at config/ohmyposh/theme.omp.json
+    Theme configuration is installed to $HOME/.config/ohmyposh/theme.omp.json
+    and is independent of the repository after installation.
 #>
 
 ## Uncomment to enable profile tracing
@@ -33,18 +34,17 @@ else {
     {
         ## Initialize Oh My Posh shell
         if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
-            ## Path to Oh My Posh theme configuration (in repository)
-            $RepoRoot = Split-Path -Path $PSScriptRoot -Parent
-            $OhMyPoshTheme = Join-Path -Path $RepoRoot -ChildPath "config\ohmyposh\theme.omp.json"
+            ## Path to Oh My Posh theme configuration (installed in user's config directory)
+            $OhMyPoshTheme = Join-Path -Path $HOME -ChildPath ".config\ohmyposh\theme.omp.json"
             
             ## Check if custom theme exists
             if (Test-Path -Path $OhMyPoshTheme) {
                 oh-my-posh init pwsh --config $OhMyPoshTheme | Invoke-Expression
             }
             else {
-                Write-Warning "Custom Oh My Posh theme not found at: $OhMyPoshTheme"
-                Write-Host "Using default 'paradox' theme." -ForegroundColor Yellow
-                oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\paradox.omp.json" | Invoke-Expression
+                Write-Warning "Oh My Posh theme not found at: $OhMyPoshTheme"
+                Write-Host "Run the installation script to set up Oh My Posh: .\Install-CustomProfile.ps1" -ForegroundColor Yellow
+                Write-Host "Or manually run: Invoke-OhMyPoshSetup -RepositoryPath <path-to-repo>" -ForegroundColor Yellow
             }
         }
         else {

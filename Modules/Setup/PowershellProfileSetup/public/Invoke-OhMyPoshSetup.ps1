@@ -119,6 +119,9 @@ function Invoke-OhMyPoshSetup {
         Write-Host "     - Or run: oh-my-posh font install" -ForegroundColor Gray
         Write-Host "  2. Configure your terminal to use the Nerd Font" -ForegroundColor White
         Write-Host "  3. Restart your terminal to see the new prompt" -ForegroundColor White
+        Write-Host ""
+        Write-Host "Your theme is installed at: $env:USERPROFILE\.config\ohmyposh\theme.omp.json" -ForegroundColor Gray
+        Write-Host "   You can customize it independently of this repository." -ForegroundColor Gray
     }
 
     Write-Host ""
