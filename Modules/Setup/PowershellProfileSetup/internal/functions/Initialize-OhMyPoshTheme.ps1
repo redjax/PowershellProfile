@@ -39,7 +39,7 @@ function Initialize-OhMyPoshTheme {
     ## Read config.json to get selected theme
     $configPath = Join-Path -Path $RepositoryPath -ChildPath "config.json"
     
-    if (-not (Test-Path -Path $configPath)) {
+    if ( -not ( Test-Path -Path $configPath ) ) {
         Write-Error "config.json not found at: $configPath"
         return $false
     }
@@ -73,7 +73,7 @@ function Initialize-OhMyPoshTheme {
     Write-Host "  Install:  $installedThemePath" -ForegroundColor Gray
 
     ## Create config directory if it doesn't exist
-    if (-not (Test-Path -Path $configDir)) {
+    if ( -not ( Test-Path -Path $configDir ) ) {
         New-Item -Path $configDir -ItemType Directory -Force | Out-Null
         Write-Host "Created config directory: $configDir" -ForegroundColor Gray
     }
@@ -81,7 +81,7 @@ function Initialize-OhMyPoshTheme {
     ## Check if template theme exists in repository
     $shouldCreateDefault = $false
     
-    if (Test-Path -Path $templateThemePath) {
+    if ( Test-Path -Path $templateThemePath ) {
         ## Copy template theme to user's config directory
         Write-Host "Installing theme from repository template" -ForegroundColor Yellow
         try {
@@ -96,7 +96,7 @@ function Initialize-OhMyPoshTheme {
     else {
         Write-Warning "Template theme not found at: $templateThemePath"
         
-        if ($CreateDefault) {
+        if ( $CreateDefault ) {
             $shouldCreateDefault = $true
         }
         else {
@@ -106,7 +106,7 @@ function Initialize-OhMyPoshTheme {
     }
 
     ## Create default theme if needed
-    if ($shouldCreateDefault) {
+    if ( $shouldCreateDefault ) {
         Write-Host "Creating default theme" -ForegroundColor Yellow
 
         ## Create a minimal default theme
@@ -147,27 +147,29 @@ function Initialize-OhMyPoshTheme {
         }
     }
 
-    ## Validate theme if Oh My Posh is installed
-    if (Get-Command "oh-my-posh" -ErrorAction SilentlyContinue) {
-        Write-Host "Validating theme configuration" -ForegroundColor Cyan
+    ## Validate theme file is valid JSON
+    if ( Get-Command "oh-my-posh" -ErrorAction SilentlyContinue ) {
+        Write-Host "Validating theme configuration..." -ForegroundColor Cyan
         
         try {
-            $validation = & oh-my-posh config validate --config $installedThemePath 2>&1
+            ## Try to read and parse the JSON to ensure it's valid
+            $themeContent = Get-Content -Path $installedThemePath -Raw | ConvertFrom-Json
             
-            if ($LASTEXITCODE -eq 0) {
+            ## Basic validation: check for required properties
+            if ( $themeContent.'$schema' -and $themeContent.version ) {
                 Write-Host "Theme is valid" -ForegroundColor Green
                 return $true
             }
             else {
-                Write-Warning "Theme validation failed:"
-                Write-Host $validation -ForegroundColor Red
-                return $false
+                Write-Warning "Theme JSON is valid but may be missing required properties (schema, version)"
+                Write-Host "The theme may still work. Try restarting your terminal to test." -ForegroundColor Yellow
+                return $true
             }
         }
         catch {
-            Write-Warning "Could not validate theme: $($_.Exception.Message)"
-            Write-Host "The theme file exists but could not be validated." -ForegroundColor Yellow
-            return $true
+            Write-Warning "Could not parse theme file as valid JSON: $($_.Exception.Message)"
+            Write-Host "The theme file may be corrupted. Try reinstalling." -ForegroundColor Yellow
+            return $false
         }
     }
     else {
