@@ -15,5 +15,8 @@
         "SystHelpers",
         "UnixAliases",
         "Weathermod"
-    ]
+    ],
+    "ohmyposh": {
+        "theme": "default"
+    }
 }

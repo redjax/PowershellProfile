@@ -122,6 +122,21 @@ catch {
     exit 1
 }
 
+## Handle Oh My Posh setup if OhMyPosh profile is selected
+if ( $ProfileConfig.profile.name -eq "OhMyPosh" ) {
+    Write-Host ""
+    try {
+        Invoke-OhMyPoshSetup `
+            -RepositoryPath $PSScriptRoot `
+            -PromptForInstall `
+            -CreateDefaultTheme
+    }
+    catch {
+        Write-Warning "Oh My Posh setup encountered an error: $($_.Exception.Message)"
+        Write-Host "You can set up Oh My Posh manually later with: Invoke-OhMyPoshSetup -RepositoryPath `"$PSScriptRoot`"" -ForegroundColor Yellow
+    }
+}
+
 Write-Host "`n--[ Finished" -ForegroundColor Magenta
 Write-Host "Powershell profile installed. Restart your terminal for changes to take effect." -ForegroundColor Green
 exit $LASTEXITCODE

@@ -47,7 +47,8 @@
 		'Install-CustomModules',
 		'Invoke-CustomModulesPathInit',
 		'Set-CustomPSModulesPath',
-		'Remove-CustomModules'
+		'Remove-CustomModules',
+		'Invoke-OhMyPoshSetup'
 	)
 	
 	# Cmdlets to export from this module
