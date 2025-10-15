@@ -125,7 +125,7 @@ You can control which modules are installed automatically by the [`Install-Custo
 
 ### Remove custom modules
 
-Run the [Remove-CustomModulesDir.ps1` script](./scripts/Remove-CustomModulesDir.ps1) to uninstall all custom modules. This does not affect your custom profile, only the modules in the profile path's `CustomModules/` directory.
+Run the [`Remove-CustomModulesDir.ps1` script](./scripts/Remove-CustomModulesDir.ps1) to uninstall all custom modules. This does not affect your custom profile, only the modules in the profile path's `CustomModules/` directory.
 
 ## Developing
 
