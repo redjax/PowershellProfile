@@ -141,7 +141,7 @@ if ($ProfileConfig.profile.name -eq "OhMyPosh") {
 if ($ProfileConfig.profile.name -eq "Starship") {
     Write-Host ""
     try {
-        Invoke-StarshipSetup -RepositoryPath $PSScriptRoot -PromptForInstall -ConfigFile $ConfigFile
+        Invoke-StarshipSetup -RepositoryPath $PSScriptRoot -PromptForInstall -ConfigFile $ConfigFile -ConfigName $ProfileConfig.starship.config
     }
     catch {
         Write-Warning "Starship setup encountered an error: $($_.Exception.Message)"
