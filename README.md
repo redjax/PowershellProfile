@@ -31,9 +31,14 @@
 
 My Powershell `$PROFILE` module.
 
-[Documentation](./docs/)
+📖 [Documentation](./docs/)
 
-**WARNING**: This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that before running any of the scripts in this repository, especially if you've done any customization previously.
+---
+
+> [!WARNING]
+> This script overwrites your Powershell `$PROFILE`. Make sure to take a backup of that
+> before running any of the scripts in this repository, especially if you've done
+> any customization previously.
 
 You can backup your current profile with:
 
@@ -125,7 +130,7 @@ You can control which modules are installed automatically by the [`Install-Custo
 
 ### Remove custom modules
 
-Run the [Remove-CustomModulesDir.ps1` script](./scripts/Remove-CustomModulesDir.ps1) to uninstall all custom modules. This does not affect your custom profile, only the modules in the profile path's `CustomModules/` directory.
+Run the [`Remove-CustomModulesDir.ps1` script](./scripts/Remove-CustomModulesDir.ps1) to uninstall all custom modules. This does not affect your custom profile, only the modules in the profile path's `CustomModules/` directory.
 
 ## Developing
 
