@@ -180,6 +180,10 @@ if ($host.Name -eq 'ConsoleHost') {
         Set-PSReadLineKeyHandler -Key Enter -Function AcceptLine
         ## Disable audio bells
         Set-PSReadLineOption -BellStyle None
+        ## Enable command prediction
+        Set-PSReadLineOption -PredictionSource History
+        ## Show predictions as a list
+        Set-PSReadLineOption -PredictionViewStyle ListView
     }
 }
 elseif ($host.Name -eq 'Windows PowerShell ISE Host') {
