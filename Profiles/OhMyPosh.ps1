@@ -51,6 +51,21 @@ else {
             Write-Warning "Oh My Posh is not installed."
             Write-Host "Install with: winget install JanDeDobbeleer.OhMyPosh" -ForegroundColor Cyan
         }
+    },
+    {
+        ## Load posh-git for Oh My Posh git integration
+        try {
+            if (Get-Module -ListAvailable -Name posh-git) {
+                Import-Module posh-git -ErrorAction Stop
+                Write-Verbose "posh-git module loaded."
+            }
+            else {
+                Write-Verbose "posh-git not installed. Skipping import."
+            }
+        }
+        catch {
+            Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
+        }
     }
 ) | ForEach-Object {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_

@@ -205,8 +205,6 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
     {
         try {
             Import-Module ProfileModule
-            ## Indicate to the script that the ProfileModule was imported successfully
-            $Global:ProfileModuleImported = $true
             ## Signal that the module was successfully imported
             $Global:ProfileModuleImported.Set()
         }
@@ -260,7 +258,6 @@ if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
                 }
 
                 ## Signal successful import
-                $Global:CustomModulesImported = $true
                 $Global:CustomModulesImported.Set()
             }
             catch {
@@ -276,20 +273,6 @@ if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
 
 ## Source completions in the background
 @(
-    {
-        try {
-            if (Get-Module -ListAvailable -Name posh-git) {
-                Import-Module posh-git -ErrorAction Stop
-                Write-Verbose "posh-git module loaded."
-            }
-            else {
-                Write-Verbose "posh-git not installed. Skipping import."
-            }
-        }
-        catch {
-            Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
-        }
-    },
     {
         try {
             if (Get-Command azd -ErrorAction SilentlyContinue) {
