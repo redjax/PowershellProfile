@@ -6,7 +6,7 @@ $WeztermCLIDirs = @(
 )
 
 ## If wezterm CLI command is not found, try to find it & set an alias
-if ( -not ( Test-Command wezterm -ErrorAction SilentlyContinue ) ) {
+if ( -not ( Test-CommandExists wezterm -ErrorAction SilentlyContinue ) ) {
     $WezPath = $null
 
     ## Loop over potential install paths
