@@ -243,34 +243,85 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
 } | Out-Null
 
-## Import custom modules in background
+## Import custom modules - immediate and lazy loading
 if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
+    
+    ## Modules to load immediately (frequently used)
+    $ImmediateModules = @(
+        'DatetimeHelpers'
+        'NetworkHelpers'
+        'PathHelpers'
+        'StringHelpers'
+        'UnixAliases'
+    )
+    
+    ## Lazy-load configuration: Module -> Functions mapping
+    $LazyModules = @{
+        'ActiveDirectoryHelpers' = @('Find-ADUser')
+        'AzureDevOpsHelpers' = @('Get-AllAzureDevOpsRepositories', 'Get-AzureDevOpsProjects', 'Get-AzureDevOpsProjectRepositories')
+        'AzureHelpers' = @('Install-AzureCLI', 'Search-AzSiteExtensionInstalled', 'Search-KVSecret', 'Set-KVSecret', 'Get-KuduUrl', 'Get-ApiAppRoles')
+        'BitwardenHelpers' = @('Unlock-BitwardenVault')
+        'DotnetAspireHelpers' = @('Install-DotnetAspire')
+        'MsOutlookHelpers' = @('Set-OutlookOOO')
+        'MsTeamsHelpers' = @('Get-TeamsPresence')
+        'PlatformInfo' = @('Get-PlatformCPU', 'Get-PlatformMemory', 'Get-PlatformOS', 'Get-PlatformDisk', 'Get-PlatformGPU', 'Get-PlatformNetwork', 'Get-PlatformBIOS', 'Get-PlatformMotherboard', 'Get-PlatformUsers', 'Get-PlatformProcesses', 'Get-PlatformLastBoot', 'Get-PlatformServices', 'Get-PlatformEnvironment', 'Get-PlatformUpdates', 'Get-PlatformEventLogs', 'Get-PlatformFirewallRules', 'Get-SystemTimeZone')
+        'ScoopHelpers' = @('Initialize-ScoopCli', 'Install-ScoopCli', 'Search-ScoopPackage')
+        'SecurityHelpers' = @('New-SelfSignedCert', 'Disable-DefenderRealtimeMonitoring')
+        'SystHelpers' = @('Import-SystCompletions', 'Install-SystCompletions', 'Start-SystInstall', 'Start-SystUpgrade')
+        'Weathermod' = @('Get-Weather')
+        'YaziHelpers' = @('Open-YaziHelp', 'y')
+    }
+    
+    ## Load immediate modules in background
     @(
         {
             try {
-                # Import all custom modules from the CustomModules directory
-                Get-ChildItem -Path $CustomModulesPath -Directory | ForEach-Object {
-                    try {
-                        Import-Module -Name $_.FullName -Global -ErrorAction Stop
-                        Write-Output "Successfully imported module: $($_.Name)"
-                    }
-                    catch {
-                        Write-Warning "Failed to import module: $($_.Name). Details: $($_.Exception.Message)"
+                $ImmediateModules = @('DatetimeHelpers', 'NetworkHelpers', 'PathHelpers', 'StringHelpers', 'UnixAliases')
+                $CustomModulesPath = Join-Path (Split-Path -Path $PROFILE -Parent) "CustomModules"
+                
+                foreach ($moduleName in $ImmediateModules) {
+                    $modulePath = Join-Path $CustomModulesPath $moduleName
+                    if (Test-Path $modulePath) {
+                        try {
+                            Import-Module -Name $modulePath -Global -ErrorAction Stop
+                            Write-Output "Loaded module: $moduleName"
+                        }
+                        catch {
+                            Write-Warning "Failed to import module: $moduleName. Details: $($_.Exception.Message)"
+                        }
                     }
                 }
-
+                
                 ## Signal successful import
                 $Global:CustomModulesImported.Set()
             }
             catch {
-                Write-Error "Error loading custom modules from path: $CustomModulesPath. Details: $($_.Exception.Message)"
-                ## Signal even if there's an error
+                Write-Error "Error loading custom modules. Details: $($_.Exception.Message)"
                 $Global:CustomModulesImported.Set()
             }
         }
     ) | ForEach-Object {
         Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
     } | Out-Null
+    
+    ## Create lazy-loading proxy functions for remaining modules
+    foreach ($moduleName in $LazyModules.Keys) {
+        $functions = $LazyModules[$moduleName]
+        
+        foreach ($functionName in $functions) {
+            # Create a script block that loads the module on first call
+            $lazyLoader = [ScriptBlock]::Create(@"
+                `$modulePath = Join-Path (Join-Path (Split-Path -Path `$PROFILE -Parent) "CustomModules") "$moduleName"
+                if (-not (Get-Module '$moduleName')) {
+                    Import-Module `$modulePath -Global -ErrorAction Stop | Out-Null
+                }
+                & '$moduleName\$functionName' @args
+"@)
+            
+            # Register the proxy function globally
+            Set-Item -Path "Function:\global:$functionName" -Value $lazyLoader -Force
+        }
+    }
 }
 
 ## End profile initialization timer
