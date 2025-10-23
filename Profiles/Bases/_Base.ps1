@@ -57,33 +57,20 @@ function Import-CustomPSModules {
         $CustomModules = $CustomModulesPath
     )
 
-
     ## Import custom modules
     if ( Test-Path -Path $CustomModules ) {
         Write-Debug "Importing custom Powershell modules from path: $($CustomModules)"
 
-        ## Find all custom modules
-        $ModuleDirectories = Get-ChildItem -Path $CustomModules -Directory | Where-Object {
-            Test-Path (Join-Path -Path $_.FullName -ChildPath "*.psm1")
-        }
-
-        ## Import custom modules
-        foreach ($ModuleDir in $ModuleDirectories) {
-            $ModuleName = $ModuleDir.Name
-            $ModuleFile = Get-ChildItem -Path $ModuleDir.FullName -Filter "*.psm1" | Select-Object -First 1
-
-            if ($ModuleFile) {
-                try {
-                    Write-Debug "Importing module '$($ModuleName)' from file '$($ModuleFile.FullName)'"
-                    Import-Module -Name $ModuleFile.FullName -Force
-                    Write-Debug "Successfully imported module: $($ModuleName)"
-                }
-                catch {
-                    Write-Error "Failed to import module: $($ModuleName). Details: $($_.Exception.Message)"
-                }
+        ## Import all .psm1 files directly - much faster than filtering directories first
+        foreach ($moduleFile in [System.IO.Directory]::GetFiles($CustomModules, "*.psm1", [System.IO.SearchOption]::AllDirectories)) {
+            try {
+                $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($moduleFile)
+                Write-Debug "Importing module '$moduleName' from file '$moduleFile'"
+                Import-Module -Name $moduleFile -Force
+                Write-Debug "Successfully imported module: $moduleName"
             }
-            else {
-                Write-Warning "No .psm1 file found in directory: $($ModuleDir.FullName)"
+            catch {
+                Write-Error "Failed to import module: $moduleName. Details: $($_.Exception.Message)"
             }
         }
     }
@@ -182,7 +169,7 @@ if ($host.Name -eq 'ConsoleHost') {
         Set-PSReadLineOption -BellStyle None
         ## Enable command prediction
         Set-PSReadLineOption -PredictionSource History
-        ## Show predictions as a list
+        ## Show predictions as a list (slower but more visible)
         Set-PSReadLineOption -PredictionViewStyle ListView
     }
 }
@@ -218,46 +205,46 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
             $Global:ProfileModuleImported.Set()
         }
     }
+    {
+        ## Third-party software initializations
+        try {
+            $SoftwareInitsPath = Join-Path (Split-Path -Path $PROFILE -Parent) "software_inits.ps1"
+            if (Test-Path -Path $SoftwareInitsPath) {
+                . $SoftwareInitsPath
+            }
+        }
+        catch {
+            Write-Warning "Failed to load software initializations: $($_.Exception.Message)"
+        }
+    }
+    {
+        ## 1Password shell completions
+        try {
+            if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
+                op completion powershell | Out-String | Invoke-Expression
+            }
+        }
+        catch {
+            Write-Warning "Unable to initialize 1Password shell completion. Your execution policy must be set to RemoteSigned."
+        }
+    }
+    {
+        ## Azure Developer CLI completions
+        try {
+            if (Get-Command azd -ErrorAction SilentlyContinue) {
+                azd completion powershell | Out-String | Invoke-Expression
+            }
+        } 
+        catch {
+            Write-Warning "Failed to import azd CLI completions: $($_.Exception.Message)"
+        }
+    }
 ) | ForEach-Object {
     Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
 } | Out-Null
 
-## Shell completions
-
-if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
-    try {
-        op completion powershell | Out-String | Invoke-Expression
-    }
-    catch {
-        Write-Warning "Unable to initialize 1Password shell completion. Your execution policy must be set to RemoteSigned."
-    }
-}
-
-## Third-party software initializations
-$SoftwareInitsPath = Join-Path (Split-Path -Path $PROFILE -Parent) "software_inits.ps1"
-if (Test-Path -Path $SoftwareInitsPath) {
-    try {
-        . $SoftwareInitsPath
-    }
-    catch {
-        Write-Warning "Failed to load software initializations: $($_.Exception.Message)"
-    }
-}
-
-## Import custom modules
+## Import custom modules in background
 if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
-
-    # try {
-    #     Import-CustomPSModules -CustomModules $CustomModulesPath -ErrorAction SilentlyContinue
-    # }
-    # catch {
-    #     Write-Warning "Failed to import custom Powershell modules. Details: $($_.Exception.Message)"
-    # }
-
-    # if ($ClearOnInit) {
-    #     Clear-Host
-    # }
-
     @(
         {
             try {
@@ -285,23 +272,6 @@ if ( Test-Path -Path $CustomModulesPath -ErrorAction SilentlyContinue ) {
         Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
     } | Out-Null
 }
-
-## Source completions in the background
-@(
-    {
-        try {
-            if (Get-Command azd -ErrorAction SilentlyContinue) {
-                azd completion powershell | Out-String | Invoke-Expression
-            } else {
-                Write-Verbose "azd CLI is not installed. Skipping import."
-            }
-        } catch {
-            Write-Warning "Failed to import azd CLI completions: $($_.Exception.Message)"
-        }
-    }
-) | ForEach-Object {
-    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
-} | Out-Null
 
 ## End profile initialization timer
 $ProfileEndTime = Get-Date

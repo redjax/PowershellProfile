@@ -32,10 +32,24 @@ $PublicFunctionNames = [System.Collections.Generic.List[string]]::new()
 foreach ($file in $PublicFunctions) {
     . $file.FullName
     
-    ## OPTIMIZATION: Extract function name from filename instead of parsing content
-    ## Most files are named the same as the function (e.g., Get-Something.ps1 contains function Get-Something)
-    $baseName = $file.BaseName
-    $PublicFunctionNames.Add($baseName)
+    ## For files with multiple functions (like Helpers.ps1), parse the content
+    $content = Get-Content -LiteralPath $file.FullName -Raw
+    $functionMatches = [regex]::Matches($content, '(?m)^function\s+([\w-]+)')
+    
+    if ($functionMatches.Count -gt 1) {
+        ## Multi-function file: extract all function names
+        foreach ($match in $functionMatches) {
+            $PublicFunctionNames.Add($match.Groups[1].Value)
+        }
+    }
+    elseif ($functionMatches.Count -eq 1) {
+        ## Single function file: use parsed name (more reliable than filename)
+        $PublicFunctionNames.Add($functionMatches[0].Groups[1].Value)
+    }
+    else {
+        ## No functions found, skip (might be a script or utility file)
+        Write-Warning "No functions found in file: $($file.Name)"
+    }
 }
 
 ## Export public functions
