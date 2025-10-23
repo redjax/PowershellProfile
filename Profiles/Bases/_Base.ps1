@@ -199,6 +199,10 @@ elseif ($host.Name -eq 'Visual Studio Code Host') {
     Import-EditorCommand -Module 'EditorServicesCommandSuite' -ErrorAction SilentlyContinue
 }
 
+## Force initial prompt render BEFORE background tasks
+#  This ensures your custom prompt appears immediately
+[console]::Write("`r$(prompt)")
+
 ## Wrap slow code to run asynchronously later
 #  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
 @(
@@ -226,6 +230,17 @@ if ( Get-Command "op" -ErrorAction SilentlyContinue ) {
     }
     catch {
         Write-Warning "Unable to initialize 1Password shell completion. Your execution policy must be set to RemoteSigned."
+    }
+}
+
+## Third-party software initializations
+$SoftwareInitsPath = Join-Path (Split-Path -Path $PROFILE -Parent) "software_inits.ps1"
+if (Test-Path -Path $SoftwareInitsPath) {
+    try {
+        . $SoftwareInitsPath
+    }
+    catch {
+        Write-Warning "Failed to load software initializations: $($_.Exception.Message)"
     }
 }
 

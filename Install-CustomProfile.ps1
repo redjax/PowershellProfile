@@ -106,6 +106,24 @@ catch {
     exit 1
 }
 
+## Install software_inits.ps1
+Write-Host "Installing software initializations file" -ForegroundColor Cyan
+$SoftwareInitsSource = Join-Path $ProfilesDir "software_inits.ps1"
+$SoftwareInitsDest = Join-Path (Split-Path $PROFILE -Parent) "software_inits.ps1"
+
+if (Test-Path $SoftwareInitsSource) {
+    try {
+        Copy-Item -Path $SoftwareInitsSource -Destination $SoftwareInitsDest -Force
+        Write-Host "Installed software_inits.ps1 to: $SoftwareInitsDest" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to install software_inits.ps1: $($_.Exception.Message)"
+    }
+}
+else {
+    Write-Warning "software_inits.ps1 not found at: $SoftwareInitsSource"
+}
+
 ## Install profile
 Write-Host "Installing custom Powershell profile" -ForegroundColor Cyan
 try {
