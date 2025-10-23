@@ -121,8 +121,22 @@ function Install-CustomModules {
     ## Array to store paths to modules for installation operation
     [string[]]$ModuleInstallPaths = @()
 
-    ## Iterate over custom_modules list from config
-    $ProfileConfig.custom_modules | ForEach-Object {
+    ## Collect all modules from config (immediate_load + lazy_load)
+    $AllModules = @()
+    if ($ProfileConfig.custom_modules.immediate_load) {
+        $AllModules += $ProfileConfig.custom_modules.immediate_load
+    }
+    if ($ProfileConfig.custom_modules.lazy_load) {
+        $AllModules += $ProfileConfig.custom_modules.lazy_load
+    }
+    
+    ## Fallback for old config format (simple array)
+    if (-not $AllModules -and $ProfileConfig.custom_modules -is [Array]) {
+        $AllModules = $ProfileConfig.custom_modules
+    }
+
+    ## Iterate over all modules from config
+    $AllModules | ForEach-Object {
         ## Extract module name
         $ModuleName = $_
         ## Build module install path

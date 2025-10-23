@@ -30,7 +30,10 @@ function Read-ConfigFile {
             author       = "redjax"
             profile_base = "_Base.ps1"
         }
-        custom_modules = @()
+        custom_modules = [PSCustomObject]@{
+            immediate_load = @()
+            lazy_load = @()
+        }
         ohmyposh = [PSCustomObject]@{
             theme = "default"
         }
