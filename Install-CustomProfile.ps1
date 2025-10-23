@@ -93,12 +93,41 @@ catch {
     exit 1
 }
 
-Write-Host "`n--[ Generate Module Initialization File" -ForegroundColor Magenta
+Write-Host "`n--[ Install Custom Powershell Profile" -ForegroundColor Magenta
 
-## Generate ModuleInit.ps1 from config
-Write-Host "Generating ModuleInit.ps1 from config" -ForegroundColor Cyan
+## Install Base $PROFILE
+Write-Host "Installing base profile" -ForegroundColor Cyan
 try {
-    $ModuleInitPath = Join-Path $ProfilesDir "ModuleInit.ps1"
+    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/Bases/$($ProfileConfig.repo.profile_base)"
+    Write-Host "Installed base profile to: $(Split-Path $PROFILE -Parent)\_Base.ps1" -ForegroundColor Green
+}
+catch {
+    Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
+    exit 1
+}
+
+## Install software_inits.ps1
+Write-Host "Installing software initializations file" -ForegroundColor Cyan
+$SoftwareInitsSource = Join-Path $ProfilesDir "software_inits.ps1"
+$SoftwareInitsDest = Join-Path (Split-Path $PROFILE -Parent) "software_inits.ps1"
+
+if (Test-Path $SoftwareInitsSource) {
+    try {
+        Copy-Item -Path $SoftwareInitsSource -Destination $SoftwareInitsDest -Force
+        Write-Host "Installed software_inits.ps1 to: $SoftwareInitsDest" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to install software_inits.ps1: $($_.Exception.Message)"
+    }
+}
+else {
+    Write-Debug "No software_inits.ps1 file found at $SoftwareInitsSource"
+}
+
+## Generate and install ModuleInit.ps1
+Write-Host "Generating and installing module initialization file" -ForegroundColor Cyan
+try {
+    $ModuleInitDest = Join-Path (Split-Path $PROFILE -Parent) "ModuleInit.ps1"
     
     # Build the content for ModuleInit.ps1
     $ModuleInitContent = @"
@@ -132,62 +161,13 @@ try {
     
     $ModuleInitContent += "`n)"
     
-    # Write the file
-    Set-Content -Path $ModuleInitPath -Value $ModuleInitContent -Force
-    Write-Host "Generated ModuleInit.ps1 with $($ProfileConfig.custom_modules.immediate_load.Count) immediate and $($ProfileConfig.custom_modules.lazy_load.Count) lazy modules" -ForegroundColor Green
+    # Write directly to the destination file
+    Set-Content -Path $ModuleInitDest -Value $ModuleInitContent -Force
+    Write-Host "Generated and installed ModuleInit.ps1 with $($ProfileConfig.custom_modules.immediate_load.Count) immediate and $($ProfileConfig.custom_modules.lazy_load.Count) lazy modules to: $ModuleInitDest" -ForegroundColor Green
 }
 catch {
     Write-Error "Error generating ModuleInit.ps1. Details: $($_.Exception.Message)"
     exit 1
-}
-
-Write-Host "`n--[ Install Custom Powershell Profile" -ForegroundColor Magenta
-
-## Install Base $PROFILE
-Write-Host "Installing base profile" -ForegroundColor Cyan
-try {
-    Invoke-BaseProfileInstall -ProfileBase "$($ProfilesDir)/Bases/$($ProfileConfig.repo.profile_base)"
-    Write-Host "Installed base profile to: $(Split-Path $PROFILE -Parent)\_Base.ps1" -ForegroundColor Green
-}
-catch {
-    Write-Error "Error installing base profile. Details: $($_.Exception.Message)"
-    exit 1
-}
-
-## Install software_inits.ps1
-Write-Host "Installing software initializations file" -ForegroundColor Cyan
-$SoftwareInitsSource = Join-Path $ProfilesDir "software_inits.ps1"
-$SoftwareInitsDest = Join-Path (Split-Path $PROFILE -Parent) "software_inits.ps1"
-
-if (Test-Path $SoftwareInitsSource) {
-    try {
-        Copy-Item -Path $SoftwareInitsSource -Destination $SoftwareInitsDest -Force
-        Write-Host "Installed software_inits.ps1 to: $SoftwareInitsDest" -ForegroundColor Green
-    }
-    catch {
-        Write-Warning "Failed to install software_inits.ps1: $($_.Exception.Message)"
-    }
-}
-else {
-    Write-Debug "No software_inits.ps1 file found at $SoftwareInitsSource"
-}
-
-## Install ModuleInit.ps1
-Write-Host "Installing module initialization file" -ForegroundColor Cyan
-$ModuleInitSource = Join-Path $ProfilesDir "ModuleInit.ps1"
-$ModuleInitDest = Join-Path (Split-Path $PROFILE -Parent) "ModuleInit.ps1"
-
-if (Test-Path $ModuleInitSource) {
-    try {
-        Copy-Item -Path $ModuleInitSource -Destination $ModuleInitDest -Force
-        Write-Host "Installed ModuleInit.ps1 to: $ModuleInitDest" -ForegroundColor Green
-    }
-    catch {
-        Write-Warning "Failed to install ModuleInit.ps1: $($_.Exception.Message)"
-    }
-}
-else {
-    Write-Warning "ModuleInit.ps1 not found at: $ModuleInitSource"
 }
 
 ## Install profile

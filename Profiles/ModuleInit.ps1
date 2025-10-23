@@ -3,27 +3,7 @@
 # Do not edit manually - changes will be overwritten on next install
 
 # Modules to load immediately on profile startup
-$immediate_load = @(
-    'DatetimeHelpers',
-    'NetworkHelpers',
-    'PathHelpers',
-    'StringHelpers',
-    'UnixAliases'
-)
+$immediate_load = @()
 
 # Modules to load lazily (on-demand via proxy functions)
-$lazy_load = @(
-    'ActiveDirectoryHelpers',
-    'AzureHelpers',
-    'AzureDevOpsHelpers',
-    'BitwardenHelpers',
-    'DotnetAspireHelpers',
-    'MsTeamsHelpers',
-    'MsOutlookHelpers',
-    'PlatformInfo',
-    'ScoopHelpers',
-    'SecurityHelpers',
-    'SystHelpers',
-    'Weathermod',
-    'YaziHelpers'
-)
+$lazy_load = @()
