@@ -22,8 +22,8 @@ $ClearOnInit = $true
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
-$ScriptRoot = $PSScriptRoot
-$BaseProfile = "$($ScriptRoot)\_StarshipBase.ps1"
+$ScriptRoot = Split-Path -Path $PROFILE -Parent
+$BaseProfile = Join-Path -Path $ScriptRoot -ChildPath "_Base.ps1"
 
 if (-not (Test-Path -Path "$($BaseProfile)")) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
@@ -32,23 +32,14 @@ else {
     . "$($BaseProfile)"
 }
 
-## Initialize Starship in the background
-#  Wrap slow code to run asynchronously later
-#  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
-@(
-    {
-        ## Initialize Starship shell
-        if (Get-Command starship -ErrorAction SilentlyContinue) {
-            Invoke-Expression (& starship init powershell)
-        }
-        else {
-            Write-Warning "Starship is not installed."
-            Write-Host "Install with: winget install Starship.Starship" -ForegroundColor Cyan
-        }
-    }
-) | ForEach-Object {
-    Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $_
-} | Out-Null
+## Initialize Starship prompt
+if (Get-Command starship -ErrorAction SilentlyContinue) {
+    Invoke-Expression (& starship init powershell)
+}
+else {
+    Write-Warning "Starship is not installed."
+    Write-Host "Install with: winget install Starship.Starship" -ForegroundColor Cyan
+}
 
 if ($ClearOnInit) {
     Clear-Host
@@ -61,7 +52,6 @@ $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Print initialization time
 Write-Output "Profile loaded in $($ProfileInitTime.TotalSeconds) second(s)."
 Write-Output "Some commands may be unavailable for 1-3 seconds while background imports finish."
-Write-Output "The Starshp prompt will load after your next command."
 
 ## Disable profile tracing
 Set-PSDebug -Trace 0
