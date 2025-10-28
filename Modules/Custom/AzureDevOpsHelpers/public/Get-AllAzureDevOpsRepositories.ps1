@@ -44,18 +44,24 @@ function Get-AllAzureDevOpsRepositories {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Azure DevOps organization name")]
-        [string]$Organization,
+        [Parameter(Mandatory = $false, HelpMessage = "Azure DevOps organization name")]
+        [string]$Organization = $env:AZURE_DEVOPS_ORG,
         
         [Parameter(Mandatory = $false, HelpMessage = "Output CSV file path")]
         [string]$OutputPath = "AzureDevOps_AllRepositories.csv",
         
-        [Parameter(Mandatory = $false, ParameterSetName = "Token", HelpMessage = "Personal Access Token")]
-        [string]$PersonalAccessToken,
+        [Parameter(Mandatory = $false, HelpMessage = "Personal Access Token")]
+        [string]$PersonalAccessToken = $env:AZURE_DEVOPS_PAT,
         
-        [Parameter(Mandatory = $false, ParameterSetName = "TokenFile", HelpMessage = "Path to file containing PAT")]
-        [string]$PersonalAccessTokenFile
+        [Parameter(Mandatory = $false, HelpMessage = "Path to file containing PAT")]
+        [string]$PersonalAccessTokenFile = $env:AZURE_DEVOPS_PAT_FILE
     )
+
+    ## Validate Organization
+    if ([string]::IsNullOrWhiteSpace($Organization)) {
+        Write-Error "Organization is required. Provide -Organization parameter or set AZURE_DEVOPS_ORG environment variable."
+        return
+    }
 
     ## Validate that either PersonalAccessToken or PersonalAccessTokenFile is provided
     if ([string]::IsNullOrWhiteSpace($PersonalAccessToken) -and [string]::IsNullOrWhiteSpace($PersonalAccessTokenFile)) {
@@ -109,7 +115,7 @@ function Get-AllAzureDevOpsRepositories {
         }
     
         ## Get all projects
-        $projects = Get-AzureDevOpsProjects -Organization $Organization -Pat $Pat
+        $projects = Get-AzureDevOpsProjects -Organization $Organization -PersonalAccessToken $Pat
     
         if ($projects.Count -eq 0) {
             Write-Error "No projects found. Please check your organization name and PAT permissions."
@@ -124,7 +130,7 @@ function Get-AllAzureDevOpsRepositories {
             Write-Host "Processing project: $($project.name)" -ForegroundColor Yellow
         
             ## Get repositories for this project
-            $repositories = Get-AzureDevOpsProjectRepositories -Organization $Organization -ProjectId $project.id -Pat $Pat
+            $repositories = Get-AzureDevOpsProjectRepositories -Organization $Organization -ProjectId $project.id -PersonalAccessToken $Pat
         
             if ($repositories.Count -eq 0) {
                 ## If no repositories, still add project info
