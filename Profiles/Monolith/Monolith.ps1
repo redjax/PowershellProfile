@@ -41,13 +41,13 @@ foreach ( $component in $components ) {
     $componentPath = Join-Path $ComponentsDir $component
     if ( Test-Path $componentPath ) {
         try {
-            # $compStart = Get-Date
+            $compStart = Get-Date
             . $componentPath
-            # $compEnd = Get-Date
-            # $compTime = ($compEnd - $compStart).TotalMilliseconds
-            # if ($compTime -gt 50) {
-            #     Write-Host "  $component - ${compTime}ms" -ForegroundColor Yellow
-            # }
+            $compEnd = Get-Date
+            $compTime = ($compEnd - $compStart).TotalMilliseconds
+            if ($compTime -gt 50) {
+                Write-Host "  $component - ${compTime}ms" -ForegroundColor Yellow
+            }
         }
         catch {
             Write-Warning "Failed to load $component : $($_.Exception.Message)"
