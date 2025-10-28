@@ -25,91 +25,106 @@ Set-PSReadLineKeyHandler -Key '"', "'" `
 
     $quote = $key.KeyChar
 
-    $selectionStart = $null
-    $selectionLength = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+    try {
+        $selectionStart = $null
+        $selectionLength = $null
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
 
-    $line = $null
-    $cursor = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+        # Get buffer state once with all info
+        $line = $null
+        $cursor = $null
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
 
-    # If text is selected, just quote it without any smarts
-    if ($selectionStart -ne -1) {
-        [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $quote + $line.SubString($selectionStart, $selectionLength) + $quote)
-        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
-        return
-    }
-
-    $ast = $null
-    $tokens = $null
-    $parseErrors = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$parseErrors, [ref]$null)
-
-    function FindToken {
-        param($tokens, $cursor)
-
-        foreach ($token in $tokens) {
-            if ($cursor -lt $token.Extent.StartOffset) { continue }
-            if ($cursor -lt $token.Extent.EndOffset) {
-                $result = $token
-                $token = $token -as [StringExpandableToken]
-                if ($token) {
-                    $nested = FindToken $token.NestedTokens $cursor
-                    if ($nested) { $result = $nested }
-                }
-
-                return $result
-            }
-        }
-        return $null
-    }
-
-    $token = FindToken $tokens $cursor
-
-    # If we're on or inside a **quoted** string token (so not generic), we need to be smarter
-    if ($token -is [StringToken] -and $token.Kind -ne [TokenKind]::Generic) {
-        # If we're at the start of the string, assume we're inserting a new string
-        if ($token.Extent.StartOffset -eq $cursor) {
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$quote$quote ")
-            [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
+        # If text is selected, just quote it without any smarts
+        if ($selectionStart -ne -1) {
+            [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $quote + $line.SubString($selectionStart, $selectionLength) + $quote)
+            [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
             return
         }
 
-        # If we're at the end of the string, move over the closing quote if present.
-        if ($token.Extent.EndOffset -eq ($cursor + 1) -and $line[$cursor] -eq $quote) {
-            [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
-            return
-        }
-    }
-
-    if ($null -eq $token -or
-        $token.Kind -eq [TokenKind]::RParen -or $token.Kind -eq [TokenKind]::RCurly -or $token.Kind -eq [TokenKind]::RBracket) {
-        if ($line[0..$cursor].Where{ $_ -eq $quote }.Count % 2 -eq 1) {
-            # Odd number of quotes before the cursor, insert a single quote
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert($quote)
-        }
-        else {
-            # Insert matching quotes, move cursor to be in between the quotes
+        # Fast path: if line is empty or very simple, just insert paired quotes
+        if ($line.Length -eq 0) {
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$quote$quote")
             [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
-        }
-        return
-    }
-
-    # If cursor is at the start of a token, enclose it in quotes.
-    if ($token.Extent.StartOffset -eq $cursor) {
-        if ($token.Kind -eq [TokenKind]::Generic -or $token.Kind -eq [TokenKind]::Identifier -or 
-            $token.Kind -eq [TokenKind]::Variable -or $token.TokenFlags.hasFlag([TokenFlags]::Keyword)) {
-            $end = $token.Extent.EndOffset
-            $len = $end - $cursor
-            [Microsoft.PowerShell.PSConsoleReadLine]::Replace($cursor, $len, $quote + $line.SubString($cursor, $len) + $quote)
-            [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($end + 2)
             return
         }
-    }
 
-    # We failed to be smart, so just insert a single quote
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($quote)
+        # Now get AST info only if we need it
+        $ast = $null
+        $tokens = $null
+        $parseErrors = $null
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$parseErrors, [ref]$null)
+
+        function FindToken {
+            param($tokens, $cursor)
+
+            foreach ($token in $tokens) {
+                if ($cursor -lt $token.Extent.StartOffset) { continue }
+                if ($cursor -lt $token.Extent.EndOffset) {
+                    $result = $token
+                    $token = $token -as [StringExpandableToken]
+                    if ($token) {
+                        $nested = FindToken $token.NestedTokens $cursor
+                        if ($nested) { $result = $nested }
+                    }
+
+                    return $result
+                }
+            }
+            return $null
+        }
+
+        $token = FindToken $tokens $cursor
+
+        # If we're on or inside a **quoted** string token (so not generic), we need to be smarter
+        if ($token -is [StringToken] -and $token.Kind -ne [TokenKind]::Generic) {
+            # If we're at the start of the string, assume we're inserting a new string
+            if ($token.Extent.StartOffset -eq $cursor) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$quote$quote ")
+                [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
+                return
+            }
+
+            # If we're at the end of the string, move over the closing quote if present.
+            if ($token.Extent.EndOffset -eq ($cursor + 1) -and $line[$cursor] -eq $quote) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
+                return
+            }
+        }
+
+        if ($null -eq $token -or
+            $token.Kind -eq [TokenKind]::RParen -or $token.Kind -eq [TokenKind]::RCurly -or $token.Kind -eq [TokenKind]::RBracket) {
+            if ($line[0..$cursor].Where{ $_ -eq $quote }.Count % 2 -eq 1) {
+                # Odd number of quotes before the cursor, insert a single quote
+                [Microsoft.PowerShell.PSConsoleReadLine]::Insert($quote)
+            }
+            else {
+                # Insert matching quotes, move cursor to be in between the quotes
+                [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$quote$quote")
+                [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
+            }
+            return
+        }
+
+        # If cursor is at the start of a token, enclose it in quotes.
+        if ($token.Extent.StartOffset -eq $cursor) {
+            if ($token.Kind -eq [TokenKind]::Generic -or $token.Kind -eq [TokenKind]::Identifier -or 
+                $token.Kind -eq [TokenKind]::Variable -or $token.TokenFlags.hasFlag([TokenFlags]::Keyword)) {
+                $end = $token.Extent.EndOffset
+                $len = $end - $cursor
+                [Microsoft.PowerShell.PSConsoleReadLine]::Replace($cursor, $len, $quote + $line.SubString($cursor, $len) + $quote)
+                [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($end + 2)
+                return
+            }
+        }
+
+        # We failed to be smart, so just insert a single quote
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($quote)
+    }
+    catch {
+        # If anything goes wrong, just insert the quote
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($quote)
+    }
 }
 
 ## Smart brace insertion
