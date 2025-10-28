@@ -172,7 +172,7 @@ function which {
 #################
 
 ## lg -> lazygit
-if ($global:CommandCache['lazygit']) {
+if (Get-Command "lazygit" -ErrorAction SilentlyContinue) {
     Set-Alias -Name lg -Value lazygit
 }
 else {
@@ -180,7 +180,7 @@ else {
 }
 
 ## bwu -> bw unlock
-if ($global:CommandCache['bw']) {
+if (Get-Command "bw" -ErrorAction SilentlyContinue) {
     Set-Alias -Name bwu -Value Unlock-BitwardenVault
 }
 else {
@@ -195,7 +195,7 @@ $WeztermCLIDirs = @(
 )
 
 ## If wezterm CLI command is not found, try to find it & set an alias
-if (-not $global:CommandCache['wezterm']) {
+if (-not (Get-Command wezterm -ErrorAction SilentlyContinue)) {
     $WezPath = $null
 
     ## Loop over potential install paths
@@ -223,7 +223,7 @@ function y {
         .DESCRIPTION
         Wrap the yazi command to pass args & handle non-existent directories.
     #>
-    if ($global:CommandCache['yazi']) {   
+    if (Get-Command yazi -ErrorAction SilentlyContinue) {   
         $tmp = [System.IO.Path]::GetTempFileName()
         
         try {

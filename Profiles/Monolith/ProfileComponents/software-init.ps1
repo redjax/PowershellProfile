@@ -13,7 +13,7 @@
 
 ## IntelliShell
 $env:INTELLI_HOME = "$env:APPDATA\IntelliShell\Intelli-Shell\data"
-if ($global:CommandCache['intelli-shell.exe']) {
+if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
     $intelliCache = Join-Path $env:USERPROFILE ".intellishell\intellishell.ps1"
     
     # Generate cache if it doesn't exist or is older than intelli-shell executable

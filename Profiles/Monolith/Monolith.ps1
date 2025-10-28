@@ -4,7 +4,6 @@
 
     .DESCRIPTION
     A PowerShell profile composed of smaller, maintainable component files:
-    - command-cache.ps1: Pre-cache command existence (must load first)
     - namespaces.ps1: Type shortcuts
     - psreadline-handlers.ps1: Advanced key bindings
     - prompt.ps1: Starship prompt initialization
@@ -30,9 +29,8 @@ $ComponentsDir = Join-Path $ProfileDir "ProfileComponents"
 
 ## Source all component files
 $components = @(
-    'command-cache.ps1'  # Must be first - other components depend on this
     'namespaces.ps1'
-    'psreadline-handlers.ps1'
+    # 'psreadline-handlers.ps1'  # Deferred - loads in background
     'prompt.ps1'
     'shell-completions.ps1'
     'aliases.ps1'
@@ -62,6 +60,19 @@ foreach ( $component in $components ) {
     else {
         Write-Warning "Component not found: $componentPath"
     }
+}
+
+## Defer PSReadLine handlers to background for faster startup
+$psReadLineHandlersPath = Join-Path $ComponentsDir "psreadline-handlers.ps1"
+if (Test-Path $psReadLineHandlersPath) {
+    $null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action ([scriptblock]::Create(@"
+        try {
+            . '$($psReadLineHandlersPath -replace "'", "''")'
+        }
+        catch {
+            Write-Warning "Failed to load deferred PSReadLine handlers: `$(`$_.Exception.Message)"
+        }
+"@))
 }
 
 #############

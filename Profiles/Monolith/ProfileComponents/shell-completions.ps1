@@ -17,7 +17,7 @@
 #####################
 
 ## Azure CLI completions
-if ($global:CommandCache['az']) {
+if (Get-Command az -ErrorAction SilentlyContinue) {
     # Use cached completion file if it exists (much faster)
     $azCompletionFile = "$env:USERPROFILE\.azure\az.completion.ps1"
     if (Test-Path $azCompletionFile) {
@@ -26,7 +26,7 @@ if ($global:CommandCache['az']) {
 }
 
 ## Azure Developer CLI completions
-if ($global:CommandCache['azd']) {
+if (Get-Command azd -ErrorAction SilentlyContinue) {
     # Use cached completion file if it exists (much faster)
     $azdCompletionFile = "$env:USERPROFILE\.azd\azd.completion.ps1"
     
@@ -59,7 +59,7 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
 }
 
 ## Syst completions
-if ($global:CommandCache['syst']) {
+if (Get-Command syst -ErrorAction SilentlyContinue) {
     # Use cached completion file if it exists (much faster)
     $userModulesPath = [Environment]::GetFolderPath('MyDocuments')
     $systCompletionFile = Join-Path -Path $userModulesPath -ChildPath "PowerShell\Completions\syst-completions.ps1"

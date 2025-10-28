@@ -9,7 +9,7 @@
 
 ## Starship prompt initialization with caching
 try {
-    if ($global:CommandCache['starship']) {
+    if (Get-Command starship -ErrorAction SilentlyContinue) {
         $starshipCache = Join-Path $env:USERPROFILE ".starship\starship.ps1"
         
         # Generate cache if it doesn't exist or is older than starship executable
