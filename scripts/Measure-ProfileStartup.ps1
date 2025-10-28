@@ -213,10 +213,30 @@ Write-Host ("=" * 80) -ForegroundColor Cyan
 `$totalTime = (`$Global:ProfileTimings | Measure-Object -Property Duration -Sum).Sum
 `$totalSeconds = [Math]::Round(`$totalTime / 1000, 2)
 
-# Find key operations
-`$profileModuleTime = (`$Global:ProfileTimings | Where-Object { `$_.Section -like "*ProfileModule*" } | Measure-Object -Property Duration -Sum).Sum
-`$customModulesTime = (`$Global:ProfileTimings | Where-Object { `$_.Section -like "*Custom*" -or `$_.Section -like "*OnIdle*" } | Measure-Object -Property Duration -Sum).Sum
-`$psReadLineTime = (`$Global:ProfileTimings | Where-Object { `$_.Section -like "*PSReadLine*" } | Measure-Object -Property Duration -Sum).Sum
+# Find key operations (handle null results safely)
+try {
+    `$profileModuleResult = `$Global:ProfileTimings | Where-Object { `$_.Section -like "*ProfileModule*" } | Measure-Object -Property Duration -Sum
+    `$profileModuleTime = `$profileModuleResult.Sum
+    if (`$null -eq `$profileModuleTime) { `$profileModuleTime = 0 }
+} catch {
+    `$profileModuleTime = 0
+}
+
+try {
+    `$customModulesResult = `$Global:ProfileTimings | Where-Object { `$_.Section -like "*Custom*" -or `$_.Section -like "*OnIdle*" } | Measure-Object -Property Duration -Sum
+    `$customModulesTime = `$customModulesResult.Sum
+    if (`$null -eq `$customModulesTime) { `$customModulesTime = 0 }
+} catch {
+    `$customModulesTime = 0
+}
+
+try {
+    `$psReadLineResult = `$Global:ProfileTimings | Where-Object { `$_.Section -like "*PSReadLine*" } | Measure-Object -Property Duration -Sum
+    `$psReadLineTime = `$psReadLineResult.Sum
+    if (`$null -eq `$psReadLineTime) { `$psReadLineTime = 0 }
+} catch {
+    `$psReadLineTime = 0
+}
 
 Write-Host "`n📊 OVERALL PERFORMANCE" -ForegroundColor Yellow
 Write-Host "  Total Load Time:        " -NoNewline

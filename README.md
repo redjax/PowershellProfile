@@ -33,6 +33,13 @@ My Powershell `$PROFILE` module.
 
 📖 [Documentation](./docs/)
 
+> [!NOTE]
+> I am working on a rewrite of this profile, it turns out importing a bunch of modules that conveniently encapsulate functionality I want also slows the hell out of startup time.
+>
+> The new profile is in [`Profiles/Monolith/Monolith.ps1`](./Profiles/Monolith/Monolith.ps1). Instead of importing a bunch of modules, it sources profile "components." Instead of using the `Install-CustomProfile.ps1` script, this profile is installed with `Install-MonoProfile.ps1`. The default installation assumes you do not have a custom prompt (Starship, Oh-My-Posh, etc); you can pass a custom prompt & theme with `-Prompt [starship, oh-my-posh]` and `-StarshipTheme [theme-name]` or `-OhMyPoshTheme [theme-name]`.
+>
+> I will document this better when I fully replace the current profile.
+
 ---
 
 > [!WARNING]
