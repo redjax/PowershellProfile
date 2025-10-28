@@ -16,8 +16,8 @@ $ClearOnInit = $true
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
-$ScriptRoot = $PSScriptRoot
-$BaseProfile = "$($ScriptRoot)\_Base.ps1"
+$ScriptRoot = Split-Path -Path $PROFILE -Parent
+$BaseProfile = Join-Path -Path $ScriptRoot -ChildPath "_Base.ps1"
 
 Write-Output "Importing custom profile, your terminal may slow down for 1-2 seconds."
 

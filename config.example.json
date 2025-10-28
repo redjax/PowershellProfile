@@ -7,15 +7,18 @@
         "author": "redjax",
         "profile_base": "_Base.ps1"
     },
-    "custom_modules": [
-        "DatetimeHelpers",
-        "NetworkHelpers",
-        "PathHelpers",
-        "SecurityHelpers",
-        "SystHelpers",
-        "UnixAliases",
-        "Weathermod"
-    ],
+    "custom_modules": {
+        "immediate_load": [
+            "DatetimeHelpers",
+            "NetworkHelpers",
+            "PathHelpers",
+            "SecurityHelpers",
+            "SystHelpers",
+            "UnixAliases",
+            "Weathermod"
+        ],
+        "lazy_load": []
+    },
     "ohmyposh": {
         "theme": "default"
     },

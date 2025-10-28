@@ -1,63 +1,56 @@
-﻿$script:ModuleRoot = $PSScriptRoot
+$script:ModuleRoot = $PSScriptRoot
 
-#region Helper function
-function Import-ModuleFile
-{
-	<#
-		.SYNOPSIS
-			Loads files into the module on module import.
-		
-		.DESCRIPTION
-			This helper function is used during module initialization.
-			It should always be dotsourced itself, in order to proper function.
-			
-			This provides a central location to react to files being imported, if later desired
-		
-		.PARAMETER Path
-			The path to the file to load
-		
-		.EXAMPLE
-			PS C:\> . Import-ModuleFile -File $function.FullName
-	
-			Imports the file stored in $function according to import policy
-	#>
-	[CmdletBinding()]
-	Param (
-		[string]
-		$Path
-	)
-	
-	if ($script:dontDotSource) { $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText((Resolve-Path $Path).ProviderPath))), $null, $null) }
-	else { . (Resolve-Path $Path).ProviderPath }
+#region Load internal/private functions
+$internalPath = Join-Path -Path $ModuleRoot -ChildPath "internal"
+if (Test-Path -LiteralPath $internalPath) {
+    $internalFunctionsPath = Join-Path -Path $internalPath -ChildPath "functions"
+    if (Test-Path -LiteralPath $internalFunctionsPath) {
+        foreach ($file in [System.IO.Directory]::GetFiles($internalFunctionsPath, "*.ps1", [System.IO.SearchOption]::AllDirectories)) {
+            . $file
+        }
+    }
+    
+    # Load preimport.ps1 if it exists
+    $preimportPath = Join-Path -Path $internalPath -ChildPath "scripts\preimport.ps1"
+    if (Test-Path -LiteralPath $preimportPath) {
+        . $preimportPath
+    }
 }
-#endregion Helper function
+#endregion Load internal/private functions
 
-# Perform Actions before loading the rest of the content
-. Import-ModuleFile -Path "$ModuleRoot\internal\scripts\preimport.ps1"
+#region Load functions directory (if exists)
+$functionsPath = Join-Path -Path $ModuleRoot -ChildPath "functions"
+if (Test-Path -LiteralPath $functionsPath) {
+    foreach ($file in [System.IO.Directory]::GetFiles($functionsPath, "*.ps1", [System.IO.SearchOption]::AllDirectories)) {
+        . $file
+    }
+}
+#endregion Load functions directory
 
-#region Load functions
-foreach ($function in (Get-ChildItem "$ModuleRoot\internal\functions" -Recurse -File -Filter "*.ps1"))
-{
-	. Import-ModuleFile -Path $function.FullName
+#region Load and export public functions
+$publicPath = Join-Path -Path $ModuleRoot -ChildPath "public"
+$exportedFunctions = @()
+
+if (Test-Path -LiteralPath $publicPath) {
+    foreach ($file in [System.IO.Directory]::GetFiles($publicPath, "*.ps1", [System.IO.SearchOption]::AllDirectories)) {
+        . $file
+        # Use filename as function name (standard PowerShell convention)
+        $exportedFunctions += [System.IO.Path]::GetFileNameWithoutExtension($file)
+    }
 }
 
-foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Recurse -File -Filter "*.ps1"))
-{
-	. Import-ModuleFile -Path $function.FullName
+# Export all collected functions
+if ($exportedFunctions.Count -gt 0) {
+    Export-ModuleMember -Function $exportedFunctions
 }
+#endregion Load and export public functions
 
-foreach ($function in (Get-ChildItem "$ModuleRoot\private" -Recurse -File -Filter "*.ps1"))
-{
-	. Import-ModuleFile -Path $function.FullName
+#region Load postimport.ps1 if it exists
+$internalPath = Join-Path -Path $ModuleRoot -ChildPath "internal"
+if (Test-Path -LiteralPath $internalPath) {
+    $postimportPath = Join-Path -Path $internalPath -ChildPath "scripts\postimport.ps1"
+    if (Test-Path -LiteralPath $postimportPath) {
+        . $postimportPath
+    }
 }
-#endregion Load functions
-
-# Perform Actions after loading the module contents
-. Import-ModuleFile -Path "$ModuleRoot\internal\scripts\postimport.ps1"
-
-## Export each function
-foreach ($function in (Get-ChildItem "$ModuleRoot/public" -Recurse -File -Filter "*.ps1")) {
-	. Import-ModuleFile -Path $function.FullName
-	$functionName = $function.BaseName
-	Export-ModuleMember -Function $functionName
-}
+#endregion Load postimport.ps1

@@ -17,8 +17,8 @@ $ClearOnInit = $true
 ## Start profile initialization timer
 $ProfileStartTime = Get-Date
 
-$ScriptRoot = $PSScriptRoot
-$BaseProfile = "$($ScriptRoot)\Bases\_Base.ps1"
+$ScriptRoot = Split-Path -Path $PROFILE -Parent
+$BaseProfile = Join-Path -Path $ScriptRoot -ChildPath "_Base.ps1"
 
 if (-not (Test-Path -Path "$($BaseProfile)")) {
     Write-Warning "Could not find base profile '$($BaseProfile)'."
@@ -27,33 +27,29 @@ else {
     . "$($BaseProfile)"
 }
 
-## Initialize Oh My Posh in the background
-#  Wrap slow code to run asynchronously later
-#  https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
+## Initialize Oh My Posh prompt
+if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
+    ## Path to Oh My Posh theme configuration (installed in user's config directory)
+    $OhMyPoshTheme = Join-Path -Path $HOME -ChildPath ".config\ohmyposh\theme.omp.json"
+    
+    ## Check if custom theme exists
+    if (Test-Path -Path $OhMyPoshTheme) {
+        oh-my-posh init pwsh --config $OhMyPoshTheme | Invoke-Expression
+    }
+    else {
+        Write-Warning "Oh My Posh theme not found at: $OhMyPoshTheme"
+        Write-Host "Run the installation script to set up Oh My Posh: .\Install-CustomProfile.ps1" -ForegroundColor Yellow
+        Write-Host "Or manually run: Invoke-OhMyPoshSetup -RepositoryPath <path-to-repo>" -ForegroundColor Yellow
+    }
+}
+else {
+    Write-Warning "Oh My Posh is not installed."
+    Write-Host "Install with: winget install JanDeDobbeleer.OhMyPosh" -ForegroundColor Cyan
+}
+
+## Load posh-git for Oh My Posh git integration in background
 @(
     {
-        ## Initialize Oh My Posh shell
-        if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
-            ## Path to Oh My Posh theme configuration (installed in user's config directory)
-            $OhMyPoshTheme = Join-Path -Path $HOME -ChildPath ".config\ohmyposh\theme.omp.json"
-            
-            ## Check if custom theme exists
-            if (Test-Path -Path $OhMyPoshTheme) {
-                oh-my-posh init pwsh --config $OhMyPoshTheme | Invoke-Expression
-            }
-            else {
-                Write-Warning "Oh My Posh theme not found at: $OhMyPoshTheme"
-                Write-Host "Run the installation script to set up Oh My Posh: .\Install-CustomProfile.ps1" -ForegroundColor Yellow
-                Write-Host "Or manually run: Invoke-OhMyPoshSetup -RepositoryPath <path-to-repo>" -ForegroundColor Yellow
-            }
-        }
-        else {
-            Write-Warning "Oh My Posh is not installed."
-            Write-Host "Install with: winget install JanDeDobbeleer.OhMyPosh" -ForegroundColor Cyan
-        }
-    },
-    {
-        ## Load posh-git for Oh My Posh git integration
         try {
             if (Get-Module -ListAvailable -Name posh-git) {
                 Import-Module posh-git -ErrorAction Stop
