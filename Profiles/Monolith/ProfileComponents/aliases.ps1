@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-    Unix-like aliases and functions for Monolith profile.
+    Aliases and functions for Monolith profile.
 
     .DESCRIPTION
     Provides Unix-like command aliases and functions for PowerShell:
@@ -9,6 +9,11 @@
     - Process management (ps, kill)
     - File management (rm, mv, cp)
     - Help and navigation (man, pwd, clear, history)
+
+    Also provides aliases for 3rd party tools if installed:
+    - lg -> lazygit
+    - bwu -> bw unlock
+    - y -> yazi
 #>
 
 #############
