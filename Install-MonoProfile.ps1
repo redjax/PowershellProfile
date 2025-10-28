@@ -143,7 +143,12 @@ try {
     foreach ($dir in $componentDirs) {
         try {
             $destSubDir = Join-Path $ComponentsDestDir $dir.Name
-            Copy-Item -Path $dir.FullName -Destination $destSubDir -Recurse -Force
+            # Create the destination subdirectory if it doesn't exist
+            if (-not (Test-Path $destSubDir)) {
+                New-Item -Path $destSubDir -ItemType Directory -Force | Out-Null
+            }
+            # Copy contents of the directory, not the directory itself
+            Copy-Item -Path "$($dir.FullName)\*" -Destination $destSubDir -Recurse -Force
             Write-Host "  $($dir.Name)/ directory" -ForegroundColor Green
             $installedCount++
         }

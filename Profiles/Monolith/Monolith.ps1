@@ -62,10 +62,10 @@ foreach ( $component in $components ) {
 # Functions #
 #############
 
-## Load custom functions from ProfileComponents\functions subdirectory
+## Load custom functions from ProfileComponents\functions subdirectory (including subdirectories)
 $FunctionsDir = Join-Path $ComponentsDir "functions"
 if ( Test-Path $FunctionsDir ) {
-    $functionFiles = Get-ChildItem -Path $FunctionsDir -Filter "*.ps1" -File
+    $functionFiles = Get-ChildItem -Path $FunctionsDir -Filter "*.ps1" -File -Recurse
     foreach ( $funcFile in $functionFiles ) {
         try {
             . $funcFile.FullName
