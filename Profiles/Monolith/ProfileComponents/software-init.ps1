@@ -37,8 +37,25 @@ if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
     # Source the cached init script with verbose suppression
     $prevVerbose = $VerbosePreference
     $VerbosePreference = 'SilentlyContinue'
-    . $intelliCache
-    $VerbosePreference = $prevVerbose
-    Write-Verbose "IntelliShell initialized from cache."
+    try {
+        . $intelliCache
+        Write-Verbose "IntelliShell initialized from cache."
+    }
+    catch {
+        Write-Warning "Failed to initialize IntelliShell from cache: $($_.Exception.Message)"
+        Write-Verbose "Attempting to regenerate IntelliShell cache..."
+        # Try regenerating the cache
+        try {
+            intelli-shell.exe init powershell | Out-File -FilePath $intelliCache -Encoding utf8 -Force
+            . $intelliCache
+            Write-Verbose "IntelliShell cache regenerated and loaded successfully."
+        }
+        catch {
+            Write-Warning "Failed to initialize IntelliShell. Skipping IntelliShell integration."
+        }
+    }
+    finally {
+        $VerbosePreference = $prevVerbose
+    }
 }
 
