@@ -512,18 +512,22 @@ Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
 # Shell Completions #
 #####################
 
-## Starship completions
+## Starship prompt initialization
 try {
     if (Get-Command starship -ErrorAction SilentlyContinue) {
-        starship completions powershell | Out-String | Invoke-Expression
-        Write-Verbose "Starship completions loaded."
+        # Initialize Starship prompt
+        Invoke-Expression (&starship init powershell)
+        
+        # Load Starship completions
+        starship completions power-shell | Out-String | Invoke-Expression
+        Write-Verbose "Starship prompt and completions loaded."
     }
     else {
-        Write-Verbose "Starship is not installed. Skipping completions."
+        Write-Verbose "Starship is not installed. Skipping initialization."
     }
 }
 catch {
-    Write-Warning "Failed to load Starship completions: $($_.Exception.Message)"
+    Write-Warning "Failed to initialize Starship: $($_.Exception.Message)"
 }
 
 ## Azure CLI completions

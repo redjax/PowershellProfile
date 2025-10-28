@@ -46,7 +46,7 @@ if (-not (Test-Path $ProfileDirectory)) {
     Write-Host "Creating profile directory: $ProfileDirectory" -ForegroundColor Yellow
     try {
         New-Item -Path $ProfileDirectory -ItemType Directory -Force | Out-Null
-        Write-Host "✓ Profile directory created" -ForegroundColor Green
+        Write-Host "Profile directory created" -ForegroundColor Green
     }
     catch {
         Write-Error "Failed to create profile directory: $($_.Exception.Message)"
@@ -70,7 +70,7 @@ if (Test-Path $DestinationPath) {
     Write-Host "Backing up existing profile to: $BackupPath" -ForegroundColor Yellow
     try {
         Copy-Item -Path $DestinationPath -Destination $BackupPath -Force
-        Write-Host "✓ Backup created" -ForegroundColor Green
+        Write-Host "Backup created" -ForegroundColor Green
     }
     catch {
         Write-Error "Failed to backup existing profile: $($_.Exception.Message)"
@@ -79,10 +79,10 @@ if (Test-Path $DestinationPath) {
 }
 
 ## Install the Monolith profile
-Write-Host "Installing Monolith profile..." -ForegroundColor Cyan
+Write-Host "Installing Monolith profile" -ForegroundColor Cyan
 try {
     Copy-Item -Path $MonolithProfilePath -Destination $DestinationPath -Force
-    Write-Host "✓ Monolith profile installed successfully!" -ForegroundColor Green
+    Write-Host "Monolith profile installed successfully!" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to install profile: $($_.Exception.Message)"
