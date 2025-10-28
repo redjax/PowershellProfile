@@ -1,10 +1,17 @@
 <#
     .SYNOPSIS
-    Install the Monolith PowerShell profile.
+    Install the Monolith PowerShell profile and its component files.
 
     .DESCRIPTION
-    Installs the self-contained Monolith.ps1 profile to $PROFILE.
-    This profile does not require any modules or additional files.
+    Installs the Monolith.ps1 profile and ProfileComponents directory to the $PROFILE directory.
+    
+    The ProfileComponents directory contains:
+    - namespaces.ps1: Type shortcuts
+    - psreadline-handlers.ps1: Advanced key bindings
+    - prompt.ps1: Starship prompt initialization
+    - shell-completions.ps1: CLI tool completions
+    - aliases.ps1: Unix-like aliases and functions
+    - software-init.ps1: Third-party tool initialization
 
     .PARAMETER Force
     Overwrite existing profile without prompting for confirmation.
@@ -26,13 +33,29 @@ Param(
 
 ## Variables
 $ScriptRoot = $PSScriptRoot
-$MonolithProfilePath = Join-Path $ScriptRoot "Profiles\Monolith.ps1"
+$MonolithSourceDir = Join-Path $ScriptRoot "Profiles\Monolith"
+$ComponentsSourceDir = Join-Path $MonolithSourceDir "ProfileComponents"
+$MonolithProfilePath = Join-Path $MonolithSourceDir "Monolith.ps1"
 $DestinationPath = $PROFILE
+$DestinationDir = Split-Path $DestinationPath -Parent
+$ComponentsDestDir = Join-Path $DestinationDir "ProfileComponents"
 
 Write-Host "`n=== Monolith Profile Installer ===" -ForegroundColor Cyan
-Write-Host "Source: $MonolithProfilePath" -ForegroundColor Gray
+Write-Host "Source Directory: $MonolithSourceDir" -ForegroundColor Gray
 Write-Host "Destination: $DestinationPath" -ForegroundColor Gray
 Write-Host ""
+
+## Check if source directory exists
+if (-not (Test-Path $MonolithSourceDir)) {
+    Write-Error "Monolith directory not found at: $MonolithSourceDir"
+    exit 1
+}
+
+## Check if ProfileComponents directory exists
+if (-not (Test-Path $ComponentsSourceDir)) {
+    Write-Error "ProfileComponents directory not found at: $ComponentsSourceDir"
+    exit 1
+}
 
 ## Check if source profile exists
 if (-not (Test-Path $MonolithProfilePath)) {
@@ -79,13 +102,53 @@ if (Test-Path $DestinationPath) {
 }
 
 ## Install the Monolith profile
-Write-Host "Installing Monolith profile" -ForegroundColor Cyan
+Write-Host "Installing Monolith profile..." -ForegroundColor Cyan
 try {
     Copy-Item -Path $MonolithProfilePath -Destination $DestinationPath -Force
-    Write-Host "Monolith profile installed successfully!" -ForegroundColor Green
+    Write-Host "  ✓ Monolith.ps1 copied" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to install profile: $($_.Exception.Message)"
+    exit 1
+}
+
+## Install ProfileComponents directory
+Write-Host "Installing ProfileComponents directory..." -ForegroundColor Cyan
+try {
+    # Create ProfileComponents directory if it doesn't exist
+    if (-not (Test-Path $ComponentsDestDir)) {
+        New-Item -Path $ComponentsDestDir -ItemType Directory -Force | Out-Null
+        Write-Host "  ✓ Created ProfileComponents directory" -ForegroundColor Green
+    }
+    
+    # Copy all component files
+    $componentFiles = Get-ChildItem -Path $ComponentsSourceDir -File
+    $installedCount = 0
+    $failedCount = 0
+    
+    foreach ($file in $componentFiles) {
+        try {
+            Copy-Item -Path $file.FullName -Destination $ComponentsDestDir -Force
+            Write-Host "  ✓ $($file.Name)" -ForegroundColor Green
+            $installedCount++
+        }
+        catch {
+            Write-Warning "  ✗ Failed to copy $($file.Name): $($_.Exception.Message)"
+            $failedCount++
+        }
+    }
+    
+    if ($failedCount -gt 0) {
+        Write-Warning "`nSome component files failed to install. The profile may not work correctly."
+    }
+    
+    Write-Host "`nInstalled: $installedCount component files" -ForegroundColor Cyan
+    if ($failedCount -gt 0) {
+        Write-Host "Failed: $failedCount component files" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Error "Failed to install ProfileComponents: $($_.Exception.Message)"
     exit 1
 }
 

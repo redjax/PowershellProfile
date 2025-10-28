@@ -1,18 +1,16 @@
 <#
     .SYNOPSIS
-    Monolithic PowerShell $PROFILE - single file with no external dependencies.
+    PSReadLine key handlers for Monolith profile.
 
     .DESCRIPTION
-    A self-contained PowerShell profile that doesn't rely on external modules or base files.
-    Everything needed for the profile is in this single file.
+    Advanced PSReadLine key handlers for smart editing:
+    - Smart quote/brace/bracket insertion
+    - Smart backspace (deletes matching pairs)
+    - Clipboard paste as here-string
+    - Argument selection and manipulation
+    - Directory marking and jumping
+    - Command help and alias expansion
 #>
-
-## Import namespaces so later you can just type
-#  i.e. StringExpandableToken instead of System.Management.Automation.Language.StringExpandableToken
-using namespace System.Management.Automation
-using namespace System.Management.Automation.Language
-
-$ProfileStartTime = Get-Date
 
 ###########################
 # PSReadline Key Handlers #
@@ -222,7 +220,7 @@ Set-PSReadLineKeyHandler -Key Ctrl+V `
     Add-Type -Assembly PresentationCore
     if ([System.Windows.Clipboard]::ContainsText()) {
         # Get clipboard text - remove trailing spaces, convert \r\n to \n, and remove the final \n.
-        $text = ([System.Windows.Clipboard]::GetText() -replace "\p{ Zs }*`r?`n", "`n").TrimEnd()
+        $text = ([System.Windows.Clipboard]::GetText() -replace "\p{Zs}*`r?`n", "`n").TrimEnd()
         [Microsoft.PowerShell.PSConsoleReadLine]::Insert("@'`n$text`n'@")
     }
     else {
@@ -493,159 +491,7 @@ Set-PSReadLineKeyHandler -Key Alt+a `
     [Microsoft.PowerShell.PSConsoleReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
 }
 
+## PSReadLine Options
 Set-PSReadLineOption -PredictionSource History
 Set-PSReadLineOption -PredictionViewStyle ListView
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
-
-#####################
-# Shell Completions #
-#####################
-
-## Starship prompt initialization
-try {
-    if (Get-Command starship -ErrorAction SilentlyContinue) {
-        # Initialize Starship prompt
-        Invoke-Expression (&starship init powershell)
-        
-        # Load Starship completions
-        starship completions power-shell | Out-String | Invoke-Expression
-        Write-Verbose "Starship prompt and completions loaded."
-    }
-    else {
-        Write-Verbose "Starship is not installed. Skipping initialization."
-    }
-}
-catch {
-    Write-Warning "Failed to initialize Starship: $($_.Exception.Message)"
-}
-
-## Azure CLI completions
-try {
-    if (Get-Command az -ErrorAction SilentlyContinue) {
-        # Use Azure CLI's native PowerShell completion (much faster than argcomplete)
-        if (Test-Path "$env:USERPROFILE\.azure\az.completion.ps1") {
-            . "$env:USERPROFILE\.azure\az.completion.ps1"
-            Write-Verbose "Azure CLI completions loaded (native method)."
-        }
-        else {
-            # Generate the completion file if it doesn't exist
-            Write-Verbose "Generating Azure CLI completion file..."
-            az completion --shell powershell | Out-File -FilePath "$env:USERPROFILE\.azure\az.completion.ps1" -Encoding utf8
-            . "$env:USERPROFILE\.azure\az.completion.ps1"
-        }
-    }
-    else {
-        Write-Verbose "Azure CLI is not installed. Skipping completions."
-    }
-}
-catch {
-    Write-Warning "Failed to load Azure CLI completions: $($_.Exception.Message)"
-}
-
-## Azure Developer CLI completions
-try {
-    if (Get-Command azd -ErrorAction SilentlyContinue) {
-        azd completion powershell | Out-String | Invoke-Expression
-        Write-Host "Imported azd CLI completions." -ForegroundColor Green
-    }
-    else {
-        Write-Verbose "azd CLI is not installed. Skipping import."
-    }
-}
-catch {
-    Write-Warning "Failed to import azd CLI completions: $($_.Exception.Message)"
-}
-
-## Winget completions
-Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
-    param($wordToComplete, $commandAst, $cursorPosition)
-    [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
-    $Local:word = $wordToComplete.Replace('"', '""')
-    $Local:ast = $commandAst.ToString().Replace('"', '""')
-    winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition | ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-    }
-}
-
-###########
-# Aliases #
-###########
-
-## Unix-like 'ls'
-Remove-Item Alias:ls
-function Enable-TerminalIcons {
-    if (-not (Get-Module Terminal-Icons)) {
-        Import-Module Terminal-Icons -ErrorAction SilentlyContinue
-    }
-}
-
-function ls {
-    Enable-TerminalIcons
-    Get-ChildItem @args
-}
-
-## Unix-like 'dir'
-Remove-Item Alias:dir
-function dir {
-    Enable-TerminalIcons
-    Get-ChildItem @args
-}
-
-## Unix-like 'll' (long listing)
-Function ll { Get-ChildItem -Force | Format-List }
-Set-Alias pwd Get-Location
-
-## Unix-like 'touch'
-Function touch { param($f); New-Item -ItemType File -Path $f -Force }
-
-## File Viewing and Editing
-Set-Alias cat Get-Content
-Function tac { param($f); $c = Get-Content $f; [array]::Reverse($c); $c }
-Function tail { param($f); Get-Content -Tail 10 -Path $f }
-Function tailf { param($f); Get-Content -Wait -Path $f }
-Function head { param($f, $n = 10); Get-Content $f | Select-Object -First $n }
-
-## System/Process
-Set-Alias ps Get-Process
-Set-Alias kill Stop-Process
-Set-Alias clear Clear-Host
-Set-Alias history Get-History
-
-## File Management
-Set-Alias rm Remove-Item
-Set-Alias mv Move-Item
-Set-Alias man Get-Help
-
-###########################
-# Software Initialization #
-###########################
-
-# IntelliShell
-$env:INTELLI_HOME = "$env:APPDATA\IntelliShell\Intelli-Shell\data"
-# $env:INTELLI_SEARCH_HOTKEY = 'Ctrl+Spacebar'
-# $env:INTELLI_VARIABLE_HOTKEY = 'Ctrl+l'
-# $env:INTELLI_BOOKMARK_HOTKEY = 'Ctrl+b'
-# $env:INTELLI_FIX_HOTKEY = 'Ctrl+x'
-# Set-Alias -Name 'is' -Value 'intelli-shell'
-try {
-    if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
-        intelli-shell.exe init powershell | Out-String | Invoke-Expression
-    }
-}
-catch {
-    Write-Warning "Failed to initialize IntelliShell: $($_.Exception.Message)"
-}
-
-##############################################################
-# PROFILE load finished                                      #
-# Leave this at the bottom, and don't put anything after it. #
-##############################################################
-
-## End profile initialization timer
-$ProfileEndTime = Get-Date
-## Calculate profile init time
-$ProfileInitTime = $ProfileEndTime - $ProfileStartTime
-## Print initialization time
-Write-Output "$($ProfileInitTime.TotalSeconds)s"
-
-## No code below this line
