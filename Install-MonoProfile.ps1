@@ -102,10 +102,10 @@ if (Test-Path $DestinationPath) {
 }
 
 ## Install the Monolith profile
-Write-Host "Installing Monolith profile..." -ForegroundColor Cyan
+Write-Host "Installing Monolith profile" -ForegroundColor Cyan
 try {
     Copy-Item -Path $MonolithProfilePath -Destination $DestinationPath -Force
-    Write-Host "  ✓ Monolith.ps1 copied" -ForegroundColor Green
+    Write-Host "  Monolith.ps1 copied" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to install profile: $($_.Exception.Message)"
@@ -113,15 +113,15 @@ catch {
 }
 
 ## Install ProfileComponents directory
-Write-Host "Installing ProfileComponents directory..." -ForegroundColor Cyan
+Write-Host "Installing ProfileComponents directory" -ForegroundColor Cyan
 try {
     # Create ProfileComponents directory if it doesn't exist
     if (-not (Test-Path $ComponentsDestDir)) {
         New-Item -Path $ComponentsDestDir -ItemType Directory -Force | Out-Null
-        Write-Host "  ✓ Created ProfileComponents directory" -ForegroundColor Green
+        Write-Host "  Created ProfileComponents directory" -ForegroundColor Green
     }
     
-    # Copy all component files
+    # Copy all component files (root level)
     $componentFiles = Get-ChildItem -Path $ComponentsSourceDir -File
     $installedCount = 0
     $failedCount = 0
@@ -129,11 +129,26 @@ try {
     foreach ($file in $componentFiles) {
         try {
             Copy-Item -Path $file.FullName -Destination $ComponentsDestDir -Force
-            Write-Host "  ✓ $($file.Name)" -ForegroundColor Green
+            Write-Host "  $($file.Name)" -ForegroundColor Green
             $installedCount++
         }
         catch {
-            Write-Warning "  ✗ Failed to copy $($file.Name): $($_.Exception.Message)"
+            Write-Warning "  Failed to copy $($file.Name): $($_.Exception.Message)"
+            $failedCount++
+        }
+    }
+    
+    # Copy subdirectories (like functions/)
+    $componentDirs = Get-ChildItem -Path $ComponentsSourceDir -Directory
+    foreach ($dir in $componentDirs) {
+        try {
+            $destSubDir = Join-Path $ComponentsDestDir $dir.Name
+            Copy-Item -Path $dir.FullName -Destination $destSubDir -Recurse -Force
+            Write-Host "  $($dir.Name)/ directory" -ForegroundColor Green
+            $installedCount++
+        }
+        catch {
+            Write-Warning "  Failed to copy $($dir.Name)/ directory: $($_.Exception.Message)"
             $failedCount++
         }
     }
@@ -142,9 +157,9 @@ try {
         Write-Warning "`nSome component files failed to install. The profile may not work correctly."
     }
     
-    Write-Host "`nInstalled: $installedCount component files" -ForegroundColor Cyan
+    Write-Host "`nInstalled: $installedCount component files/directories" -ForegroundColor Cyan
     if ($failedCount -gt 0) {
-        Write-Host "Failed: $failedCount component files" -ForegroundColor Yellow
+        Write-Host "Failed: $failedCount component files/directories" -ForegroundColor Yellow
     }
 }
 catch {

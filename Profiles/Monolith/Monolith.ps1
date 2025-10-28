@@ -10,6 +10,7 @@
     - shell-completions.ps1: CLI tool completions
     - aliases.ps1: Unix-like aliases and functions
     - software-init.ps1: Third-party tool initialization
+    - functions/*.ps1: Custom function definitions
     
     All components must be in the ProfileComponents subdirectory within the profile directory.
     The installer (Install-MonoProfile.ps1) copies all necessary files to the profile directory.
@@ -54,6 +55,24 @@ foreach ( $component in $components ) {
     }
     else {
         Write-Warning "Component not found: $componentPath"
+    }
+}
+
+#############
+# Functions #
+#############
+
+## Load custom functions from ProfileComponents\functions subdirectory
+$FunctionsDir = Join-Path $ComponentsDir "functions"
+if ( Test-Path $FunctionsDir ) {
+    $functionFiles = Get-ChildItem -Path $FunctionsDir -Filter "*.ps1" -File
+    foreach ( $funcFile in $functionFiles ) {
+        try {
+            . $funcFile.FullName
+        }
+        catch {
+            Write-Warning "Failed to load function $($funcFile.Name): $($_.Exception.Message)"
+        }
     }
 }
 
