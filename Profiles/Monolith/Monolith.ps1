@@ -4,6 +4,7 @@
 
     .DESCRIPTION
     A PowerShell profile composed of smaller, maintainable component files:
+    - command-cache.ps1: Pre-cache command existence (must load first)
     - namespaces.ps1: Type shortcuts
     - psreadline-handlers.ps1: Advanced key bindings
     - prompt.ps1: Starship prompt initialization
@@ -29,6 +30,7 @@ $ComponentsDir = Join-Path $ProfileDir "ProfileComponents"
 
 ## Source all component files
 $components = @(
+    'command-cache.ps1'  # Must be first - other components depend on this
     'namespaces.ps1'
     'psreadline-handlers.ps1'
     'prompt.ps1'
@@ -41,13 +43,17 @@ foreach ( $component in $components ) {
     $componentPath = Join-Path $ComponentsDir $component
     if ( Test-Path $componentPath ) {
         try {
-            $compStart = Get-Date
+            # Measure component load time
+            # $compStart = Get-Date
+
             . $componentPath
-            $compEnd = Get-Date
-            $compTime = ($compEnd - $compStart).TotalMilliseconds
-            if ($compTime -gt 50) {
-                Write-Host "  $component - ${compTime}ms" -ForegroundColor Yellow
-            }
+            
+            ## Print components that take longer than threshold to load
+            # $compEnd = Get-Date
+            # $compTime = ($compEnd - $compStart).TotalMilliseconds
+            # if ($compTime -gt 50) {
+            #     Write-Host "  $component - ${compTime}ms" -ForegroundColor Yellow
+            # }
         }
         catch {
             Write-Warning "Failed to load $component : $($_.Exception.Message)"

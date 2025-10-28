@@ -128,12 +128,24 @@ catch {
 
 ## Install ProfileComponents directory
 Write-Host "Installing ProfileComponents directory" -ForegroundColor Cyan
-try {
-    # Create ProfileComponents directory if it doesn't exist
-    if (-not (Test-Path $ComponentsDestDir)) {
-        New-Item -Path $ComponentsDestDir -ItemType Directory -Force | Out-Null
-        Write-Host "  Created ProfileComponents directory" -ForegroundColor Green
+
+# Remove existing ProfileComponents directory if it exists
+if (Test-Path $ComponentsDestDir) {
+    Write-Host "  Removing existing ProfileComponents directory..." -ForegroundColor Yellow
+    try {
+        Remove-Item -Path $ComponentsDestDir -Recurse -Force
+        Write-Host "  Existing ProfileComponents removed" -ForegroundColor Green
     }
+    catch {
+        Write-Warning "  Failed to remove existing ProfileComponents: $($_.Exception.Message)"
+        Write-Host "  Attempting to overwrite files..." -ForegroundColor Yellow
+    }
+}
+
+try {
+    # Create fresh ProfileComponents directory
+    New-Item -Path $ComponentsDestDir -ItemType Directory -Force | Out-Null
+    Write-Host "  Created ProfileComponents directory" -ForegroundColor Green
     
     # Copy all component files (root level)
     $componentFiles = Get-ChildItem -Path $ComponentsSourceDir -File
