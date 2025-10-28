@@ -81,23 +81,37 @@ if (-not (Test-Path $ProfileDirectory)) {
 if (Test-Path $DestinationPath) {
     if (-not $Force) {
         Write-Warning "A profile already exists at: $DestinationPath"
-        $response = Read-Host "Do you want to back up and overwrite it? (Y/N)"
-        if ($response -ne 'Y' -and $response -ne 'y') {
-            Write-Host "Installation cancelled." -ForegroundColor Yellow
-            exit 0
+        $backupResponse = Read-Host "Do you want to create a backup before installing? (Y/N)"
+        
+        if ($backupResponse -eq 'Y' -or $backupResponse -eq 'y') {
+            ## Backup existing profile
+            $BackupPath = "$DestinationPath.backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+            Write-Host "Backing up existing profile to: $BackupPath" -ForegroundColor Yellow
+            try {
+                Copy-Item -Path $DestinationPath -Destination $BackupPath -Force
+                Write-Host "  Backup created successfully" -ForegroundColor Green
+            }
+            catch {
+                Write-Error "Failed to backup existing profile: $($_.Exception.Message)"
+                exit 1
+            }
+        }
+        else {
+            Write-Host "Skipping backup - profile will be overwritten" -ForegroundColor Yellow
         }
     }
-    
-    ## Backup existing profile
-    $BackupPath = "$DestinationPath.backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-    Write-Host "Backing up existing profile to: $BackupPath" -ForegroundColor Yellow
-    try {
-        Copy-Item -Path $DestinationPath -Destination $BackupPath -Force
-        Write-Host "Backup created" -ForegroundColor Green
-    }
-    catch {
-        Write-Error "Failed to backup existing profile: $($_.Exception.Message)"
-        exit 1
+    else {
+        ## Force flag is set - create backup automatically without prompting
+        $BackupPath = "$DestinationPath.backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Write-Host "Force flag set - backing up existing profile to: $BackupPath" -ForegroundColor Yellow
+        try {
+            Copy-Item -Path $DestinationPath -Destination $BackupPath -Force
+            Write-Host "  Backup created successfully" -ForegroundColor Green
+        }
+        catch {
+            Write-Warning "Failed to backup existing profile: $($_.Exception.Message)"
+            Write-Host "  Continuing with installation..." -ForegroundColor Yellow
+        }
     }
 }
 

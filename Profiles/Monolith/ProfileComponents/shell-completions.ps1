@@ -7,6 +7,7 @@
     - Azure CLI (az)
     - Azure Developer CLI (azd)
     - Winget (Windows package manager)
+    - Syst (Go application manager)
     
     Note: Starship completions are loaded automatically by starship init in prompt.ps1
 #>
@@ -54,6 +55,33 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
     $Local:ast = $commandAst.ToString().Replace('"', '""')
     winget complete --word="$Local:word" --commandline "$Local:ast" --position $cursorPosition | ForEach-Object {
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+    }
+}
+
+## Syst completions
+if (Get-Command syst -ErrorAction SilentlyContinue) {
+    # Use cached completion file if it exists (much faster)
+    $userModulesPath = [Environment]::GetFolderPath('MyDocuments')
+    $systCompletionFile = Join-Path -Path $userModulesPath -ChildPath "PowerShell\Completions\syst-completions.ps1"
+    
+    # Generate cache if it doesn't exist or is older than syst executable
+    if (-not (Test-Path $systCompletionFile)) {
+        $systExe = (Get-Command syst).Source
+        if (-not (Test-Path $systCompletionFile) -or 
+            (Get-Item $systCompletionFile).LastWriteTime -lt (Get-Item $systExe).LastWriteTime) {
+            
+            $cacheDir = Split-Path $systCompletionFile -Parent
+            if (-not (Test-Path $cacheDir)) {
+                New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+            }
+            
+            syst completion powershell | Out-File -FilePath $systCompletionFile -Encoding utf8
+        }
+    }
+    
+    # Source the cached completion script if it exists
+    if (Test-Path $systCompletionFile) {
+        . $systCompletionFile
     }
 }
 
