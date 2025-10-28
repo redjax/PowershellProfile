@@ -4,66 +4,46 @@
 
     .DESCRIPTION
     Registers argument completers for various CLI tools:
-    - Starship (prompt tool)
     - Azure CLI (az)
     - Azure Developer CLI (azd)
     - Winget (Windows package manager)
+    
+    Note: Starship completions are loaded automatically by starship init in prompt.ps1
 #>
 
 #####################
 # Shell Completions #
 #####################
 
-## Starship completions
-try {
-    if (Get-Command starship -ErrorAction SilentlyContinue) {
-        # Load Starship completions
-        starship completions power-shell | Out-String | Invoke-Expression
-        Write-Verbose "Starship completions loaded."
-    }
-    else {
-        Write-Verbose "Starship is not installed. Skipping completions."
-    }
-}
-catch {
-    Write-Warning "Failed to load Starship completions: $($_.Exception.Message)"
-}
-
 ## Azure CLI completions
-try {
-    if (Get-Command az -ErrorAction SilentlyContinue) {
-        # Use Azure CLI's native PowerShell completion (much faster than argcomplete)
-        if (Test-Path "$env:USERPROFILE\.azure\az.completion.ps1") {
-            . "$env:USERPROFILE\.azure\az.completion.ps1"
-            Write-Verbose "Azure CLI completions loaded (native method)."
-        }
-        else {
-            # Generate the completion file if it doesn't exist
-            Write-Verbose "Generating Azure CLI completion file..."
-            az completion --shell powershell | Out-File -FilePath "$env:USERPROFILE\.azure\az.completion.ps1" -Encoding utf8
-            . "$env:USERPROFILE\.azure\az.completion.ps1"
-        }
+if (Get-Command az -ErrorAction SilentlyContinue) {
+    # Use cached completion file if it exists (much faster)
+    $azCompletionFile = "$env:USERPROFILE\.azure\az.completion.ps1"
+    if (Test-Path $azCompletionFile) {
+        . $azCompletionFile
     }
-    else {
-        Write-Verbose "Azure CLI is not installed. Skipping completions."
-    }
-}
-catch {
-    Write-Warning "Failed to load Azure CLI completions: $($_.Exception.Message)"
 }
 
 ## Azure Developer CLI completions
-try {
-    if (Get-Command azd -ErrorAction SilentlyContinue) {
-        azd completion powershell | Out-String | Invoke-Expression
-        Write-Verbose "azd CLI completions loaded."
+if (Get-Command azd -ErrorAction SilentlyContinue) {
+    # Use cached completion file if it exists (much faster)
+    $azdCompletionFile = "$env:USERPROFILE\.azd\azd.completion.ps1"
+    
+    # Generate cache if it doesn't exist or is older than azd executable
+    $azdExe = (Get-Command azd).Source
+    if (-not (Test-Path $azdCompletionFile) -or 
+        (Get-Item $azdCompletionFile).LastWriteTime -lt (Get-Item $azdExe).LastWriteTime) {
+        
+        $cacheDir = Split-Path $azdCompletionFile -Parent
+        if (-not (Test-Path $cacheDir)) {
+            New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+        }
+        
+        azd completion powershell | Out-File -FilePath $azdCompletionFile -Encoding utf8
     }
-    else {
-        Write-Verbose "azd CLI is not installed. Skipping completions."
-    }
-}
-catch {
-    Write-Warning "Failed to load azd CLI completions: $($_.Exception.Message)"
+    
+    # Source the cached completion script
+    . $azdCompletionFile
 }
 
 ## Winget completions
@@ -76,3 +56,7 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
 }
+
+
+
+

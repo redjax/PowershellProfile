@@ -15,6 +15,10 @@
     The installer (Install-MonoProfile.ps1) copies all necessary files to the profile directory.
 #>
 
+## Measure IMMEDIATELY when profile starts
+# $VeryFirstProfileTime = Get-Date
+# Write-Host "Profile code executing at: $($VeryFirstProfileTime)" -ForegroundColor Cyan
+
 ## Start profile timing
 $ProfileStartTime = Get-Date
 
@@ -36,8 +40,13 @@ foreach ( $component in $components ) {
     $componentPath = Join-Path $ComponentsDir $component
     if ( Test-Path $componentPath ) {
         try {
+            # $compStart = Get-Date
             . $componentPath
-            Write-Verbose "Loaded: $component"
+            # $compEnd = Get-Date
+            # $compTime = ($compEnd - $compStart).TotalMilliseconds
+            # if ($compTime -gt 50) {
+            #     Write-Host "  $component - ${compTime}ms" -ForegroundColor Yellow
+            # }
         }
         catch {
             Write-Warning "Failed to load $component : $($_.Exception.Message)"
