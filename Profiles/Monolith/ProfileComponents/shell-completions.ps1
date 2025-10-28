@@ -18,7 +18,7 @@
 try {
     if (Get-Command starship -ErrorAction SilentlyContinue) {
         # Load Starship completions
-        starship completions powershell | Out-String | Invoke-Expression
+        starship completions power-shell | Out-String | Invoke-Expression
         Write-Verbose "Starship completions loaded."
     }
     else {
