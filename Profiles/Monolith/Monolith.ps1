@@ -123,10 +123,4 @@ $ProfileInitTime = $ProfileEndTime - $ProfileStartTime
 ## Store timing in global variable (can check with $global:ProfileLoadTime)
 $global:ProfileLoadTime = $ProfileInitTime.TotalSeconds
 
-## Display the custom prompt immediately after profile loads
-## This prevents the default PS> from showing before the first command
-if (Get-Command prompt -ErrorAction SilentlyContinue) {
-    Write-Host -NoNewline (prompt)
-}
-
 ## No code below this line
