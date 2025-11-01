@@ -212,18 +212,19 @@ Set-PSReadLineKeyHandler -Key Backspace `
 }
 
 ## Save current line in history without executing it
-Set-PSReadLineKeyHandler -Key Alt+w `
-    -BriefDescription SaveInHistory `
-    -LongDescription "Save current line in history but do not execute" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Less commonly used - Alt+w is less intuitive than Ctrl+C
+# Set-PSReadLineKeyHandler -Key Alt+w `
+#     -BriefDescription SaveInHistory `
+#     -LongDescription "Save current line in history but do not execute" `
+#     -ScriptBlock {
+#     param($key, $arg)
 
-    $line = $null
-    $cursor = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-    [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
-    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-}
+#     $line = $null
+#     $cursor = $null
+#     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+#     [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
+#     [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+# }
 
 ## Insert text from the clipboard as a here string
 Set-PSReadLineKeyHandler -Key Ctrl+V `
@@ -244,118 +245,121 @@ Set-PSReadLineKeyHandler -Key Ctrl+V `
 }
 
 ## Put parenthesis around the selection or entire line
-Set-PSReadLineKeyHandler -Key 'Alt+(' `
-    -BriefDescription ParenthesizeSelection `
-    -LongDescription "Put parenthesis around the selection or entire line and move the cursor to after the closing parenthesis" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Advanced feature, less commonly used
+# Set-PSReadLineKeyHandler -Key 'Alt+(' `
+#     -BriefDescription ParenthesizeSelection `
+#     -LongDescription "Put parenthesis around the selection or entire line and move the cursor to after the closing parenthesis" `
+#     -ScriptBlock {
+#     param($key, $arg)
 
-    $selectionStart = $null
-    $selectionLength = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+#     $selectionStart = $null
+#     $selectionLength = $null
+#     [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
 
-    $line = $null
-    $cursor = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-    if ($selectionStart -ne -1) {
-        [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
-        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
-    }
-    else {
-        [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
-        [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
-    }
-}
+#     $line = $null
+#     $cursor = $null
+#     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+#     if ($selectionStart -ne -1) {
+#         [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
+#         [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+#     }
+#     else {
+#         [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
+#         [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+#     }
+# }
 
 ## Toggle quotes on the argument under the cursor with Alt+'
-Set-PSReadLineKeyHandler -Key "Alt+'" `
-    -BriefDescription ToggleQuoteArgument `
-    -LongDescription "Toggle quotes on the argument under the cursor" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Advanced feature, complex logic, less commonly used
+# Set-PSReadLineKeyHandler -Key "Alt+'" `
+#     -BriefDescription ToggleQuoteArgument `
+#     -LongDescription "Toggle quotes on the argument under the cursor" `
+#     -ScriptBlock {
+#     param($key, $arg)
 
-    $ast = $null
-    $tokens = $null
-    $errors = $null
-    $cursor = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+#     $ast = $null
+#     $tokens = $null
+#     $errors = $null
+#     $cursor = $null
+#     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
 
-    $tokenToChange = $null
-    foreach ($token in $tokens) {
-        $extent = $token.Extent
-        if ($extent.StartOffset -le $cursor -and $extent.EndOffset -ge $cursor) {
-            $tokenToChange = $token
+#     $tokenToChange = $null
+#     foreach ($token in $tokens) {
+#         $extent = $token.Extent
+#         if ($extent.StartOffset -le $cursor -and $extent.EndOffset -ge $cursor) {
+#             $tokenToChange = $token
 
-            # If the cursor is at the end (it's really 1 past the end) of the previous token,
-            # we only want to change the previous token if there is no token under the cursor
-            if ($extent.EndOffset -eq $cursor -and $foreach.MoveNext()) {
-                $nextToken = $foreach.Current
-                if ($nextToken.Extent.StartOffset -eq $cursor) {
-                    $tokenToChange = $nextToken
-                }
-            }
-            break
-        }
-    }
+#             # If the cursor is at the end (it's really 1 past the end) of the previous token,
+#             # we only want to change the previous token if there is no token under the cursor
+#             if ($extent.EndOffset -eq $cursor -and $foreach.MoveNext()) {
+#                 $nextToken = $foreach.Current
+#                 if ($nextToken.Extent.StartOffset -eq $cursor) {
+#                     $tokenToChange = $nextToken
+#                 }
+#             }
+#             break
+#         }
+#     }
 
-    if ($tokenToChange -ne $null) {
-        $extent = $tokenToChange.Extent
-        $tokenText = $extent.Text
-        if ($tokenText[0] -eq '"' -and $tokenText[-1] -eq '"') {
-            # Switch to no quotes
-            $replacement = $tokenText.Substring(1, $tokenText.Length - 2)
-        }
-        elseif ($tokenText[0] -eq "'" -and $tokenText[-1] -eq "'") {
-            # Switch to double quotes
-            $replacement = '"' + $tokenText.Substring(1, $tokenText.Length - 2) + '"'
-        }
-        else {
-            # Add single quotes
-            $replacement = "'" + $tokenText + "'"
-        }
+#     if ($tokenToChange -ne $null) {
+#         $extent = $tokenToChange.Extent
+#         $tokenText = $extent.Text
+#         if ($tokenText[0] -eq '"' -and $tokenText[-1] -eq '"') {
+#             # Switch to no quotes
+#             $replacement = $tokenText.Substring(1, $tokenText.Length - 2)
+#         }
+#         elseif ($tokenText[0] -eq "'" -and $tokenText[-1] -eq "'") {
+#             # Switch to double quotes
+#             $replacement = '"' + $tokenText.Substring(1, $tokenText.Length - 2) + '"'
+#         }
+#         else {
+#             # Add single quotes
+#             $replacement = "'" + $tokenText + "'"
+#         }
 
-        [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
-            $extent.StartOffset,
-            $tokenText.Length,
-            $replacement)
-    }
-}
+#         [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
+#             $extent.StartOffset,
+#             $tokenText.Length,
+#             $replacement)
+#     }
+# }
 
 ## Expand all aliases on the command line with Alt+%
-Set-PSReadLineKeyHandler -Key "Alt+%" `
-    -BriefDescription ExpandAliases `
-    -LongDescription "Replace all aliases with the full command" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Niche feature, less commonly used
+# Set-PSReadLineKeyHandler -Key "Alt+%" `
+#     -BriefDescription ExpandAliases `
+#     -LongDescription "Replace all aliases with the full command" `
+#     -ScriptBlock {
+#     param($key, $arg)
 
-    $ast = $null
-    $tokens = $null
-    $errors = $null
-    $cursor = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+#     $ast = $null
+#     $tokens = $null
+#     $errors = $null
+#     $cursor = $null
+#     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
 
-    $startAdjustment = 0
-    foreach ($token in $tokens) {
-        if ($token.TokenFlags -band [TokenFlags]::CommandName) {
-            $alias = $ExecutionContext.InvokeCommand.GetCommand($token.Extent.Text, 'Alias')
-            if ($alias -ne $null) {
-                $resolvedCommand = $alias.ResolvedCommandName
-                if ($resolvedCommand -ne $null) {
-                    $extent = $token.Extent
-                    $length = $extent.EndOffset - $extent.StartOffset
-                    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
-                        $extent.StartOffset + $startAdjustment,
-                        $length,
-                        $resolvedCommand)
+#     $startAdjustment = 0
+#     foreach ($token in $tokens) {
+#         if ($token.TokenFlags -band [TokenFlags]::CommandName) {
+#             $alias = $ExecutionContext.InvokeCommand.GetCommand($token.Extent.Text, 'Alias')
+#             if ($alias -ne $null) {
+#                 $resolvedCommand = $alias.ResolvedCommandName
+#                 if ($resolvedCommand -ne $null) {
+#                     $extent = $token.Extent
+#                     $length = $extent.EndOffset - $extent.StartOffset
+#                     [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
+#                         $extent.StartOffset + $startAdjustment,
+#                         $length,
+#                         $resolvedCommand)
 
-                    # Our copy of the tokens won't have been updated, so we need to
-                    # adjust by the difference in length
-                    $startAdjustment += ($resolvedCommand.Length - $length)
-                }
-            }
-        }
-    }
-}
+#                     # Our copy of the tokens won't have been updated, so we need to
+#                     # adjust by the difference in length
+#                     $startAdjustment += ($resolvedCommand.Length - $length)
+#                 }
+#             }
+#         }
+#     }
+# }
 
 ## Show help for the current command with F1
 Set-PSReadLineKeyHandler -Key F1 `
@@ -395,43 +399,46 @@ Set-PSReadLineKeyHandler -Key F1 `
 $global:PSReadLineMarks = @{}
 
 ## Mark the current directory with Ctrl+J
-Set-PSReadLineKeyHandler -Key Ctrl+J `
-    -BriefDescription MarkDirectory `
-    -LongDescription "Mark the current directory" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Directory marking/jumping is a niche feature
+# Set-PSReadLineKeyHandler -Key Ctrl+J `
+#     -BriefDescription MarkDirectory `
+#     -LongDescription "Mark the current directory" `
+#     -ScriptBlock {
+#     param($key, $arg)
 
-    $key = [Console]::ReadKey($true)
-    $global:PSReadLineMarks[$key.KeyChar] = $pwd
-}
+#     $key = [Console]::ReadKey($true)
+#     $global:PSReadLineMarks[$key.KeyChar] = $pwd
+# }
 
 ## Goto the marked directory with Ctrl+j
-Set-PSReadLineKeyHandler -Key Ctrl+j `
-    -BriefDescription JumpDirectory `
-    -LongDescription "Goto the marked directory" `
-    -ScriptBlock {
-    param($key, $arg)
-    $key = [Console]::ReadKey()
-    $dir = $global:PSReadLineMarks[$key.KeyChar]
-    if ($dir) {
-        Set-Location $dir
-        [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
-    }
-}
+## COMMENTED OUT: Directory marking/jumping is a niche feature
+# Set-PSReadLineKeyHandler -Key Ctrl+j `
+#     -BriefDescription JumpDirectory `
+#     -LongDescription "Goto the marked directory" `
+#     -ScriptBlock {
+#     param($key, $arg)
+#     $key = [Console]::ReadKey()
+#     $dir = $global:PSReadLineMarks[$key.KeyChar]
+#     if ($dir) {
+#         Set-Location $dir
+#         [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+#     }
+# }
 
 ## Show the currently marked directories with Alt+j
-Set-PSReadLineKeyHandler -Key Alt+j `
-    -BriefDescription ShowDirectoryMarks `
-    -LongDescription "Show the currently marked directories" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Directory marking/jumping is a niche feature
+# Set-PSReadLineKeyHandler -Key Alt+j `
+#     -BriefDescription ShowDirectoryMarks `
+#     -LongDescription "Show the currently marked directories" `
+#     -ScriptBlock {
+#     param($key, $arg)
 
-    $global:PSReadLineMarks.GetEnumerator() | ForEach-Object {
-        [PSCustomObject]@{Key = $_.Key; Dir = $_.Value } } |
-    Format-Table -AutoSize | Out-Host
+#     $global:PSReadLineMarks.GetEnumerator() | ForEach-Object {
+#         [PSCustomObject]@{Key = $_.Key; Dir = $_.Value } } |
+#     Format-Table -AutoSize | Out-Host
 
-    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
-}
+#     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+# }
 
 ## Move cursor one character to the right in the current editing line and accept the next word in suggestion when it's at the end of current editing line
 Set-PSReadLineKeyHandler -Key RightArrow `
@@ -453,58 +460,59 @@ Set-PSReadLineKeyHandler -Key RightArrow `
 }
 
 ## Select the next command argument in the command line with Alt+a
-Set-PSReadLineKeyHandler -Key Alt+a `
-    -BriefDescription SelectCommandArguments `
-    -LongDescription "Set current selection to next command argument in the command line. Use of digit argument selects argument by position" `
-    -ScriptBlock {
-    param($key, $arg)
+## COMMENTED OUT: Complex feature, less commonly used
+# Set-PSReadLineKeyHandler -Key Alt+a `
+#     -BriefDescription SelectCommandArguments `
+#     -LongDescription "Set current selection to next command argument in the command line. Use of digit argument selects argument by position" `
+#     -ScriptBlock {
+#     param($key, $arg)
   
-    $ast = $null
-    $cursor = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$null, [ref]$null, [ref]$cursor)
+#     $ast = $null
+#     $cursor = $null
+#     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$null, [ref]$null, [ref]$cursor)
   
-    $asts = $ast.FindAll( {
-            $args[0] -is [System.Management.Automation.Language.ExpressionAst] -and
-            $args[0].Parent -is [System.Management.Automation.Language.CommandAst] -and
-            $args[0].Extent.StartOffset -ne $args[0].Parent.Extent.StartOffset
-        }, $true)
+#     $asts = $ast.FindAll( {
+#             $args[0] -is [System.Management.Automation.Language.ExpressionAst] -and
+#             $args[0].Parent -is [System.Management.Automation.Language.CommandAst] -and
+#             $args[0].Extent.StartOffset -ne $args[0].Parent.Extent.StartOffset
+#         }, $true)
   
-    if ($asts.Count -eq 0) {
-        [Microsoft.PowerShell.PSConsoleReadLine]::Ding()
-        return
-    }
+#     if ($asts.Count -eq 0) {
+#         [Microsoft.PowerShell.PSConsoleReadLine]::Ding()
+#         return
+#     }
     
-    $nextAst = $null
+#     $nextAst = $null
 
-    if ($null -ne $arg) {
-        $nextAst = $asts[$arg - 1]
-    }
-    else {
-        foreach ($ast in $asts) {
-            if ($ast.Extent.StartOffset -ge $cursor) {
-                $nextAst = $ast
-                break
-            }
-        } 
+#     if ($null -ne $arg) {
+#         $nextAst = $asts[$arg - 1]
+#     }
+#     else {
+#         foreach ($ast in $asts) {
+#             if ($ast.Extent.StartOffset -ge $cursor) {
+#                 $nextAst = $ast
+#                 break
+#             }
+#         } 
         
-        if ($null -eq $nextAst) {
-            $nextAst = $asts[0]
-        }
-    }
+#         if ($null -eq $nextAst) {
+#             $nextAst = $asts[0]
+#         }
+#     }
 
-    $startOffsetAdjustment = 0
-    $endOffsetAdjustment = 0
+#     $startOffsetAdjustment = 0
+#     $endOffsetAdjustment = 0
 
-    if ($nextAst -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
-        $nextAst.StringConstantType -ne [System.Management.Automation.Language.StringConstantType]::BareWord) {
-        $startOffsetAdjustment = 1
-        $endOffsetAdjustment = 2
-    }
+#     if ($nextAst -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+#         $nextAst.StringConstantType -ne [System.Management.Automation.Language.StringConstantType]::BareWord) {
+#         $startOffsetAdjustment = 1
+#         $endOffsetAdjustment = 2
+#     }
   
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($nextAst.Extent.StartOffset + $startOffsetAdjustment)
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetMark($null, $null)
-    [Microsoft.PowerShell.PSConsoleReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
-}
+#     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($nextAst.Extent.StartOffset + $startOffsetAdjustment)
+#     [Microsoft.PowerShell.PSConsoleReadLine]::SetMark($null, $null)
+#     [Microsoft.PowerShell.PSConsoleReadLine]::SelectForwardChar($null, ($nextAst.Extent.EndOffset - $nextAst.Extent.StartOffset) - $endOffsetAdjustment)
+# }
 
 ## PSReadLine Options
 Set-PSReadLineOption -PredictionSource History

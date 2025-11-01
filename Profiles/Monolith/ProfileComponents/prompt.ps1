@@ -40,6 +40,9 @@ function Get-CustomPrompt {
     if ($lastCommand) { 
         $RunTime = ($lastCommand.EndExecutionTime - $lastCommand.StartExecutionTime).TotalSeconds 
     }
+    else {
+        $RunTime = 0
+    }
 
     if ($RunTime -ge 60) {
         $ts = [timespan]::fromseconds($RunTime)
@@ -108,8 +111,8 @@ try {
                 Write-Verbose "Starship prompt initialized from cache."
             }
             else {
-                Write-Warning "Starship is not installed. Falling back to default prompt."
-                function prompt { Get-CustomPrompt }
+                # Starship not installed - silently fall back to default prompt
+                function global:prompt { Get-CustomPrompt }
             }
         }
         
@@ -120,10 +123,8 @@ try {
                 $ompTheme = Join-Path $env:USERPROFILE ".config\ohmyposh\theme.omp.json"
                 
                 if (-not (Test-Path $ompTheme)) {
-                    Write-Warning "Oh-My-Posh theme not found at: $ompTheme"
-                    Write-Warning "Run Install-MonoProfile.ps1 with -Prompt oh-my-posh to install a theme."
-                    Write-Warning "Falling back to default prompt."
-                    function prompt { Get-CustomPrompt }
+                    # Theme not found - silently fall back to default prompt
+                    function global:prompt { Get-CustomPrompt }
                     return
                 }
                 
@@ -160,26 +161,20 @@ try {
                 Write-Verbose "Oh-My-Posh prompt initialized"
             }
             else {
-                Write-Warning "Oh-My-Posh is not installed. Falling back to default prompt."
-                function prompt { Get-CustomPrompt }
-                # Force initial prompt render
-                $null = prompt
+                # Oh-My-Posh not installed - silently fall back to default prompt
+                function global:prompt { Get-CustomPrompt }
             }
         }
         
         default {
             # Default custom prompt (also handles "", $null, "default")
             Write-Verbose "Using custom default prompt."
-            function prompt { Get-CustomPrompt }
-            # Force initial prompt render
-            $null = prompt
+            function global:prompt { Get-CustomPrompt }
         }
     }
 }
 catch {
     Write-Warning "Failed to initialize prompt handler '$PromptHandler': $($_.Exception.Message)"
     Write-Warning "Falling back to default prompt."
-    function prompt { Get-CustomPrompt }
-    # Force initial prompt render
-    $null = prompt
+    function global:prompt { Get-CustomPrompt }
 }
