@@ -17,6 +17,9 @@
     
     .PARAMETER OhMyPoshTheme
     Oh-My-Posh theme name (maps to config/ohmyposh/*.omp.json). Default: "default"
+    
+    .PARAMETER CustomModules
+    Install custom modules from Modules/Custom to the profile's Modules/Custom directory.
 
     .EXAMPLE
     .\Install-MonoProfile.ps1
@@ -29,6 +32,10 @@
     .EXAMPLE
     .\Install-MonoProfile.ps1 -Force -Prompt default
     Installs with custom default prompt, overwriting without prompting.
+    
+    .EXAMPLE
+    .\Install-MonoProfile.ps1 -CustomModules
+    Installs profile and copies custom modules to profile directory.
 #>
 
 [CmdletBinding()]
@@ -44,7 +51,10 @@ Param(
     [string]$StarshipTheme = "default",
     
     [Parameter(Mandatory = $false, HelpMessage = "Oh-My-Posh theme name")]
-    [string]$OhMyPoshTheme = "default"
+    [string]$OhMyPoshTheme = "default",
+    
+    [Parameter(Mandatory = $false, HelpMessage = "Install custom modules")]
+    [switch]$CustomModules
 )
 
 ## Variables
@@ -284,6 +294,47 @@ if ($Prompt -eq "oh-my-posh") {
     }
     else {
         Write-Warning "Oh-My-Posh theme '$OhMyPoshTheme' not found at: $OmpThemeSource"
+    }
+}
+
+## Install Custom Modules (if -CustomModules flag is set)
+if ($CustomModules) {
+    $CustomModulesSource = Join-Path $ScriptRoot "Modules\Custom"
+    $CustomModulesDest = Join-Path (Split-Path $DestinationPath -Parent) "Modules\Custom"
+    
+    if (Test-Path $CustomModulesSource) {
+        Write-Host "`nInstalling custom modules..." -ForegroundColor Cyan
+        try {
+            # Remove existing Modules/Custom directory if it exists (clean install)
+            if (Test-Path $CustomModulesDest) {
+                Write-Host "  Removing existing custom modules directory..." -ForegroundColor Yellow
+                Remove-Item -Path $CustomModulesDest -Recurse -Force
+                Write-Host "  Existing custom modules removed" -ForegroundColor Gray
+            }
+            
+            # Create Modules/Custom directory
+            New-Item -Path $CustomModulesDest -ItemType Directory -Force | Out-Null
+            
+            # Copy all modules from source to destination
+            $moduleCount = 0
+            Get-ChildItem -Path $CustomModulesSource -Directory | ForEach-Object {
+                $moduleName = $_.Name
+                $moduleSource = $_.FullName
+                $moduleDest = Join-Path $CustomModulesDest $moduleName
+                
+                Copy-Item -Path $moduleSource -Destination $moduleDest -Recurse -Force
+                Write-Host "  $moduleName" -ForegroundColor Gray
+                $moduleCount++
+            }
+            
+            Write-Host "`nInstalled $moduleCount custom module(s) to: $CustomModulesDest" -ForegroundColor Green
+        }
+        catch {
+            Write-Warning "Failed to install custom modules: $($_.Exception.Message)"
+        }
+    }
+    else {
+        Write-Warning "Custom modules directory not found at: $CustomModulesSource"
     }
 }
 
