@@ -4,6 +4,7 @@
 
     .DESCRIPTION
     Registers argument completers for various CLI tools:
+    - Git (posh-git module)
     - Azure CLI (az)
     - Azure Developer CLI (azd)
     - Winget (Windows package manager)
@@ -15,6 +16,18 @@
 #####################
 # Shell Completions #
 #####################
+
+## Git completions via posh-git
+if (Get-Module -ListAvailable -Name posh-git) {
+    try {
+        Import-Module posh-git -ErrorAction Stop
+        # Disable posh-git prompt (Starship handles the prompt)
+        $GitPromptSettings.EnablePromptStatus = $false
+    }
+    catch {
+        Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
+    }
+}
 
 ## Azure CLI completions
 if (Get-Command az -ErrorAction SilentlyContinue) {
@@ -85,6 +98,25 @@ if (Get-Command syst -ErrorAction SilentlyContinue) {
     }
 }
 
-
-
-
+## IntelliShell
+if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
+    $intelliStart = Get-Date
+    
+    $env:INTELLI_HOME = "C:\Users\jkenyon\AppData\Roaming\IntelliShell\Intelli-Shell\data"
+    # $env:INTELLI_SEARCH_HOTKEY = 'Ctrl+Spacebar'
+    # $env:INTELLI_VARIABLE_HOTKEY = 'Ctrl+l'
+    # $env:INTELLI_BOOKMARK_HOTKEY = 'Ctrl+b'
+    # $env:INTELLI_FIX_HOTKEY = 'Ctrl+x'
+    # Set-Alias -Name 'is' -Value 'intelli-shell'
+    
+    try {
+        intelli-shell.exe init powershell | Out-String | Invoke-Expression
+    }
+    catch {
+        Write-Warning "Failed to initialize IntelliShell: $($_.Exception.Message)"
+    }
+    
+    $intelliEnd = Get-Date
+    $intelliTime = ($intelliEnd - $intelliStart).TotalMilliseconds
+    Write-Debug "IntelliShell initialized in $([Math]::Round($intelliTime))ms"
+}
