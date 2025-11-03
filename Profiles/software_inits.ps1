@@ -29,4 +29,3 @@ if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
     $intelliTime = ($intelliEnd - $intelliStart).TotalMilliseconds
     Write-Debug "IntelliShell initialized in $([Math]::Round($intelliTime))ms"
 }
-

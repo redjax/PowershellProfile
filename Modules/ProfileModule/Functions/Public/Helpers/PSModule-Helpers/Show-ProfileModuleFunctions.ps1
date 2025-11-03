@@ -1,6 +1,6 @@
 function Show-ProfileModuleFunctions {
-    ## Path to custom Powershell modules
-    $CustomModulesPath = ( Join-Path -Path ( Split-Path -Path $PROFILE -Parent ) -ChildPath "CustomModules" )
+    ## Path to custom Powershell modules (updated for auto-discovery structure)
+    $CustomModulesPath = Join-Path -Path (Split-Path -Path $PROFILE -Parent) -ChildPath "Modules\Custom"
     Write-Debug "Custom modules path: $CustomModulesPath"
 
     ## Initialize an array of PSCustomObjects for discovered functions
