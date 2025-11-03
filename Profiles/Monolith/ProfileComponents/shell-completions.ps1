@@ -4,30 +4,20 @@
 
     .DESCRIPTION
     Registers argument completers for various CLI tools:
-    - Git (posh-git module)
     - Azure CLI (az)
     - Azure Developer CLI (azd)
     - Winget (Windows package manager)
     - Syst (Go application manager)
+    - IntelliShell (cached completions)
     
-    Note: Starship completions are loaded automatically by starship init in prompt.ps1
+    Note: 
+    - Starship completions are loaded automatically by starship init in prompt.ps1
+    - Git completions (posh-git) are loaded in background via OnIdle in Monolith.ps1
 #>
 
 #####################
 # Shell Completions #
 #####################
-
-## Git completions via posh-git
-if (Get-Module -ListAvailable -Name posh-git) {
-    try {
-        Import-Module posh-git -ErrorAction Stop
-        # Disable posh-git prompt (Starship handles the prompt)
-        $GitPromptSettings.EnablePromptStatus = $false
-    }
-    catch {
-        Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
-    }
-}
 
 ## Azure CLI completions
 if (Get-Command az -ErrorAction SilentlyContinue) {
@@ -100,23 +90,40 @@ if (Get-Command syst -ErrorAction SilentlyContinue) {
 
 ## IntelliShell
 if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
-    $intelliStart = Get-Date
+    ## Use cached completion file if it exists (much faster)
+    $userModulesPath = [Environment]::GetFolderPath('MyDocuments')
+    $intelliCompletionFile = Join-Path -Path $userModulesPath -ChildPath "PowerShell\Completions\intelli-shell-completions.ps1"
     
+    ## Set IntelliShell environment variables
     $env:INTELLI_HOME = "C:\Users\jkenyon\AppData\Roaming\IntelliShell\Intelli-Shell\data"
-    # $env:INTELLI_SEARCH_HOTKEY = 'Ctrl+Spacebar'
-    # $env:INTELLI_VARIABLE_HOTKEY = 'Ctrl+l'
-    # $env:INTELLI_BOOKMARK_HOTKEY = 'Ctrl+b'
-    # $env:INTELLI_FIX_HOTKEY = 'Ctrl+x'
-    # Set-Alias -Name 'is' -Value 'intelli-shell'
     
-    try {
-        intelli-shell.exe init powershell | Out-String | Invoke-Expression
-    }
-    catch {
-        Write-Warning "Failed to initialize IntelliShell: $($_.Exception.Message)"
+    ## Generate cache if it doesn't exist or is older than intelli-shell executable
+    $intelliExe = (Get-Command intelli-shell.exe).Source
+    if (-not (Test-Path $intelliCompletionFile) -or 
+        (Get-Item $intelliCompletionFile).LastWriteTime -lt (Get-Item $intelliExe).LastWriteTime) {
+        
+        $cacheDir = Split-Path $intelliCompletionFile -Parent
+        if (-not (Test-Path $cacheDir)) {
+            New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+        }
+        
+        try {
+            intelli-shell.exe init powershell | Out-File -FilePath $intelliCompletionFile -Encoding utf8
+        }
+        catch {
+            Write-Warning "Failed to generate IntelliShell completions: $($_.Exception.Message)"
+        }
     }
     
-    $intelliEnd = Get-Date
-    $intelliTime = ($intelliEnd - $intelliStart).TotalMilliseconds
-    Write-Debug "IntelliShell initialized in $([Math]::Round($intelliTime))ms"
+    # Source the cached completion script if it exists
+    if (Test-Path $intelliCompletionFile) {
+        try {
+            . $intelliCompletionFile
+        }
+        catch {
+            Write-Warning "Failed to load IntelliShell completions: $($_.Exception.Message)"
+            # Remove corrupt cache file
+            Remove-Item -Path $intelliCompletionFile -Force -ErrorAction SilentlyContinue
+        }
+    }
 }

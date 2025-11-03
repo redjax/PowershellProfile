@@ -99,6 +99,20 @@ if (Test-Path $psReadLineHandlersPath) {
 "@))
 }
 
+## Defer posh-git to background for faster startup (takes ~2.5 seconds)
+if (Get-Module -ListAvailable -Name posh-git) {
+    $null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action {
+        try {
+            Import-Module posh-git -ErrorAction Stop
+            # Disable posh-git prompt (Starship handles the prompt)
+            $GitPromptSettings.EnablePromptStatus = $false
+        }
+        catch {
+            Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
+        }
+    }
+}
+
 #############
 # Functions #
 #############
