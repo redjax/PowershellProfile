@@ -63,7 +63,7 @@ function Get-Prompt {
     $host.ui.RawUI.WindowTitle = "Current Folder: $pwd"
 
     #Configure current user, current folder and date outputs
-    $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf
+    $CmdPromptCurrentFolder = $pwd.Path
     $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
     $Date = Get-Date -Format 'dddd hh:mm:ss tt'
 
@@ -89,9 +89,7 @@ function Get-Prompt {
     Write-Host " PS$($PSVersionTable.PSVersion.Major) " -BackgroundColor Blue -ForegroundColor White -NoNewline
     Write-Host ($(if ($IsAdmin) { 'Elevated ' } else { '' })) -BackgroundColor DarkRed -ForegroundColor White -NoNewline
     Write-Host " USER:$($CmdPromptUser.Name.split("\")[1]) " -BackgroundColor DarkBlue -ForegroundColor White -NoNewline
-    if ($CmdPromptCurrentFolder -like "*:*")
-    { Write-Host " $CmdPromptCurrentFolder " -ForegroundColor White -BackgroundColor DarkGray -NoNewline }
-    else { Write-Host ".\$CmdPromptCurrentFolder\ " -ForegroundColor White -BackgroundColor DarkGray -NoNewline }
+    Write-Host " $CmdPromptCurrentFolder\ " -ForegroundColor White -BackgroundColor DarkGray -NoNewline
 
     Write-Host " $date " -ForegroundColor White
     Write-Host "[$elapsedTime] " -NoNewline -ForegroundColor Green
