@@ -2,9 +2,8 @@
 
 Things I've learned building this repository.
 
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
-- [Table of Contents](#table-of-contents)
 - [Default Powershell $PROFILE path](#default-powershell-profile-path)
   - [Windows](#windows)
     - [Powershell 5](#powershell-5)

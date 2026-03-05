@@ -2,9 +2,13 @@
 
 These docs are for adding new features/modules/profiles to this repository.
 
-## Table of Contents
+> [!NOTE]
+> This documentation is out of date. I am slowly moving to a [monolithic `$PROFILE`](../Profiles/Monolith/). This documentation was written for an old version of my `$PROFILE`, which still exists in the repository.
+>
+> Until this message is removed, this page is basically useless.
 
-- [Table of Contents](#table-of-contents)
+## Table of Contents <!-- omit in toc -->
+
 - [Base template](#base-template)
 - [Add new functions and aliases](#add-new-functions-and-aliases)
 - [Add a new custom module](#add-a-new-custom-module)
