@@ -19,8 +19,14 @@
 # Shell Completions #
 #####################
 
+## Batch Get-Command check for completion tools (1 PATH scan instead of 4)
+$_completionTools = @{}
+Get-Command -Name az, azd, syst, 'intelli-shell.exe' -ErrorAction SilentlyContinue | ForEach-Object {
+    $_completionTools[$_.Name] = $_
+}
+
 ## Azure CLI completions
-if (Get-Command az -ErrorAction SilentlyContinue) {
+if ($_completionTools.ContainsKey('az')) {
     # Use cached completion file if it exists (much faster)
     $azCompletionFile = "$env:USERPROFILE\.azure\az.completion.ps1"
     if (Test-Path $azCompletionFile) {
@@ -29,12 +35,12 @@ if (Get-Command az -ErrorAction SilentlyContinue) {
 }
 
 ## Azure Developer CLI completions
-if (Get-Command azd -ErrorAction SilentlyContinue) {
+if ($_completionTools.ContainsKey('azd')) {
     # Use cached completion file if it exists (much faster)
     $azdCompletionFile = "$env:USERPROFILE\.azd\azd.completion.ps1"
     
     # Generate cache if it doesn't exist or is older than azd executable
-    $azdExe = (Get-Command azd).Source
+    $azdExe = $_completionTools['azd'].Source
     if (-not (Test-Path $azdCompletionFile) -or 
         (Get-Item $azdCompletionFile).LastWriteTime -lt (Get-Item $azdExe).LastWriteTime) {
         
@@ -62,14 +68,14 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
 }
 
 ## Syst completions
-if (Get-Command syst -ErrorAction SilentlyContinue) {
+if ($_completionTools.ContainsKey('syst')) {
     # Use cached completion file if it exists (much faster)
     $userModulesPath = [Environment]::GetFolderPath('MyDocuments')
     $systCompletionFile = Join-Path -Path $userModulesPath -ChildPath "PowerShell\Completions\syst-completions.ps1"
     
     # Generate cache if it doesn't exist or is older than syst executable
     if (-not (Test-Path $systCompletionFile)) {
-        $systExe = (Get-Command syst).Source
+        $systExe = $_completionTools['syst'].Source
         if (-not (Test-Path $systCompletionFile) -or 
             (Get-Item $systCompletionFile).LastWriteTime -lt (Get-Item $systExe).LastWriteTime) {
             
@@ -89,7 +95,7 @@ if (Get-Command syst -ErrorAction SilentlyContinue) {
 }
 
 ## IntelliShell
-if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
+if ($_completionTools.ContainsKey('intelli-shell.exe')) {
     ## Use cached completion file if it exists (much faster)
     $userModulesPath = [Environment]::GetFolderPath('MyDocuments')
     $intelliCompletionFile = Join-Path -Path $userModulesPath -ChildPath "PowerShell\Completions\intelli-shell-completions.ps1"
@@ -98,7 +104,7 @@ if (Get-Command intelli-shell.exe -ErrorAction SilentlyContinue) {
     $env:INTELLI_HOME = "C:\Users\jkenyon\AppData\Roaming\IntelliShell\Intelli-Shell\data"
     
     ## Generate cache if it doesn't exist or is older than intelli-shell executable
-    $intelliExe = (Get-Command intelli-shell.exe).Source
+    $intelliExe = $_completionTools['intelli-shell.exe'].Source
     if (-not (Test-Path $intelliCompletionFile) -or 
         (Get-Item $intelliCompletionFile).LastWriteTime -lt (Get-Item $intelliExe).LastWriteTime) {
         

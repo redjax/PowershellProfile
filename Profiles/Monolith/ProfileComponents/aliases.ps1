@@ -172,46 +172,20 @@ function which {
 #################
 
 ## lg -> lazygit
-if (Get-Command "lazygit" -ErrorAction SilentlyContinue) {
-    Set-Alias -Name lg -Value lazygit
-}
-else {
-    Remove-Item -Path Alias:lg -ErrorAction SilentlyContinue
-}
+Set-Alias -Name lg -Value lazygit
 
-## bwu -> bw unlock
-if (Get-Command "bw" -ErrorAction SilentlyContinue) {
-    Set-Alias -Name bwu -Value Unlock-BitwardenVault
-}
-else {
-    Remove-Item -Path Alias:bwu -ErrorAction SilentlyContinue
-}
+## bwu -> bw unlock (Unlock-BitwardenVault is defined in functions)
+Set-Alias -Name bwu -Value Unlock-BitwardenVault
 
-## Set paths where wezterm CLI might be installed
-$WeztermCLIDirs = @(
+## Wezterm — check known install locations only if not already on PATH
+$_weztermDirs = @(
     "C:\Program Files\WezTerm",
-    "%USERPROFILE%\scoop\apps\wezterm\current",
     "$env:USERPROFILE\scoop\apps\wezterm\current"
 )
-
-## If wezterm CLI command is not found, try to find it & set an alias
-if (-not (Get-Command wezterm -ErrorAction SilentlyContinue)) {
-    $WezPath = $null
-
-    ## Loop over potential install paths
-    foreach ( $WezDir in $WeztermCLIDirs ) {
-        ## Test for wezterm.exe
-        if ( Test-Path -Path "$WezDir\wezterm.exe" -ErrorAction SilentlyContinue ) {
-            ## wezterm.exe found, set $WezPath
-            $WezPath = "$WezDir\wezterm.exe"
-            break
-        }
-    }
-
-    Write-Debug "Wezterm CLI bin path: $WezPath"
-    if ( $WezPath ) {
-        ## $WezPath found, set alias
-        Set-Alias -Name wezterm -Value $WezPath
+foreach ($_wezDir in $_weztermDirs) {
+    if (Test-Path -Path "$_wezDir\wezterm.exe") {
+        Set-Alias -Name wezterm -Value "$_wezDir\wezterm.exe"
+        break
     }
 }
 
