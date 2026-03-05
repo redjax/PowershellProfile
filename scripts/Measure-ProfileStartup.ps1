@@ -1,346 +1,342 @@
 <#
 .SYNOPSIS
-    Detailed profiling of PowerShell profile with granular timing
-    
+    Measure and profile PowerShell Monolith profile startup performance.
+
 .DESCRIPTION
-    Instruments and profiles your PowerShell profile to identify performance bottlenecks.
-    Shows timing for every command, module import, and function call.
-    
+    Accurately profiles the Monolith PowerShell profile by measuring each component
+    with high-resolution Stopwatch timers. Profiles both synchronous startup and
+    deferred OnIdle background tasks separately.
+
+    Measures:
+    - Configuration loading (PSModulePath, prompt-config)
+    - Each synchronous component (namespaces, prompt, aliases, software-init)
+    - Function cache / individual function file loading
+    - OnIdle event registrations
+    - Deferred background tasks (PSReadLine, shell-completions, posh-git, tool aliases)
+    - Import-Module calls (transparently wrapped)
+
+.PARAMETER IncludeDeferred
+    Also execute and time deferred OnIdle tasks (adds several seconds).
+    Without this flag, only synchronous startup time is measured.
+
+.PARAMETER Iterations
+    Number of times to run the profile for averaging (default: 1).
+    Use higher values to reduce noise from background system activity.
+
 .PARAMETER OutputPath
-    Path to save detailed profiling results (optional)
-    
+    Path to save detailed profiling results as CSV (optional).
+
 .EXAMPLE
-    .\scripts\Profile-Detailed.ps1
-    
+    .\scripts\Measure-ProfileStartup.ps1
+    Measure synchronous startup only.
+
 .EXAMPLE
-    .\scripts\Profile-Detailed.ps1 -OutputPath "profile-analysis.txt"
+    .\scripts\Measure-ProfileStartup.ps1 -IncludeDeferred
+    Measure startup plus all deferred OnIdle tasks.
+
+.EXAMPLE
+    .\scripts\Measure-ProfileStartup.ps1 -Iterations 3
+    Average profile startup over 3 runs.
+
+.EXAMPLE
+    .\scripts\Measure-ProfileStartup.ps1 -OutputPath "profile-timing.csv"
+    Measure startup and export results to CSV.
 #>
 
+[CmdletBinding()]
 param(
+    [switch]$IncludeDeferred,
+
+    [ValidateRange(1, 20)]
+    [int]$Iterations = 1,
+
     [string]$OutputPath
 )
 
-Write-Host "`n=== Detailed Profile Profiling ===`n" -ForegroundColor Cyan
-
-if (-not (Test-Path $PROFILE)) {
-    Write-Host "No profile found at: $PROFILE" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "Profile: $PROFILE" -ForegroundColor Yellow
-Write-Host "Starting instrumented profile analysis...`n" -ForegroundColor Yellow
-
-# Create profiling script
+# Build the profiling script as a here-string.
+# It runs inside a fresh pwsh -NoProfile session so nothing is pre-loaded.
 $profilingScript = @"
-# Enable strict mode and debugging
 `$ErrorActionPreference = 'Continue'
-`$VerbosePreference = 'Continue'
 
-# Initialize the ManualResetEvent objects that the profile expects
-`$Global:ProfileModuleImported = New-Object System.Threading.ManualResetEvent `$false
-`$Global:CustomModulesImported = New-Object System.Threading.ManualResetEvent `$false
+# ── High-resolution timer helpers ──────────────────────────────────────────────
+`$Global:_Timings = [System.Collections.Generic.List[psobject]]::new()
 
-# Profiling data collection
-`$Global:ProfileTimings = @()
-`$Global:CurrentSection = 'Profile Start'
-`$Global:SectionStart = Get-Date
-
-function Record-Timing {
-    param([string]`$Section)
-    
-    `$now = Get-Date
-    `$duration = (`$now - `$Global:SectionStart).TotalMilliseconds
-    
-    `$Global:ProfileTimings += [PSCustomObject]@{
-        Section = `$Global:CurrentSection
-        Duration = `$duration
-        Timestamp = `$now
-    }
-    
-    `$Global:CurrentSection = `$Section
-    `$Global:SectionStart = `$now
+function Add-Timing {
+    param([string]`$Name, [double]`$Ms, [string]`$Category = 'Startup')
+    `$Global:_Timings.Add([pscustomobject]@{
+        Name     = `$Name
+        Ms       = [Math]::Round(`$Ms, 2)
+        Category = `$Category
+    })
 }
 
-# Override Import-Module to track each import
-`$OriginalImportModule = Get-Command Import-Module -CommandType Cmdlet
+function Measure-Block {
+    param([string]`$Name, [scriptblock]`$Block, [string]`$Category = 'Startup')
+    `$sw = [System.Diagnostics.Stopwatch]::StartNew()
+    try { & `$Block } catch { Write-Warning "`$Name failed: `$(`$_.Exception.Message)" }
+    `$sw.Stop()
+    Add-Timing -Name `$Name -Ms `$sw.Elapsed.TotalMilliseconds -Category `$Category
+}
+
+# ── Wrap Import-Module to capture timing ───────────────────────────────────────
+`$script:_OrigImportModule = Get-Command Import-Module -CommandType Cmdlet
+
 function Import-Module {
     [CmdletBinding()]
     param(
-        [Parameter(Position=0, Mandatory=`$true)]
-        [string]`$Name,
-        [switch]`$Global,
-        [switch]`$Force
+        [Parameter(Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]`$Name,
+        [Parameter()] [switch]`$Global,
+        [Parameter()] [switch]`$Force,
+        [Parameter()] [switch]`$PassThru,
+        [Parameter()] [switch]`$DisableNameChecking,
+        [Parameter()] [string]`$Prefix
     )
-    
-    Record-Timing "Before Import: `$Name"
-    
-    try {
-        `$params = @{
-            Name = `$Name
-            Global = `$Global
-            Force = `$Force
-            ErrorAction = `$ErrorActionPreference
-        }
-        & `$OriginalImportModule @params
-    } catch {
-        Write-Warning "Failed to import `$(`$Name): `$(`$_.Exception.Message)"
+    `$sw = [System.Diagnostics.Stopwatch]::StartNew()
+    `$params = @{}
+    foreach (`$key in `$PSBoundParameters.Keys) { `$params[`$key] = `$PSBoundParameters[`$key] }
+    try { & `$script:_OrigImportModule @params }
+    catch { Write-Warning "Import-Module `$(`$Name -join ', ') failed: `$(`$_.Exception.Message)" }
+    `$sw.Stop()
+    Add-Timing -Name "Import-Module: `$(`$Name -join ', ')" -Ms `$sw.Elapsed.TotalMilliseconds -Category 'Module'
+}
+
+# ── Resolve profile paths ─────────────────────────────────────────────────────
+`$ProfilePath = '$($PROFILE.Replace("'", "''"))'
+`$ProfileDir  = Split-Path -Path `$ProfilePath -Parent
+`$ComponentsDir = Join-Path `$ProfileDir 'ProfileComponents'
+
+if (-not (Test-Path `$ProfilePath)) {
+    Write-Host "Profile not found at: `$ProfilePath" -ForegroundColor Red
+    exit 1
+}
+
+# ── Overall timer ─────────────────────────────────────────────────────────────
+`$overallSw = [System.Diagnostics.Stopwatch]::StartNew()
+
+# ── 1. Configuration ──────────────────────────────────────────────────────────
+Measure-Block 'PSModulePath setup' {
+    `$CustomModulesPath = Join-Path `$ProfileDir 'Modules\Custom'
+    if (Test-Path `$CustomModulesPath) {
+        `$env:PSModulePath = "`$CustomModulesPath;`$env:PSModulePath"
     }
-    
-    Record-Timing "After Import: `$Name"
 }
 
-# Trace profile execution
-Write-Host "Executing profile with instrumentation..." -ForegroundColor Gray
+Measure-Block 'prompt-config.ps1' {
+    `$PromptConfigPath = Join-Path `$ProfileDir 'prompt-config.ps1'
+    if (Test-Path `$PromptConfigPath) { . `$PromptConfigPath }
+}
 
-try {
-    # Source the actual profile
-    . '$($PROFILE.Replace("'", "''"))'
-    
-    Record-Timing "Profile Execution Complete"
-    
-    # Wait for background tasks
-    Start-Sleep -Milliseconds 500
-    
-    # Try to trigger OnIdle events
-    `$idleEvents = Get-EventSubscriber | Where-Object { `$_.SourceIdentifier -eq 'PowerShell.OnIdle' }
-    if (`$idleEvents) {
-        Record-Timing "Before OnIdle Events"
-        foreach (`$event in `$idleEvents) {
-            if (`$event.Action) {
-                try {
-                    # Get the script block from the action
-                    `$scriptBlock = `$event.Action.Command
-                    if (`$scriptBlock -is [scriptblock]) {
-                        & `$scriptBlock
-                    } else {
-                        # If it's a string, convert to scriptblock
-                        `$scriptBlock = [scriptblock]::Create(`$scriptBlock)
-                        & `$scriptBlock
-                    }
-                } catch {
-                    Write-Warning "OnIdle event failed: `$(`$_.Exception.Message)"
-                }
-            }
-        }
-        Record-Timing "After OnIdle Events"
+# ── 2. Synchronous components ────────────────────────────────────────────────
+`$components = @('namespaces.ps1', 'prompt.ps1', 'aliases.ps1', 'software-init.ps1')
+foreach (`$comp in `$components) {
+    `$compPath = Join-Path `$ComponentsDir `$comp
+    if (Test-Path `$compPath) {
+        Measure-Block `$comp { . `$compPath }
     }
-    
-    Start-Sleep -Milliseconds 1000
-    Record-Timing "Analysis Complete"
-    
-} catch {
-    Write-Error "Profile execution failed: `$(`$_.Exception.Message)"
 }
 
-# Display results
-Write-Host "`n=== Timing Analysis ===`n" -ForegroundColor Cyan
+# ── 3. Function loading ──────────────────────────────────────────────────────
+`$FunctionsCacheFile = Join-Path `$ComponentsDir '.functions-cache.ps1'
+`$FunctionsDir = Join-Path `$ComponentsDir 'functions'
 
-`$sortedTimings = `$Global:ProfileTimings | Sort-Object -Property Duration -Descending
-
-foreach (`$timing in `$sortedTimings) {
-    `$ms = [Math]::Round(`$timing.Duration, 2)
-    
-    `$color = if (`$ms -gt 1000) { 'Red' } 
-             elseif (`$ms -gt 500) { 'Yellow' } 
-             elseif (`$ms -gt 100) { 'Cyan' }
-             else { 'Green' }
-    
-    `$paddedSection = `$timing.Section.PadRight(60)
-    Write-Host "  `$paddedSection" -NoNewline
-    Write-Host "`$ms ms" -ForegroundColor `$color
-}
-
-# Summary
-`$totalTime = (`$Global:ProfileTimings | Measure-Object -Property Duration -Sum).Sum
-Write-Host "`n  " -NoNewline
-Write-Host ("=" * 70) -ForegroundColor DarkGray
-Write-Host "  Total Time:".PadRight(60) -NoNewline
-Write-Host "`$([Math]::Round(`$totalTime, 2)) ms" -ForegroundColor Cyan
-
-# Top slowest operations
-Write-Host "`n=== Top 10 Slowest Operations ===`n" -ForegroundColor Cyan
-`$slowest = `$Global:ProfileTimings | Sort-Object -Property Duration -Descending | Select-Object -First 10
-
-foreach (`$item in `$slowest) {
-    `$ms = [Math]::Round(`$item.Duration, 2)
-    `$color = if (`$ms -gt 1000) { 'Red' } elseif (`$ms -gt 500) { 'Yellow' } else { 'Cyan' }
-    Write-Host "  `$(`$item.Section)" -NoNewline
-    Write-Host " - " -NoNewline -ForegroundColor DarkGray
-    Write-Host "`$ms ms" -ForegroundColor `$color
-}
-
-# Module analysis
-Write-Host "`n=== Loaded Modules ===`n" -ForegroundColor Cyan
-`$modules = Get-Module | Where-Object { 
-    `$_.Path -like "*CustomModules*" -or 
-    `$_.Name -eq "ProfileModule" -or
-    `$_.Name -eq "posh-git"
-}
-
-if (`$modules) {
-    foreach (`$mod in `$modules | Sort-Object Name) {
-        Write-Host "  ✓ " -NoNewline -ForegroundColor Green
-        Write-Host `$mod.Name -NoNewline
-        if (`$mod.Path -like "*CustomModules*") {
-            Write-Host " [Custom]" -ForegroundColor DarkGray
-        } else {
-            Write-Host ""
-        }
+if (Test-Path `$FunctionsCacheFile) {
+    Measure-Block '.functions-cache.ps1' { . `$FunctionsCacheFile }
+} elseif (Test-Path `$FunctionsDir) {
+    Measure-Block 'functions/ (individual files)' {
+        `$files = Get-ChildItem -Path `$FunctionsDir -Filter '*.ps1' -File -Recurse
+        foreach (`$f in `$files) { . `$f.FullName }
     }
-    Write-Host "`n  Total modules loaded: " -NoNewline
-    Write-Host `$modules.Count -ForegroundColor Cyan
-} else {
-    Write-Host "  No profile modules detected" -ForegroundColor Yellow
 }
 
-# Export results if requested
-if ('$OutputPath') {
-    `$Global:ProfileTimings | Export-Csv -Path '$OutputPath' -NoTypeInformation
-    Write-Host "`n✓ Detailed results saved to: $OutputPath" -ForegroundColor Green
+# ── 4. OnIdle registrations (just measuring the Register-EngineEvent calls) ──
+Measure-Block 'OnIdle registrations' {
+    `$psReadLineHandlersPath = Join-Path `$ComponentsDir 'psreadline-handlers.ps1'
+    if (Test-Path `$psReadLineHandlersPath) {
+        `$null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action ([scriptblock]::Create(""))
+    }
+    `$shellCompletionsPath = Join-Path `$ComponentsDir 'shell-completions.ps1'
+    if (Test-Path `$shellCompletionsPath) {
+        `$null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action ([scriptblock]::Create(""))
+    }
+    `$null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action {}
+}
+
+`$overallSw.Stop()
+`$startupMs = `$overallSw.Elapsed.TotalMilliseconds
+Add-Timing -Name '=== Synchronous Startup Total ===' -Ms `$startupMs -Category 'Total'
+
+# ── 5. Deferred tasks (optional) ─────────────────────────────────────────────
+`$includeDeferred = [bool]::Parse('$($IncludeDeferred.ToString())')
+
+if (`$includeDeferred) {
+    # Unregister the dummy events we just registered
+    Get-EventSubscriber | Where-Object { `$_.SourceIdentifier -eq 'PowerShell.OnIdle' } |
+        Unregister-Event -ErrorAction SilentlyContinue
+
+    `$psrlPath = Join-Path `$ComponentsDir 'psreadline-handlers.ps1'
+    if (Test-Path `$psrlPath) {
+        Measure-Block 'Deferred: psreadline-handlers.ps1' { . `$psrlPath } 'Deferred'
+    }
+
+    `$scPath = Join-Path `$ComponentsDir 'shell-completions.ps1'
+    if (Test-Path `$scPath) {
+        Measure-Block 'Deferred: shell-completions.ps1' { . `$scPath } 'Deferred'
+    }
+
+    Measure-Block 'Deferred: posh-git check + import' {
+        if (Get-Module -ListAvailable -Name posh-git) {
+            & `$script:_OrigImportModule posh-git -ErrorAction SilentlyContinue
+        }
+    } 'Deferred'
+
+    `$deferredMs = (`$Global:_Timings | Where-Object { `$_.Category -eq 'Deferred' } |
+        Measure-Object -Property Ms -Sum).Sum
+    if (`$null -eq `$deferredMs) { `$deferredMs = 0 }
+    Add-Timing -Name '=== Deferred Tasks Total ===' -Ms `$deferredMs -Category 'Total'
+}
+
+# ── Restore Import-Module ────────────────────────────────────────────────────
+Remove-Item Function:\Import-Module -ErrorAction SilentlyContinue
+
+# ══════════════════════════════════════════════════════════════════════════════
+# OUTPUT
+# ══════════════════════════════════════════════════════════════════════════════
+
+function Write-Bar {
+    param([double]`$Ms, [double]`$MaxMs)
+    `$width = 30
+    `$filled = if (`$MaxMs -gt 0) { [Math]::Max(1, [Math]::Round((`$Ms / `$MaxMs) * `$width)) } else { 1 }
+    `$filled = [Math]::Min(`$filled, `$width)
+    `$color = if (`$Ms -gt 1000) { 'Red' } elseif (`$Ms -gt 500) { 'Yellow' } elseif (`$Ms -gt 100) { 'Cyan' } else { 'Green' }
+    Write-Host ([string][char]0x2588 * `$filled) -ForegroundColor `$color -NoNewline
+    Write-Host (' ' * (`$width - `$filled)) -NoNewline
 }
 
 Write-Host ""
-
-# ========================================
-# FINAL SUMMARY REPORT
-# ========================================
-Write-Host "`n" -NoNewline
 Write-Host ("=" * 80) -ForegroundColor Cyan
-Write-Host "                          PROFILE PERFORMANCE SUMMARY" -ForegroundColor Cyan
+Write-Host "                    MONOLITH PROFILE STARTUP ANALYSIS" -ForegroundColor Cyan
 Write-Host ("=" * 80) -ForegroundColor Cyan
 
-# Calculate key metrics
-`$totalTime = (`$Global:ProfileTimings | Measure-Object -Property Duration -Sum).Sum
-`$totalSeconds = [Math]::Round(`$totalTime / 1000, 2)
+# -- Synchronous breakdown --
+Write-Host "`n  SYNCHRONOUS STARTUP" -ForegroundColor Yellow
+Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
 
-# Find key operations (handle null results safely)
-try {
-    `$profileModuleResult = `$Global:ProfileTimings | Where-Object { `$_.Section -like "*ProfileModule*" } | Measure-Object -Property Duration -Sum
-    `$profileModuleTime = `$profileModuleResult.Sum
-    if (`$null -eq `$profileModuleTime) { `$profileModuleTime = 0 }
-} catch {
-    `$profileModuleTime = 0
+`$syncTimings = `$Global:_Timings | Where-Object { `$_.Category -eq 'Startup' -or `$_.Category -eq 'Module' }
+`$maxMs = (`$syncTimings | Measure-Object -Property Ms -Maximum).Maximum
+if (`$null -eq `$maxMs -or `$maxMs -eq 0) { `$maxMs = 1 }
+
+foreach (`$t in `$syncTimings | Sort-Object Ms -Descending) {
+    `$pct = if (`$startupMs -gt 0) { [Math]::Round((`$t.Ms / `$startupMs) * 100, 1) } else { 0 }
+    Write-Host "  " -NoNewline
+    Write-Bar -Ms `$t.Ms -MaxMs `$maxMs
+    `$label = `$t.Name.PadRight(38)
+    Write-Host " `$label" -NoNewline
+    `$msStr = "`$(`$t.Ms)ms".PadLeft(10)
+    `$color = if (`$t.Ms -gt 1000) { 'Red' } elseif (`$t.Ms -gt 500) { 'Yellow' } elseif (`$t.Ms -gt 100) { 'Cyan' } else { 'Green' }
+    Write-Host `$msStr -ForegroundColor `$color -NoNewline
+    Write-Host " (`$pct%)" -ForegroundColor DarkGray
 }
 
-try {
-    `$customModulesResult = `$Global:ProfileTimings | Where-Object { `$_.Section -like "*Custom*" -or `$_.Section -like "*OnIdle*" } | Measure-Object -Property Duration -Sum
-    `$customModulesTime = `$customModulesResult.Sum
-    if (`$null -eq `$customModulesTime) { `$customModulesTime = 0 }
-} catch {
-    `$customModulesTime = 0
-}
+Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
+`$totalColor = if (`$startupMs -lt 500) { 'Green' } elseif (`$startupMs -lt 1500) { 'Cyan' } elseif (`$startupMs -lt 3000) { 'Yellow' } else { 'Red' }
+Write-Host "  TOTAL (to first prompt):".PadRight(70) -NoNewline
+Write-Host "`$([Math]::Round(`$startupMs))ms" -ForegroundColor `$totalColor
 
-try {
-    `$psReadLineResult = `$Global:ProfileTimings | Where-Object { `$_.Section -like "*PSReadLine*" } | Measure-Object -Property Duration -Sum
-    `$psReadLineTime = `$psReadLineResult.Sum
-    if (`$null -eq `$psReadLineTime) { `$psReadLineTime = 0 }
-} catch {
-    `$psReadLineTime = 0
-}
+# -- Deferred breakdown --
+if (`$includeDeferred) {
+    `$deferredTimings = `$Global:_Timings | Where-Object { `$_.Category -eq 'Deferred' }
+    if (`$deferredTimings) {
+        Write-Host "`n  DEFERRED (OnIdle) TASKS" -ForegroundColor Yellow
+        Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
 
-Write-Host "`n📊 OVERALL PERFORMANCE" -ForegroundColor Yellow
-Write-Host "  Total Load Time:        " -NoNewline
-`$timeColor = if (`$totalTime -lt 2000) { 'Green' } elseif (`$totalTime -lt 5000) { 'Yellow' } else { 'Red' }
-Write-Host "`$totalSeconds seconds (`$([Math]::Round(`$totalTime))ms)" -ForegroundColor `$timeColor
+        `$maxDef = (`$deferredTimings | Measure-Object -Property Ms -Maximum).Maximum
+        if (`$null -eq `$maxDef -or `$maxDef -eq 0) { `$maxDef = 1 }
 
-if (`$totalTime -lt 2000) {
-    Write-Host "  Performance Rating:     " -NoNewline
-    Write-Host "⭐⭐⭐⭐⭐ Excellent" -ForegroundColor Green
-} elseif (`$totalTime -lt 5000) {
-    Write-Host "  Performance Rating:     " -NoNewline
-    Write-Host "⭐⭐⭐ Acceptable" -ForegroundColor Yellow
-} else {
-    Write-Host "  Performance Rating:     " -NoNewline
-    Write-Host "⭐⭐ Needs Optimization" -ForegroundColor Red
-}
+        foreach (`$t in `$deferredTimings | Sort-Object Ms -Descending) {
+            Write-Host "  " -NoNewline
+            Write-Bar -Ms `$t.Ms -MaxMs `$maxDef
+            `$label = `$t.Name.PadRight(38)
+            Write-Host " `$label" -NoNewline
+            `$msStr = "`$(`$t.Ms)ms".PadLeft(10)
+            `$color = if (`$t.Ms -gt 1000) { 'Red' } elseif (`$t.Ms -gt 500) { 'Yellow' } elseif (`$t.Ms -gt 100) { 'Cyan' } else { 'Green' }
+            Write-Host `$msStr -ForegroundColor `$color
+        }
 
-Write-Host "`n🔍 BREAKDOWN BY COMPONENT" -ForegroundColor Yellow
-
-if (`$profileModuleTime -gt 0) {
-    `$pct = [Math]::Round((`$profileModuleTime / `$totalTime) * 100, 1)
-    Write-Host "  ProfileModule:          " -NoNewline
-    `$color = if (`$profileModuleTime -gt 2000) { 'Red' } elseif (`$profileModuleTime -gt 1000) { 'Yellow' } else { 'Green' }
-    Write-Host "`$([Math]::Round(`$profileModuleTime))ms (`$pct%)" -ForegroundColor `$color
-}
-
-if (`$psReadLineTime -gt 0) {
-    `$pct = [Math]::Round((`$psReadLineTime / `$totalTime) * 100, 1)
-    Write-Host "  PSReadLine:             " -NoNewline
-    `$color = if (`$psReadLineTime -gt 1000) { 'Red' } elseif (`$psReadLineTime -gt 500) { 'Yellow' } else { 'Green' }
-    Write-Host "`$([Math]::Round(`$psReadLineTime))ms (`$pct%)" -ForegroundColor `$color
-}
-
-if (`$customModulesTime -gt 0) {
-    `$pct = [Math]::Round((`$customModulesTime / `$totalTime) * 100, 1)
-    Write-Host "  Background Tasks:       " -NoNewline
-    `$color = if (`$customModulesTime -gt 2000) { 'Red' } elseif (`$customModulesTime -gt 1000) { 'Yellow' } else { 'Green' }
-    Write-Host "`$([Math]::Round(`$customModulesTime))ms (`$pct%)" -ForegroundColor `$color
-}
-
-Write-Host "`n🎯 TOP 3 BOTTLENECKS" -ForegroundColor Yellow
-`$top3 = `$Global:ProfileTimings | Sort-Object -Property Duration -Descending | Select-Object -First 3
-`$rank = 1
-foreach (`$item in `$top3) {
-    `$ms = [Math]::Round(`$item.Duration, 2)
-    `$pct = [Math]::Round((`$ms / `$totalTime) * 100, 1)
-    `$color = if (`$ms -gt 1000) { 'Red' } elseif (`$ms -gt 500) { 'Yellow' } else { 'Cyan' }
-    Write-Host "  `$rank. " -NoNewline
-    Write-Host `$item.Section.PadRight(35) -NoNewline
-    Write-Host "`$ms ms (`$pct%)" -ForegroundColor `$color
-    `$rank++
-}
-
-Write-Host "`n📦 MODULES LOADED" -ForegroundColor Yellow
-`$modules = Get-Module | Where-Object { 
-    `$_.Path -like "*CustomModules*" -or 
-    `$_.Name -eq "ProfileModule" -or
-    `$_.Name -eq "posh-git"
-}
-
-if (`$modules) {
-    `$customCount = (@(`$modules | Where-Object { `$_.Path -like "*CustomModules*" })).Count
-    `$profileModuleCount = if (`$modules.Name -contains "ProfileModule") { 1 } else { 0 }
-    `$poshGitCount = if (`$modules.Name -contains "posh-git") { 1 } else { 0 }
-    
-    Write-Host "  ProfileModule:          " -NoNewline
-    if (`$profileModuleCount -gt 0) {
-        Write-Host "✓ Loaded" -ForegroundColor Green
-    } else {
-        Write-Host "✗ Not loaded" -ForegroundColor Red
+        Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
+        Write-Host "  TOTAL (deferred):".PadRight(70) -NoNewline
+        Write-Host "`$([Math]::Round(`$deferredMs))ms" -ForegroundColor Cyan
     }
-    
-    Write-Host "  Custom Modules:         " -NoNewline
-    Write-Host "`$customCount loaded" -ForegroundColor Cyan
-    
-    Write-Host "  posh-git:               " -NoNewline
-    if (`$poshGitCount -gt 0) {
-        Write-Host "✓ Loaded" -ForegroundColor Green
-    } else {
-        Write-Host "- Not loaded" -ForegroundColor DarkGray
+}
+
+# -- Modules loaded by profile --
+Write-Host "`n  MODULES LOADED" -ForegroundColor Yellow
+Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
+`$moduleTimings = `$Global:_Timings | Where-Object { `$_.Category -eq 'Module' }
+if (`$moduleTimings) {
+    foreach (`$m in `$moduleTimings | Sort-Object Ms -Descending) {
+        Write-Host "  + " -NoNewline -ForegroundColor Green
+        Write-Host "`$(`$m.Name.PadRight(50))" -NoNewline
+        `$color = if (`$m.Ms -gt 500) { 'Yellow' } else { 'Green' }
+        Write-Host "`$(`$m.Ms)ms" -ForegroundColor `$color
     }
 } else {
-    Write-Host "  No profile modules detected" -ForegroundColor Red
+    Write-Host "  (no explicit Import-Module calls during startup)" -ForegroundColor DarkGray
 }
 
-Write-Host "`n💡 RECOMMENDATIONS" -ForegroundColor Yellow
-
-if (`$profileModuleTime -gt 2000) {
-    Write-Host "  ⚠️  ProfileModule is very slow (>`$([Math]::Round(`$profileModuleTime))ms)" -ForegroundColor Red
-    Write-Host "     Consider analyzing what's inside ProfileModule" -ForegroundColor Gray
+# -- Performance rating --
+Write-Host "`n  PERFORMANCE RATING" -ForegroundColor Yellow
+Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
+Write-Host "  Startup time: " -NoNewline
+if (`$startupMs -lt 500) {
+    Write-Host "Excellent (<500ms)" -ForegroundColor Green
+} elseif (`$startupMs -lt 1000) {
+    Write-Host "Good (<1s)" -ForegroundColor Green
+} elseif (`$startupMs -lt 2000) {
+    Write-Host "Acceptable (<2s)" -ForegroundColor Cyan
+} elseif (`$startupMs -lt 3000) {
+    Write-Host "Slow (<3s)" -ForegroundColor Yellow
+} else {
+    Write-Host "Very Slow (>`$([Math]::Round(`$startupMs / 1000, 1))s) - needs optimization" -ForegroundColor Red
 }
 
-if (`$totalTime -gt 5000) {
-    Write-Host "  ⚠️  Total load time exceeds 5 seconds" -ForegroundColor Red
-    Write-Host "     Consider moving more operations to background tasks" -ForegroundColor Gray
+# -- Recommendations --
+`$recs = [System.Collections.Generic.List[string]]::new()
+
+`$slowest = `$syncTimings | Sort-Object Ms -Descending | Select-Object -First 1
+if (`$slowest -and `$slowest.Ms -gt 500) {
+    `$recs.Add("Bottleneck: '`$(`$slowest.Name)' takes `$(`$slowest.Ms)ms. Investigate or defer it.")
 }
 
-if (`$psReadLineTime -gt 1000) {
-    Write-Host "  ⚠️  PSReadLine is taking >`$([Math]::Round(`$psReadLineTime))ms" -ForegroundColor Yellow
-    Write-Host "     Already using InlineView mode (fastest option)" -ForegroundColor Gray
+`$cacheFile = Join-Path `$ComponentsDir '.functions-cache.ps1'
+if (-not (Test-Path `$cacheFile)) {
+    `$recs.Add("Function cache missing. Run Update-FunctionCache or reinstall with Install-MonoProfile.ps1.")
 }
 
-if (`$totalTime -lt 3000) {
-    Write-Host "  ✓ Performance is good! Profile loads quickly" -ForegroundColor Green
+`$pathCount = (`$env:PATH -split ';' | Where-Object { `$_ }).Count
+if (`$pathCount -gt 50) {
+    `$recs.Add("PATH has `$pathCount entries. Avoid synchronous Get-Command lookups (each scans all `$pathCount dirs).")
+}
+
+`$dupes = `$env:PATH -split ';' | Where-Object { `$_ } | Group-Object | Where-Object { `$_.Count -gt 1 }
+if (`$dupes) {
+    `$dupeNames = (`$dupes | ForEach-Object { "`$(`$_.Name) (x`$(`$_.Count))" }) -join ', '
+    `$recs.Add("Duplicate PATH entries: `$dupeNames")
+}
+
+if (`$recs.Count -gt 0) {
+    Write-Host "`n  RECOMMENDATIONS" -ForegroundColor Yellow
+    Write-Host ("  " + "-" * 76) -ForegroundColor DarkGray
+    foreach (`$r in `$recs) {
+        Write-Host "  * `$r" -ForegroundColor Gray
+    }
+}
+
+# -- Export --
+`$outputCsv = '$($OutputPath -replace "'", "''")'
+if (`$outputCsv) {
+    `$Global:_Timings | Export-Csv -Path `$outputCsv -NoTypeInformation
+    Write-Host "`n  Results saved to: `$outputCsv" -ForegroundColor Green
 }
 
 Write-Host "`n" -NoNewline
@@ -348,14 +344,25 @@ Write-Host ("=" * 80) -ForegroundColor Cyan
 Write-Host ""
 "@
 
-# Save and execute profiling script
-$tempScript = "$env:TEMP\profile-detailed-analysis.ps1"
-$profilingScript | Out-File -FilePath $tempScript -Encoding UTF8
+## Run inside a clean pwsh -NoProfile session
+Write-Host "`n=== Monolith Profile Startup Profiler ===`n" -ForegroundColor Cyan
+Write-Host "Profile:    $PROFILE" -ForegroundColor Gray
+Write-Host "Iterations: $Iterations" -ForegroundColor Gray
+Write-Host "Deferred:   $IncludeDeferred`n" -ForegroundColor Gray
 
-# Run in new session
-& pwsh -NoLogo -NoProfile -File $tempScript
+for ($i = 1; $i -le $Iterations; $i++) {
+    if ($Iterations -gt 1) {
+        Write-Host "--- Run $i of $Iterations ---`n" -ForegroundColor DarkCyan
+    }
 
-# Cleanup
-Remove-Item $tempScript -ErrorAction SilentlyContinue
+    $tempScript = Join-Path $env:TEMP "monolith-profile-measure-$([guid]::NewGuid().ToString('N').Substring(0,8)).ps1"
+    try {
+        [System.IO.File]::WriteAllText($tempScript, $profilingScript)
+        & pwsh -NoLogo -NoProfile -File $tempScript
+    }
+    finally {
+        Remove-Item $tempScript -ErrorAction SilentlyContinue
+    }
+}
 
 Write-Host "=== Profiling Complete ===`n" -ForegroundColor Cyan
