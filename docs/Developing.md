@@ -2,6 +2,11 @@
 
 These docs are for adding new features/modules/profiles to this repository.
 
+> [!NOTE]
+> This documentation is out of date. I am slowly moving to a [monolithic `$PROFILE`](../Profiles/Monolith/). This documentation was written for an old version of my `$PROFILE`, which still exists in the repository.
+>
+> Until this message is removed, this page is basically useless.
+
 ## Table of Contents <!-- omit in toc -->
 
 - [Base template](#base-template)
