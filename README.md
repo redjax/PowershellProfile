@@ -54,6 +54,7 @@ Copy-Item -Path "$($PROFILE)" -Destination "$($PROFILE).orig"
 ```
 
 To restore it later, run:
+
 ```powershell
 Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)"
 ```
