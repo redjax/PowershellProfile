@@ -1,0 +1,38 @@
+---
+###############################################################################################
+# Pipeline to build and release the monolith Powershell profile as a .zip archive.            #
+#                                                                                             #
+# The release includes all the necessary files to use the profile, except for the test files, #
+# and a script to install the profile on the user's machine.                                  #
+###############################################################################################
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate CalVer tag
+        id: version
+        run: echo "tag=$(date -u +'%Y%m%d.%H%M%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Build release archive
+        shell: pwsh
+        run: ./scripts/Build-Release.ps1 -Version '${{ steps.version.outputs.tag }}' -ExcludeTests
+
+      - name: Create tag and GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: dist/*.zip
