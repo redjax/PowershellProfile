@@ -106,9 +106,7 @@ To see a full list of the aliases exported by this profile, run: `Show-ProfileMo
 
 ## Custom Modules
 
-This repository includes a number of custom modules in the [Modules/Custom](./Modules/Custom/) path. These modules can add additional functionality to your `$PROFILE`. The [`_Base.ps1`](./Profiles/_Base.ps1) profile detects a folder `CustomModules/` at the `$PROFILE` path on your host; if present, it will import any modules within, adding extra functionality to your `$PROFILE`. Keeping modules in this separate `CustomModules/` directory prevents them from being auto-initialized by Powershell, allowing you to control module imports with the selected profile.
-
-You can control which modules are installed automatically by the [`Install-CustomProfile.ps1` script](./Install-CustomProfile.ps1) by editing the `custom_modules: []` key in your [`config.json`](./config.example.json). This key is a list of module names you want to install with your profile, corresponding to a directory in the [custom modules path of this repository](./Modules/Custom/).
+This repository includes a number of custom modules in the [Modules/Custom](./Modules/Custom/) path. These modules can add additional functionality to your `$PROFILE`, like providing [Unix-like aliases (i.e. `which` -> `where`)](./Modules/Custom/UnixAliases/), [networking utility functions](./Modules/Custom/NetworkHelpers/), and some fun ones like [a module for checking the weather](./Modules/Custom/WeatherMod/).
 
 ### Remove custom modules
 
