@@ -62,6 +62,9 @@ Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)"
 ## Table of Contents <!-- omit in toc -->
 
 - [Description](#description)
+- [Install](#install)
+  - [Option 1: Clone the repository](#option-1-clone-the-repository)
+  - [Option 2: Download a release](#option-2-download-a-release)
 - [Usage](#usage)
 - [Custom Modules](#custom-modules)
   - [Remove custom modules](#remove-custom-modules)
@@ -84,6 +87,25 @@ You can control which profile is installed by editing the [`config.json` file](.
 Additionally, [custom modules](./Modules/Custom/) can be installed using the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1). These are modular and optional—just install what you need.
 
 For example, on a work machine, you might want [Azure helpers](./Modules/Custom/AzureHelpers/) and [Active Directory helpers](./Modules/Custom/ActiveDirectoryHelpers/), but skip the [WeatherMod](./Modules/Custom/WeatherMod/), which wraps [`wttr.in`](https://wttr.in). To skip a module, simply answer `n` when prompted during installation.
+
+## Install
+
+> [!NOTE]
+> These instructions assume you are installing the [monolith profile](./Profiles/Monolith/).
+
+### Option 1: Clone the repository
+
+- Clone the repository with `git clone https://github.com/redjax/PowershellProfile.git` (or via SSH with `git clone git@github.com:redjax/PowershellProfile.git)
+- `cd` into the `PowershellProfile\` directory
+- Run `.\Install-MonoProfile.ps1 -Prompt default -Force`
+  - See usage/help menu with `Get-Help .\Install-MonoProfile.ps1 -Detailed`
+
+### Option 2: Download a release
+
+- Download a release from [the releases page](https://github.com/redjax/PowershellProfile/releases)
+- Extract the archive somewhere on your machine
+- Run the included `Install-MonoProfile.ps1` script
+  - To see install script usage, run `Get-Help .\Install-MonoProfile.ps1 -Detailed`
 
 ## Usage
 
