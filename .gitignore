@@ -1,7 +1,12 @@
 *.json
 
+release/
+dist/
+
 *.deb*
 *.rpm*
+*.zip*
+*.tar.gz*
 
 !*example*
 !*example*.*
