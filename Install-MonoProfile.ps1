@@ -136,7 +136,7 @@ if (Test-Path $DestinationPath) {
         }
         catch {
             Write-Warning "Failed to backup existing profile: $($_.Exception.Message)"
-            Write-Host "  Continuing with installation..." -ForegroundColor Yellow
+            Write-Host "  Continuing with installation" -ForegroundColor Yellow
         }
     }
 }
@@ -157,14 +157,14 @@ Write-Host "Installing ProfileComponents directory" -ForegroundColor Cyan
 
 # Remove existing ProfileComponents directory if it exists
 if (Test-Path $ComponentsDestDir) {
-    Write-Host "  Removing existing ProfileComponents directory..." -ForegroundColor Yellow
+    Write-Host "  Removing existing ProfileComponents directory" -ForegroundColor Yellow
     try {
         Remove-Item -Path $ComponentsDestDir -Recurse -Force
         Write-Host "  Existing ProfileComponents removed" -ForegroundColor Green
     }
     catch {
         Write-Warning "  Failed to remove existing ProfileComponents: $($_.Exception.Message)"
-        Write-Host "  Attempting to overwrite files..." -ForegroundColor Yellow
+        Write-Host "  Attempting to overwrite files" -ForegroundColor Yellow
     }
 }
 
@@ -222,6 +222,41 @@ try {
 catch {
     Write-Error "Failed to install ProfileComponents: $($_.Exception.Message)"
     exit 1
+}
+
+## Generate consolidated function cache for faster startup
+#  This reduces 75+ individual file reads (each triggering AV scan) to a single file read
+Write-Host "`nGenerating function cache" -ForegroundColor Cyan
+$FunctionsCacheSourceDir = Join-Path $ComponentsDestDir "functions"
+$FunctionsCacheFile = Join-Path $ComponentsDestDir ".functions-cache.ps1"
+
+if (Test-Path $FunctionsCacheSourceDir) {
+    try {
+        $funcFiles = Get-ChildItem -Path $FunctionsCacheSourceDir -Filter "*.ps1" -File -Recurse
+        $sb = [System.Text.StringBuilder]::new(65536)
+        $null = $sb.AppendLine("# Auto-generated function cache - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
+        $null = $sb.AppendLine("# Regenerate with: Update-FunctionCache")
+        $null = $sb.AppendLine("# Source: $FunctionsCacheSourceDir")
+        $null = $sb.AppendLine()
+
+        foreach ($f in $funcFiles) {
+            $relativePath = $f.FullName.Replace($FunctionsCacheSourceDir, '').TrimStart('\')
+            $null = $sb.AppendLine("##region $relativePath")
+            $null = $sb.AppendLine([System.IO.File]::ReadAllText($f.FullName))
+            $null = $sb.AppendLine("##endregion")
+            $null = $sb.AppendLine()
+        }
+
+        [System.IO.File]::WriteAllText($FunctionsCacheFile, $sb.ToString())
+        Write-Host "  Function cache generated ($($funcFiles.Count) files consolidated)" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to generate function cache: $($_.Exception.Message)"
+        Write-Host "  Profile will fall back to loading individual function files" -ForegroundColor Yellow
+    }
+}
+else {
+    Write-Host "  No functions directory found, skipping cache generation" -ForegroundColor Yellow
 }
 
 ## Configure prompt handler
@@ -303,11 +338,11 @@ if ($CustomModules) {
     $CustomModulesDest = Join-Path (Split-Path $DestinationPath -Parent) "Modules\Custom"
     
     if (Test-Path $CustomModulesSource) {
-        Write-Host "`nInstalling custom modules..." -ForegroundColor Cyan
+        Write-Host "`nInstalling custom modules" -ForegroundColor Cyan
         try {
             # Remove existing Modules/Custom directory if it exists (clean install)
             if (Test-Path $CustomModulesDest) {
-                Write-Host "  Removing existing custom modules directory..." -ForegroundColor Yellow
+                Write-Host "  Removing existing custom modules directory" -ForegroundColor Yellow
                 Remove-Item -Path $CustomModulesDest -Recurse -Force
                 Write-Host "  Existing custom modules removed" -ForegroundColor Gray
             }

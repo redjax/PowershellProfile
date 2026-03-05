@@ -171,47 +171,40 @@ function which {
 # Other Aliases #
 #################
 
-## lg -> lazygit
-if (Get-Command "lazygit" -ErrorAction SilentlyContinue) {
-    Set-Alias -Name lg -Value lazygit
-}
-else {
-    Remove-Item -Path Alias:lg -ErrorAction SilentlyContinue
-}
-
-## bwu -> bw unlock
-if (Get-Command "bw" -ErrorAction SilentlyContinue) {
-    Set-Alias -Name bwu -Value Unlock-BitwardenVault
-}
-else {
-    Remove-Item -Path Alias:bwu -ErrorAction SilentlyContinue
-}
-
-## Set paths where wezterm CLI might be installed
-$WeztermCLIDirs = @(
-    "C:\Program Files\WezTerm",
-    "%USERPROFILE%\scoop\apps\wezterm\current",
-    "$env:USERPROFILE\scoop\apps\wezterm\current"
-)
-
-## If wezterm CLI command is not found, try to find it & set an alias
-if (-not (Get-Command wezterm -ErrorAction SilentlyContinue)) {
-    $WezPath = $null
-
-    ## Loop over potential install paths
-    foreach ( $WezDir in $WeztermCLIDirs ) {
-        ## Test for wezterm.exe
-        if ( Test-Path -Path "$WezDir\wezterm.exe" -ErrorAction SilentlyContinue ) {
-            ## wezterm.exe found, set $WezPath
-            $WezPath = "$WezDir\wezterm.exe"
-            break
-        }
+## Defer optional tool alias setup to OnIdle to avoid slow Get-Command PATH scans at startup
+## With 76 PATH entries, Get-Command for missing tools takes ~1.7 seconds synchronously
+$null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action {
+    ## Batch Get-Command check for external tools
+    $_aliasTools = @{}
+    Get-Command -Name lazygit, bw, wezterm -ErrorAction SilentlyContinue | ForEach-Object {
+        $_aliasTools[$_.Name] = $_
     }
 
-    Write-Debug "Wezterm CLI bin path: $WezPath"
-    if ( $WezPath ) {
-        ## $WezPath found, set alias
-        Set-Alias -Name wezterm -Value $WezPath
+    ## lg -> lazygit
+    if ($_aliasTools.ContainsKey('lazygit')) {
+        Set-Alias -Name lg -Value lazygit -Scope Global
+    }
+
+    ## bwu -> bw unlock
+    if ($_aliasTools.ContainsKey('bw')) {
+        Set-Alias -Name bwu -Value Unlock-BitwardenVault -Scope Global
+    }
+
+    ## Wezterm CLI path search
+    if (-not $_aliasTools.ContainsKey('wezterm')) {
+        $WeztermCLIDirs = @(
+            "C:\Program Files\WezTerm",
+            "$env:USERPROFILE\scoop\apps\wezterm\current"
+        )
+        foreach ($WezDir in $WeztermCLIDirs) {
+            if (Test-Path -Path "$WezDir\wezterm.exe" -ErrorAction SilentlyContinue) {
+                Set-Alias -Name wezterm -Value "$WezDir\wezterm.exe" -Scope Global
+                break
+            }
+        }
+    }
+    else {
+        ## wezterm already on PATH, no alias needed
     }
 }
 

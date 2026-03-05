@@ -54,9 +54,9 @@ if (Test-Path $PromptConfigPath) {
 ## Source all component files
 $components = @(
     'namespaces.ps1'
-    # 'psreadline-handlers.ps1'  # Deferred - loads in background
+    # 'psreadline-handlers.ps1'  # Deferred - loads in background via OnIdle
     'prompt.ps1'
-    'shell-completions.ps1'
+    # 'shell-completions.ps1'    # Deferred - loads in background via OnIdle
     'aliases.ps1'
     'software-init.ps1'
 )
@@ -99,17 +99,31 @@ if (Test-Path $psReadLineHandlersPath) {
 "@))
 }
 
-## Defer posh-git to background for faster startup (takes ~2.5 seconds)
-if (Get-Module -ListAvailable -Name posh-git) {
-    $null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action {
+## Defer shell completions to background (not needed until user presses Tab)
+$shellCompletionsPath = Join-Path $ComponentsDir "shell-completions.ps1"
+if (Test-Path $shellCompletionsPath) {
+    $null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action ([scriptblock]::Create(@"
         try {
+            . '$($shellCompletionsPath -replace "'", "''")'
+        }
+        catch {
+            Write-Warning "Failed to load deferred shell completions: `$(`$_.Exception.Message)"
+        }
+"@))
+}
+
+## Defer posh-git to background for faster startup
+#  Note: availability check moved inside OnIdle to avoid synchronous Get-Module -ListAvailable scan
+$null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action {
+    try {
+        if (Get-Module -ListAvailable -Name posh-git) {
             Import-Module posh-git -ErrorAction Stop
             # Disable posh-git prompt (Starship handles the prompt)
             $GitPromptSettings.EnablePromptStatus = $false
         }
-        catch {
-            Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
-        }
+    }
+    catch {
+        Write-Warning "Failed to import posh-git: $($_.Exception.Message)"
     }
 }
 
@@ -117,18 +131,76 @@ if (Get-Module -ListAvailable -Name posh-git) {
 # Functions #
 #############
 
-## Load custom functions from ProfileComponents\functions subdirectory (including subdirectories)
+## Load custom functions - uses consolidated cache for performance
+#  On AV-protected machines, loading 1 cached file vs 75+ individual files is significantly faster
 $FunctionsDir = Join-Path $ComponentsDir "functions"
-if ( Test-Path $FunctionsDir ) {
-    $functionFiles = Get-ChildItem -Path $FunctionsDir -Filter "*.ps1" -File -Recurse
-    foreach ( $funcFile in $functionFiles ) {
-        try {
-            . $funcFile.FullName
-        }
-        catch {
-            Write-Warning "Failed to load function $($funcFile.Name): $($_.Exception.Message)"
+$FunctionsCacheFile = Join-Path $ComponentsDir ".functions-cache.ps1"
+
+if (Test-Path $FunctionsCacheFile) {
+    ## Use consolidated cache file (1 file read instead of 75+)
+    try {
+        . $FunctionsCacheFile
+    }
+    catch {
+        Write-Warning "Failed to load functions cache, falling back to individual files: $($_.Exception.Message)"
+        Remove-Variable FunctionsCacheFile -ErrorAction SilentlyContinue
+    }
+}
+
+## Fallback: load individual function files if cache doesn't exist or failed to load
+if (-not (Test-Path variable:\FunctionsCacheFile) -or -not (Test-Path $FunctionsCacheFile)) {
+    if (Test-Path $FunctionsDir) {
+        $functionFiles = Get-ChildItem -Path $FunctionsDir -Filter "*.ps1" -File -Recurse
+        foreach ($funcFile in $functionFiles) {
+            try {
+                . $funcFile.FullName
+            }
+            catch {
+                Write-Warning "Failed to load function $($funcFile.Name): $($_.Exception.Message)"
+            }
         }
     }
+}
+
+## Provide a function to rebuild the consolidated function cache
+function global:Update-FunctionCache {
+    <#
+        .SYNOPSIS
+        Rebuild the consolidated function cache from individual function .ps1 files.
+
+        .DESCRIPTION
+        Reads all .ps1 files from ProfileComponents\functions\ and concatenates them into
+        a single cache file. This dramatically improves startup performance by reducing
+        file I/O operations, which is especially impactful on machines with antivirus scanning.
+
+        Run this after adding, modifying, or removing function files to update the cache.
+        The installer (Install-MonoProfile.ps1) generates this cache automatically.
+    #>
+    $functionsDir = Join-Path (Split-Path $PROFILE -Parent) "ProfileComponents\functions"
+    $cacheFile = Join-Path (Split-Path $PROFILE -Parent) "ProfileComponents\.functions-cache.ps1"
+
+    if (-not (Test-Path $functionsDir)) {
+        Write-Warning "Functions directory not found: $functionsDir"
+        return
+    }
+
+    $files = Get-ChildItem -Path $functionsDir -Filter "*.ps1" -File -Recurse
+    $sb = [System.Text.StringBuilder]::new(65536)
+    $null = $sb.AppendLine("# Auto-generated function cache - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
+    $null = $sb.AppendLine("# Regenerate with: Update-FunctionCache")
+    $null = $sb.AppendLine("# Source: $functionsDir")
+    $null = $sb.AppendLine()
+
+    foreach ($f in $files) {
+        $relativePath = $f.FullName.Replace($functionsDir, '').TrimStart('\')
+        $null = $sb.AppendLine("##region $relativePath")
+        $null = $sb.AppendLine([System.IO.File]::ReadAllText($f.FullName))
+        $null = $sb.AppendLine("##endregion")
+        $null = $sb.AppendLine()
+    }
+
+    [System.IO.File]::WriteAllText($cacheFile, $sb.ToString())
+    Write-Host "Function cache rebuilt: $cacheFile ($($files.Count) files consolidated)" -ForegroundColor Green
 }
 
 ##############################################################
