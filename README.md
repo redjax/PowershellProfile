@@ -67,19 +67,15 @@ Copy-Item -Path "$($PROFILE).orig" -Destination "$($Profile)"
 
 ## Description
 
-This repository includes a module named [`ProfileModule`](./Modules/ProfileModule/), which packages custom functions, variables, and aliases for use across PowerShell sessions—effectively turning `$PROFILE` into a module.
+My [PowerShell `$PROFILE`](./Profiles/Monolith/Monolith.ps1) is [modular](./Modules/Custom/) and [component based](./Profiles/Monolith/ProfileComponents/). It will intelligently load functionality based on what is currently installed/configured on a machine, and the options used when running [the install script](./Install-MonoProfile.ps1).
 
-Each [custom PowerShell profile](./Profiles/) sources a [shared base template](./docs/Developing.md#base-template), which handles common setup tasks such as importing [custom modules](./Modules/Custom/), configuring environment-specific options (e.g., PS5, PS7, PowerShell ISE), and loading the [`ProfileModule`](./Modules/ProfileModule/).
+By default the profile customizes the [`$PROMPT`](./Profiles/Monolith/ProfileComponents/prompt.ps1) and adds [custom functions](./Profiles/Monolith/ProfileComponents/functions/), [aliases](./Profiles/Monolith/ProfileComponents/aliases.ps1), and handles [third-party software initialization](./Profiles/Monolith/ProfileComponents/software-init.ps1) and [shell completions](./Profiles/Monolith/ProfileComponents/shell-completions.ps1).
 
-Custom profiles, like the [`Starship` profile](./Profiles/Starship.ps1), build on top of this base. For example, the Starship profile automatically initializes [Starship](https://starship.rs) if it is installed.
+This profile is highly specific to my preferences and tooling. It supports [Oh-My-Posh](https://ohmyposh.dev/docs/) and [Starship](https://starship.rs) shells, and has custom [PowerShell readline handlers](./Profiles/Monolith/ProfileComponents/psreadline-handlers.ps1) to improve efficiency and make PowerShell a little more pleasant to use.
 
-The [`ProfileModule`](./Modules/ProfileModule/) adds helpful aliases and functions to every session it's imported into. List the imported aliases with `Show-ProfileModuleAliases` and  the functions with `Show-ProfileModuleFunctions`.
+The [profiling script](./scripts/Measure-ProfileStartup.ps1) shows the initialization steps the profile takes, enabling troubleshooting when the profile takes a long time to load.
 
-You can control which profile is installed by editing the [`config.json` file](./config.example.json). Each selected profile loads the shared base, then layers on its specific functionality.
-
-Additionally, [custom modules](./Modules/Custom/) can be installed using the [`Install-CustomPSModules.ps1` script](./Install-CustomPSModules.ps1). These are modular and optional—just install what you need.
-
-For example, on a work machine, you might want [Azure helpers](./Modules/Custom/AzureHelpers/) and [Active Directory helpers](./Modules/Custom/ActiveDirectoryHelpers/), but skip the [WeatherMod](./Modules/Custom/WeatherMod/), which wraps [`wttr.in`](https://wttr.in). To skip a module, simply answer `n` when prompted during installation.
+The profile starts in ~530ms on a machine with antivirus installed. It is nearly instant on machines with no antivirus. I have spent a lot of time profiling and optimizing the startup sequence for the profile so I'm not waiting at my prompt for things to finish initializing.
 
 ## Install
 
