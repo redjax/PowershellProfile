@@ -95,7 +95,7 @@ For example, on a work machine, you might want [Azure helpers](./Modules/Custom/
 
 ### Option 1: Clone the repository
 
-- Clone the repository with `git clone https://github.com/redjax/PowershellProfile.git` (or via SSH with `git clone git@github.com:redjax/PowershellProfile.git)
+- Clone the repository with `git clone https://github.com/redjax/PowershellProfile.git` (or via SSH with `git clone git@github.com:redjax/PowershellProfile.git`)
 - `cd` into the `PowershellProfile\` directory
 - Run `.\Install-MonoProfile.ps1 -Prompt default -Force`
   - See usage/help menu with `Get-Help .\Install-MonoProfile.ps1 -Detailed`
