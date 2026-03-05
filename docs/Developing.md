@@ -2,9 +2,8 @@
 
 These docs are for adding new features/modules/profiles to this repository.
 
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
-- [Table of Contents](#table-of-contents)
 - [Base template](#base-template)
 - [Add new functions and aliases](#add-new-functions-and-aliases)
 - [Add a new custom module](#add-a-new-custom-module)
