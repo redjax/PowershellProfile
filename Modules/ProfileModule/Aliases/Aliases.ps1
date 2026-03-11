@@ -25,3 +25,6 @@ Set-Alias -Name lg -Value lazygit
 
 ## bwu -> bw unlock
 Set-Alias -Name bwu -Value Unlock-BitwardenVault
+
+## recycle -> Open-RecycleBin
+Set-Alias -Name recycle -Value Open-RecycleBin
