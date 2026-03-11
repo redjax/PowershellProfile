@@ -203,30 +203,30 @@ function global:Update-FunctionCache {
     Write-Host "Function cache rebuilt: $cacheFile ($($files.Count) files consolidated)" -ForegroundColor Green
 }
 
-# function global:Open-RecycleBin {
-#     <#
-#         .SYNOPSIS
-#         Opens the Windows Recycle Bin folder.
+function global:Open-RecycleBin {
+    <#
+        .SYNOPSIS
+        Opens the Windows Recycle Bin folder.
         
-#         .DESCRIPTION
-#         Opens the Windows Recycle Bin using the shell:RecycleBinFolder shortcut.
+        .DESCRIPTION
+        Opens the Windows Recycle Bin using the shell:RecycleBinFolder shortcut.
         
-#         .EXAMPLE
-#         Open-RecycleBin
-#         Opens the Recycle Bin in Windows Explorer.
+        .EXAMPLE
+        Open-RecycleBin
+        Opens the Recycle Bin in Windows Explorer.
         
-#         .EXAMPLE
-#         recycle
-#         Opens the Recycle Bin using the alias.
-#     #>
-#     [CmdletBinding()]
-#     param()
+        .EXAMPLE
+        recycle
+        Opens the Recycle Bin using the alias.
+    #>
+    [CmdletBinding()]
+    param()
     
-#     Start-Process "shell:RecycleBinFolder"
-# }
+    Start-Process "shell:RecycleBinFolder"
+}
 
-# ## Create a convenient alias for the Recycle Bin function
-# Set-Alias -Name recycle -Value Open-RecycleBin -Scope Global
+## Create an alias for the Recycle Bin function
+Set-Alias -Name recycle -Value Open-RecycleBin -Scope Global
 
 ##############################################################
 # PROFILE load finished                                      #
