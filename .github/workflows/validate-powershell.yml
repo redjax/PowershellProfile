@@ -1,0 +1,51 @@
+---
+name: Validate PowerShell
+
+on:
+  push:
+    ## Temporary trigger while testing
+    branches:
+      - feat/ps-lint-format-ci
+    paths:
+      - "**/*.ps1"
+      - "**/*.psm1"
+      - "**/*.psd1"
+      - ".github/workflows/validate-powershell.yml"
+
+  pull_request:
+    paths:
+      - "**/*.ps1"
+      - "**/*.psm1"
+      - "**/*.psd1"
+      - ".github/workflows/validate-powershell.yml"
+
+  workflow_dispatch:
+    inputs:
+      fix:
+        description: >-
+          Fix formatting and upload a patch.
+          Does not commit or push changes.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate PowerShell profile
+    uses: redjax/PipelineTemplates/.github/workflows/validate-powershell.yml@feat/powershell-lint
+    with:
+      ## Use the same branch for shared scripts and fallback settings.
+      templates-ref: feat/powershell-lint
+
+      ## Check all tracked PowerShell files in this repository.
+      paths: "."
+
+      ## Show findings without failing while establishing a baseline.
+      lint-fail-on-findings: false
+      format-fail-on-findings: false
+
+      ## Automatic runs only check. Manual runs can optionally fix.
+      fix: ${{ github.event_name == 'workflow_dispatch' && inputs.fix }}
