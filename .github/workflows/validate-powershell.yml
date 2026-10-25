@@ -2,17 +2,14 @@
 name: Validate PowerShell
 
 on:
-  push:
-    ## Temporary trigger while testing
-    branches:
-      - feat/ps-lint-format-ci
-    paths:
-      - "**/*.ps1"
-      - "**/*.psm1"
-      - "**/*.psd1"
-      - ".github/workflows/validate-powershell.yml"
-
   pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
     paths:
       - "**/*.ps1"
       - "**/*.psm1"
