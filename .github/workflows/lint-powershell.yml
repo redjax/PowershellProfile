@@ -30,4 +30,4 @@ jobs:
       ## This file must exist in PowershellProfile.
       settings-file: config/PSScriptAnalyzerSettings.psd1
 
-      fail-on-findings: ${{ inputs.fail-on-findings }}
+      fail-on-findings: ${{ inputs['fail-on-findings'] == true }}

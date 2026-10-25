@@ -40,8 +40,8 @@ jobs:
       #  or PipelineTemplates' default formatter settings otherwise.
       settings-file: ""
 
-      fix: ${{ inputs.fix }}
-      fail-on-findings: ${{ inputs.fail-on-findings }}
+      fix: ${{ inputs.fix == true }}
+      fail-on-findings: ${{ inputs['fail-on-findings'] == true }}
 
       artifact-name: powershell-profile-format-patch
       artifact-retention-days: 7
