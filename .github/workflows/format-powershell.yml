@@ -1,0 +1,47 @@
+---
+name: Format PowerShell
+
+on:
+  ## Temporary testing trigger
+  push:
+    branches:
+      - feat/ps-lint-format-ci
+  workflow_dispatch:
+    inputs:
+      fix:
+        description: >-
+          Fix formatting and upload a patch.
+          Does not commit or push changes.
+        required: false
+        type: boolean
+        default: false
+
+      fail-on-findings:
+        description: >-
+          Fail the run when formatting differences are found in check mode.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Check or fix PowerShell profile formatting
+    uses: redjax/PipelineTemplates/.github/workflows/powershell-format.yml@feat/powershell-lint
+    with:
+      templates-ref: feat/powershell-lint
+
+      ## Check all tracked PowerShell files.
+      paths: "."
+
+      ## Empty selects the repository's FormatterSettings.psd1 if present,
+      #  or PipelineTemplates' default formatter settings otherwise.
+      settings-file: ""
+
+      fix: ${{ inputs.fix }}
+      fail-on-findings: ${{ inputs.fail-on-findings }}
+
+      artifact-name: powershell-profile-format-patch
+      artifact-retention-days: 7
