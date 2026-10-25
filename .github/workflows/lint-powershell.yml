@@ -1,0 +1,33 @@
+---
+name: Lint PowerShell
+
+on:
+  ## Temporary testing trigger
+  push:
+    branches:
+      - feat/ps-lint-format-ci
+  workflow_dispatch:
+    inputs:
+      fail-on-findings:
+        description: Fail the run when lint issues are found.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint PowerShell profile
+    uses: redjax/PipelineTemplates/.github/workflows/powershell-lint.yml@feat/powershell-lint
+    with:
+      templates-ref: feat/powershell-lint
+
+      ## Check all tracked PowerShell files.
+      paths: "."
+
+      ## This file must exist in PowershellProfile.
+      settings-file: config/PSScriptAnalyzerSettings.psd1
+
+      fail-on-findings: ${{ inputs.fail-on-findings }}
