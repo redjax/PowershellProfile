@@ -43,6 +43,9 @@ jobs:
       ## Check all tracked PowerShell files in this repository.
       paths: "."
 
+      ## Use this repository's lint settings.
+      lint-settings-file: config/PSScriptAnalyzerSettings.psd1
+
       ## Show findings without failing while establishing a baseline.
       lint-fail-on-findings: false
       format-fail-on-findings: false
