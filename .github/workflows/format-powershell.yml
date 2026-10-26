@@ -25,9 +25,9 @@ permissions:
 jobs:
   format:
     name: Check or fix PowerShell profile formatting
-    uses: redjax/PipelineTemplates/.github/workflows/powershell-format.yml@feat/powershell-lint
+    uses: redjax/PipelineTemplates/.github/workflows/powershell-format.yml@main
     with:
-      templates-ref: feat/powershell-lint
+      templates-ref: main
 
       ## Check all tracked PowerShell files.
       paths: "."

@@ -16,9 +16,9 @@ permissions:
 jobs:
   lint:
     name: Lint PowerShell profile
-    uses: redjax/PipelineTemplates/.github/workflows/powershell-lint.yml@feat/powershell-lint
+    uses: redjax/PipelineTemplates/.github/workflows/powershell-lint.yml@main
     with:
-      templates-ref: feat/powershell-lint
+      templates-ref: main
 
       ## Check all tracked PowerShell files.
       paths: "."
