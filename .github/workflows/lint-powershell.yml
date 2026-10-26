@@ -2,10 +2,6 @@
 name: Lint PowerShell
 
 on:
-  ## Temporary testing trigger
-  push:
-    branches:
-      - feat/ps-lint-format-ci
   workflow_dispatch:
     inputs:
       fail-on-findings:

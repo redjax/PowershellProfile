@@ -2,10 +2,6 @@
 name: Format PowerShell
 
 on:
-  ## Temporary testing trigger
-  push:
-    branches:
-      - feat/ps-lint-format-ci
   workflow_dispatch:
     inputs:
       fix:
