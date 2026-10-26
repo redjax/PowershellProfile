@@ -45,7 +45,7 @@ jobs:
       format-settings-file: config/FormatterSettings.psd1
 
       ## Show findings without failing while establishing a baseline.
-      lint-fail-on-findings: false
+      lint-fail-on-findings: true
       format-fail-on-findings: false
 
       ## Automatic runs only check. Manual runs can optionally fix.

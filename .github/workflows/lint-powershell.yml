@@ -8,7 +8,7 @@ on:
         description: Fail the run when lint issues are found.
         required: false
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: read
