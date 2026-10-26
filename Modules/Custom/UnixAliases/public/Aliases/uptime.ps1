@@ -1,26 +1,56 @@
 function uptime {
-    ## Mimic Unix 'uptime' command in PowerShell
+    <#
+        .SYNOPSIS
+        Returns the local computer's uptime.
+
+        .DESCRIPTION
+        Uses Get-Uptime to return the computer name, last boot time,
+        and a readable uptime duration.
+
+        Requires PowerShell 6 or later.
+
+        .EXAMPLE
+        uptime
+
+        .EXAMPLE
+        uptime | Format-Table -AutoSize
+
+        .EXAMPLE
+        uptime | Select-Object ComputerName, LastBoot, Uptime
+    #>
+
+    [CmdletBinding()]
+    param()
 
     try {
-        $OS = Get-WmiObject Win32_OperatingSystem -ComputerName $env:COMPUTERNAME -ErrorAction Stop
-        $Uptime = (Get-Date) - $OS.ConvertToDateTime($OS.LastBootUpTime)
-        [PSCustomObject]@{
-            ComputerName = $env:COMPUTERNAME
-            LastBoot     = $OS.ConvertToDateTime($OS.LastBootUpTime)
-            Uptime       = ([String]$Uptime.Days + " Days " + $Uptime.Hours + " Hours " + $Uptime.Minutes + " Minutes")
-        } | Format-Table
- 
+        if (-not (
+                Get-Command `
+                    -Name Get-Uptime `
+                    -CommandType Cmdlet `
+                    -ErrorAction SilentlyContinue
+            )) {
+            throw 'This function requires Get-Uptime from PowerShell 6 or later.'
+        }
+
+        $lastBoot = Microsoft.PowerShell.Utility\Get-Uptime `
+            -Since `
+            -ErrorAction Stop
+
+        $duration = Microsoft.PowerShell.Utility\Get-Uptime `
+            -ErrorAction Stop
+
+        [PSCustomObject] @{
+            ComputerName = [Environment]::MachineName
+            LastBoot     = $lastBoot
+            Uptime       = (
+                '{0} Days {1} Hours {2} Minutes' -f
+                $duration.Days,
+                $duration.Hours,
+                $duration.Minutes
+            )
+        }
     }
     catch {
-        [PSCustomObject]@{
-            ComputerName = $env:COMPUTERNAME
-            LastBoot     = "Unable to Connect"
-            Uptime       = $_.Exception.Message.Split('.')[0]
-        }
- 
-    }
-    finally {
-        $null = $OS
-        $null = $Uptime
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }
