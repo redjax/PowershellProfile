@@ -38,7 +38,7 @@ jobs:
 
       ## Empty selects the repository's FormatterSettings.psd1 if present,
       #  or PipelineTemplates' default formatter settings otherwise.
-      settings-file: ""
+      settings-file: "config/FormatterSettings.psd1"
 
       fix: ${{ inputs.fix == true }}
       fail-on-findings: ${{ inputs['fail-on-findings'] == true }}
