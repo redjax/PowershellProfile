@@ -1,49 +1,153 @@
 function New-SelfSignedCert {
-    [CmdletBinding()]
+    <#
+        .SYNOPSIS
+        Creates a self-signed certificate and exports its public certificate.
+
+        .DESCRIPTION
+        Creates a certificate in the selected Windows certificate store
+        and exports the public certificate to a .cer file.
+
+        Does not export the private key.
+
+        Requires Windows.
+
+        Supports -WhatIf and -Confirm.
+
+        .PARAMETER CertName
+        Certificate common name and exported filename.
+
+        .PARAMETER CertStorePath
+        Certificate store in which to create the certificate.
+
+        .PARAMETER CertKeyLength
+        Key length passed to New-SelfSignedCertificate.
+        Must be suitable for the selected algorithm and provider.
+
+        .PARAMETER CertAlgorithm
+        Key algorithm passed to New-SelfSignedCertificate.
+
+        .PARAMETER CertHashAlgorithm
+        Hash algorithm used to sign the certificate.
+
+        .PARAMETER CertOutputDir
+        Directory for the exported .cer file.
+
+        .EXAMPLE
+        New-SelfSignedCert -CertName 'DevelopmentCert' -WhatIf
+
+        .EXAMPLE
+        New-SelfSignedCert -CertName 'DevelopmentCert' -Confirm
+    #>
+
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
-        [string]$CertName = $null,
-        [string]$CertStorePath = "Cert:\CurrentUser\My",
-        [int]$CertKeyLength = 4096,
-        [string]$CertAlgorithm = "RSA",
-        [string]$CertHashAlgorithm = "SHA256",
-        [string]$CertOutputDir = "C:\Temp"
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $CertName,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $CertStorePath = 'Cert:\CurrentUser\My',
+
+        [ValidateRange(1, [int]::MaxValue)]
+        [int] $CertKeyLength = 4096,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $CertAlgorithm = 'RSA',
+
+        [ValidateNotNullOrEmpty()]
+        [string] $CertHashAlgorithm = 'SHA256',
+
+        [ValidateNotNullOrEmpty()]
+        [string] $CertOutputDir = 'C:\Temp'
     )
 
-    if (-not $CertName) {
-        Write-Error "You must give the certificate a name with -CertName."
-        return
-    }
+    try {
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'New-SelfSignedCert is supported only on Windows.'
+        }
 
-    Write-Output "Generating certificate: $CertName"
-    $Cert = New-SelfSignedCertificate `
-        -Subject "CN=$CertName" `
-        -CertStoreLocation "$($CertStorePath)" `
-        -KeyExportPolicy Exportable `
-        -KeySpec Signature `
-        -KeyLength $CertKeyLength `
-        -HashAlgorithm $CertHashAlgorithm
+        if ([string]::IsNullOrWhiteSpace($CertName)) {
+            throw 'CertName cannot be empty or whitespace.'
+        }
 
-    if (-not (Test-Path -Path $CertOutputDir -Type Container)) {
-        Write-Warning "Certificate output path does not exist: $CertOutputDir. Creating path."
+        if (
+            $CertName.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0
+        ) {
+            throw 'CertName contains characters that cannot be used in a filename.'
+        }
+
+        if (Test-Path -LiteralPath $CertOutputDir) {
+            if (-not (
+                    Test-Path -LiteralPath $CertOutputDir -PathType Container
+                )) {
+                throw "Certificate output path is not a directory: $CertOutputDir"
+            }
+        }
+
+        $certFile = Join-Path $CertOutputDir "$CertName.cer"
+
+        if (Test-Path -LiteralPath $certFile) {
+            throw "Certificate export already exists: $certFile"
+        }
+
+        $action = (
+            "Create certificate 'CN=$CertName' in '$CertStorePath' " +
+            "and export its public certificate to '$certFile'"
+        )
+
+        if (-not $PSCmdlet.ShouldProcess($CertName, $action)) {
+            return
+        }
+
+        if (-not (
+                Test-Path -LiteralPath $CertOutputDir -PathType Container
+            )) {
+            $null = New-Item `
+                -ItemType Directory `
+                -Path $CertOutputDir `
+                -Force `
+                -ErrorAction Stop
+        }
+
+        $certificateParameters = @{
+            Subject           = "CN=$CertName"
+            CertStoreLocation = $CertStorePath
+            KeyExportPolicy   = 'Exportable'
+            KeySpec           = 'Signature'
+            KeyLength         = $CertKeyLength
+            KeyAlgorithm      = $CertAlgorithm
+            HashAlgorithm     = $CertHashAlgorithm
+            ErrorAction       = 'Stop'
+        }
+
+        $certificate = New-SelfSignedCertificate @certificateParameters
 
         try {
-            New-Item -ItemType Directory -Path "$($CertOutputDir)"
+            $null = Export-Certificate `
+                -Cert $certificate `
+                -FilePath $certFile `
+                -NoClobber `
+                -ErrorAction Stop
         }
         catch {
-            Write-Error "Error creating certificate output path: $($CertOutputDir). Details: $($_.Exception.Message)"
-            exit 1
+            Write-Warning (
+                'Certificate creation succeeded, but export failed. ' +
+                "The certificate remains in '$CertStorePath' " +
+                "with thumbprint '$($certificate.Thumbprint)'."
+            )
+
+            throw
         }
-    }
 
-    $CertFile = Join-Path $CertOutputDir "$($CertName).cer"
-    Write-Output "Exporting certificate to $($CertFile)"
+        Write-Host "Public certificate saved to: $certFile" `
+            -ForegroundColor Green
 
-    try {
-        Export-Certificate -Cert $Cert -FilePath "$($CertFile)"
-        Write-Output "Certificate saved to path: $($CertFile)"
+        return $certificate
     }
     catch {
-        Write-Error "Error saving certificate to path: $($CertFile). Details: $($_.Exception.Message)"
-        exit 1
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }

@@ -1,91 +1,131 @@
 function Initialize-ScoopCli {
     <#
         .SYNOPSIS
-        Initialize the Scoop CLI.
+        Installs Scoop prerequisites and configures additional buckets.
 
         .DESCRIPTION
-        Installs aria2 & git, enables buckets.
+        Installs Scoop if necessary, then installs Git and aria2,
+        configures aria2, and adds the requested buckets.
+
+        Requires Windows and the Install-ScoopCli helper when Scoop
+        is not already installed.
+
+        Supports -WhatIf and -Confirm.
 
         .PARAMETER ScoopBuckets
-        Array of strings representing scoop buckets that should be enabled.
+        Scoop buckets to add.
 
         .EXAMPLE
-        Initialize-ScoopCli -ScoopBuckets @("extras", "nerd-fonts")
+        Initialize-ScoopCli -ScoopBuckets extras, nerd-fonts -WhatIf
+
+        .EXAMPLE
+        Initialize-ScoopCli -ScoopBuckets extras, nerd-fonts -Confirm
     #>
+
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
-        [string[]]$ScoopBuckets = @("extras", "nerd-fonts")
+        [ValidateNotNullOrEmpty()]
+        [string[]] $ScoopBuckets = @(
+            'extras'
+            'nerd-fonts'
+        )
     )
 
-    if ( -Not ( Get-Command scoop -ErrorAction SilentlyContinue ) ) {
-        Write-Warning "Scoop is not installed."
+    function Invoke-ScoopCommand {
+        param(
+            [Parameter(Mandatory = $true)]
+            [string[]] $Arguments
+        )
 
-        do {
-            $response = Read-Host "Install scoop CLI? [y/n]"
+        $LASTEXITCODE = 0
 
-            switch ( $response.ToLower() ) {
-                'y' {
-                    Write-Output "Installing scoop CLI"
-                    try {
-                        Install-ScoopCli -ErrorAction Stop
-                    } catch {
-                        Write-Error "Error installing scoop CLI. Details: $($_.Exception.Message)"
-                        Write-Warning "Check https://scoop.sh for instructions to install manually."
+        & scoop @Arguments
 
-                        exit 1
-                    }
-                    break
-                }
-                'n' {
-                    Write-Warning "Scoop is required to use this script. Please visit https://scoop.sh for installation instructions."
-                    exit 1
-                } default {
-                    Write-Warning "Invalid input '$($response)'. Please respond with 'y' or 'n'."
-                }
+        if (-not $?) {
+            throw "Scoop command failed: scoop $($Arguments -join ' ')"
+        }
+
+        if ($LASTEXITCODE -ne 0) {
+            throw (
+                "Scoop command failed with exit code ${LASTEXITCODE}: " +
+                "scoop $($Arguments -join ' ')"
+            )
+        }
+    }
+
+    try {
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Initialize-ScoopCli is supported only on Windows.'
+        }
+
+        foreach ($bucket in $ScoopBuckets) {
+            if ([string]::IsNullOrWhiteSpace($bucket)) {
+                throw 'Scoop bucket names cannot be empty or whitespace.'
             }
-        } while ( $response.ToLower() -notin @('y', 'n'))
-    }
+        }
 
-    Write-Output "Installing aria2 for accelerated downloads"
-    
-    try {
-        scoop install aria2
-        if (-not $(scoop config aria2-enabled) -eq $True) {
-            scoop config aria2-enabled true
+        $action = (
+            'Install Scoop if missing, install Git and aria2, ' +
+            'enable aria2, disable aria2 warnings, and add buckets: ' +
+            ($ScoopBuckets -join ', ')
+        )
+
+        if (-not $PSCmdlet.ShouldProcess('Current-user Scoop installation', $action)) {
+            return
         }
+
+        if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+            if (-not (
+                    Get-Command Install-ScoopCli -ErrorAction SilentlyContinue
+                )) {
+                throw (
+                    'Scoop is missing and the Install-ScoopCli helper ' +
+                    'is unavailable.'
+                )
+            }
+
+            Write-Host 'Installing Scoop...' -ForegroundColor Cyan
+
+            Install-ScoopCli -ErrorAction Stop
+
+            if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+                throw (
+                    'Scoop is not available in this session after installation. ' +
+                    'Open a new PowerShell session and retry.'
+                )
+            }
+        }
+
+        Write-Host 'Installing Git...' -ForegroundColor Cyan
+        Invoke-ScoopCommand -Arguments @('install', 'git')
+
+        Write-Host 'Installing aria2...' -ForegroundColor Cyan
+        Invoke-ScoopCommand -Arguments @('install', 'aria2')
+
+        Write-Host 'Enabling aria2 downloads...' -ForegroundColor Cyan
+        Invoke-ScoopCommand -Arguments @(
+            'config', 'aria2-enabled', 'true'
+        )
+
+        Write-Host 'Disabling aria2 warnings...' -ForegroundColor Cyan
+        Invoke-ScoopCommand -Arguments @(
+            'config', 'aria2-warning-enabled', 'false'
+        )
+
+        foreach ($bucket in ($ScoopBuckets | Select-Object -Unique)) {
+            Write-Host "Adding Scoop bucket: $bucket" -ForegroundColor Cyan
+
+            Invoke-ScoopCommand -Arguments @(
+                'bucket', 'add', $bucket
+            )
+        }
+
+        Write-Host 'Scoop initialization completed.' -ForegroundColor Green
     }
     catch {
-        Write-Error "Failed to install aria2."
-        Write-Error "Exception details: $($exc.Message)"
-    }
-    
-    Write-Output "Enable scoop buckets"
-    foreach ($Bucket in $ScoopBuckets) {
-        try {
-            scoop bucket add $Bucket
-            Write-Output "Successfully added bucket: $Bucket"
-        }
-        catch {
-            Write-Error "Failed to add bucket: $Bucket."
-            Write-Error "Exception details: $($_.Exception.Message)"
-        }
-    }
-    
-    Write-Output "Disable scoop warning when using aria2 for downloads"
-    try {
-        scoop config aria2-warning-enabled false
-    }
-    catch {
-        Write-Error "Failed to disable aria2 warning."
-        Write-Error "Exception details: $($exc.Message)"
-    }
-    
-    Write-Output "Install git"
-    try {
-        scoop install git
-    }
-    catch {
-        Write-Error "Failed to install git."
-        Write-Error "Exception details: $($exc.Message)"
+        $PSCmdlet.ThrowTerminatingError($_)
     }
 }
-    
