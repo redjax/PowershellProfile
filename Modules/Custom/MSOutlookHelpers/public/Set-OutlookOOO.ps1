@@ -1,162 +1,355 @@
 function Set-OutlookOOO {
     <#
         .SYNOPSIS
-        Sets an Outlook Out of Office (OOO) message for a user.
+        Previews or configures Exchange Online automatic replies.
 
         .DESCRIPTION
-        This function sets an Outlook Out of Office (OOO) message for a user. It requires the ExchangeOnlineManagement module to be installed and the user to have the necessary permissions to set OOO messages.
+        Reads internal and external automatic-reply messages from plain-text files and configures the selected mailbox through Exchange Online.
+
+        By default, displays the proposed configuration without connecting to Exchange or changing mailbox settings.
+
+        Pass -Apply to apply the configuration. Supports -WhatIf and -Confirm.
+
+        Message files are treated as plain text, not raw HTML.
 
         .PARAMETER Identity
-        The identity of the user for whom the OOO message is being set. This should be in the format 'DOMAIN\username'. By default, the script will use the identity of the user executing it.
+        The mailbox to configure, such as user@example.com.
+
+        Defaults to the value supplied through -UPN.
 
         .PARAMETER UPN
-        The Exchange UPN for the user (i.e. username@domain.com) to set the OOO message for.
+        The user principal name used to sign in to Exchange Online.
+
+        This can differ from Identity when the signed-in user has permission to configure another mailbox.
 
         .PARAMETER AutoReplyState
-        The state of the auto-reply. Default is 'Scheduled'.
+        Automatic-reply state: Scheduled, Enabled, or Disabled.
+
+        Defaults to Scheduled.
 
         .PARAMETER StartTime
-        The date/time to start the OOO schedule. Value should be a quoted string, i.e. 'YYYY-MM-dd hh:mm tt'.
+        Start of the automatic-reply schedule.
+
+        Required when AutoReplyState is Scheduled.
 
         .PARAMETER EndTime
-        The date/time to end the OOO schedule. Value should be a quoted string, i.e. 'YYYY-MM-dd hh:mm tt'.
+        End of the automatic-reply schedule.
+
+        Required when AutoReplyState is Scheduled.
+
+        When supplied, also provides the date used to replace the '[date of your return]' placeholder in the message files.
 
         .PARAMETER InternalMessageFile
-        Path to a .txt file containing the internal OOO message you want to apply.
+        Plain-text file containing the internal automatic-reply message.
+
+        Defaults to messages/internal-default.txt beside this function's source file.
+
+        Not used when AutoReplyState is Disabled.
 
         .PARAMETER ExternalMessageFile
-        Path to a .txt file containing the external OOO message you want to apply.
+        Plain-text file containing the external automatic-reply message.
+
+        Defaults to messages/external-default.txt beside this function's source file.
+
+        Not used when AutoReplyState is Disabled.
 
         .PARAMETER Apply
-        When the script is run without -Apply, message will only be displayed, not applied.
+        Applies the proposed configuration.
+
+        Without this switch, only displays a preview.
 
         .EXAMPLE
-        Set-OutlookOOO -UPN "youremail@domain.com" -StartTime "202X-01-01 08:00 AM" -EndTime "202X-01-02 05:00 PM" -InternalMessageFile "C:\path\to\internal.txt" -ExternalMessageFile "C:\path\to\external.txt" -Apply
+        Set-OutlookOOO `
+            -UPN 'you@example.com' `
+            -StartTime '2026-11-02T08:00:00' `
+            -EndTime '2026-11-06T17:00:00'
+
+        Displays the proposed scheduled replies without applying them.
+
+        .EXAMPLE
+        Set-OutlookOOO `
+            -UPN 'you@example.com' `
+            -StartTime '2026-11-02T08:00:00' `
+            -EndTime '2026-11-06T17:00:00' `
+            -Apply `
+            -WhatIf
+
+        Displays the proposal and the intended operation without connecting to Exchange or applying changes.
+
+        .EXAMPLE
+        Set-OutlookOOO `
+            -UPN 'you@example.com' `
+            -StartTime '2026-11-02T08:00:00' `
+            -EndTime '2026-11-06T17:00:00' `
+            -InternalMessageFile './messages/internal.txt' `
+            -ExternalMessageFile './messages/external.txt' `
+            -Apply `
+            -Confirm
+
+        Requests confirmation before connecting and applying the replies.
+
+        .EXAMPLE
+        Set-OutlookOOO `
+            -UPN 'admin@example.com' `
+            -Identity 'shared@example.com' `
+            -AutoReplyState Disabled `
+            -Apply `
+            -Confirm
+
+        Disables automatic replies for another mailbox, subject to the signed-in user's permissions.
     #>
-    Param(
-        [Parameter(Mandatory = $false, HelpMessage = "Please enter your username in the format 'DOMAIN\username")]
-        [string]$Identity = "$env:USERDOMAIN\$env:USERNAME",
-        [Parameter(Mandatory = $false, HelpMessage = "The Exchange UPN for your user (i.e. username@domain.com)")]
-        [string]$UPN,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter the autoreply state (default: Scheduled)")]
-        [string]$AutoReplyState = "Scheduled",
-        [Parameter(Mandatory = $false, HelpMessage = "The date/time to start the OOO schedule. Value should be a quoted string, i.e. 'YYYY-MM-dd hh:mm tt'")]
-        [datetime]$StartTime,
-        [Parameter(Mandatory = $false, HelpMessage = "The date/time to end the OOO schedule. Value should be a quoted string, i.e. 'YYYY-MM-dd hh:mm tt'")]
-        [datetime]$EndTime,
-        [Parameter(Mandatory = $false, HelpMessage = "Path to a .txt file containing the internal OOO message you want to apply.")]
-        [string]$InternalMessageFile,
-        [Parameter(Mandatory = $false, HelpMessage = "Path to a .txt file containing the external OOO message you want to apply.")]
-        [string]$ExternalMessageFile,
-        [Parameter(Mandatory = $false, HelpMessage = "When `$false, message will only be displayed, not applied.")]
-        [switch]$Apply = $false
+
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [Parameter(
+            HelpMessage = 'Mailbox to configure. Defaults to UPN.'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $Identity,
+
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'User principal name used to sign in to Exchange Online.'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $UPN,
+
+        [Parameter(
+            HelpMessage = 'Automatic-reply state.'
+        )]
+        [ValidateSet('Scheduled', 'Enabled', 'Disabled')]
+        [string] $AutoReplyState = 'Scheduled',
+
+        [Parameter(
+            HelpMessage = 'Start date and time for scheduled replies.'
+        )]
+        [datetime] $StartTime,
+
+        [Parameter(
+            HelpMessage = 'End date and time for scheduled replies.'
+        )]
+        [datetime] $EndTime,
+
+        [Parameter(
+            HelpMessage = 'Plain-text file containing the internal reply.'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $InternalMessageFile,
+
+        [Parameter(
+            HelpMessage = 'Plain-text file containing the external reply.'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ExternalMessageFile,
+
+        [Parameter(
+            HelpMessage = 'Apply the configuration instead of only displaying it.'
+        )]
+        [switch] $Apply
     )
 
-    ## Check if the ExchangeOnlineManagement module is installed
-    if ( -Not ( Get-Module -ListAvailable | Where-Object { $_.Name -like "ExchangeOnlineManagement" } ) ) {
-        Write-Error "ExchangeOnlineManagement module not found. Please install with: Install-Module -Name ExchangeOnlineManagement -Scope CurrentUser -Force"
-        return
-    }
+    $ErrorActionPreference = 'Stop'
 
-    ## Check that an identity was passed
-    if ( -Not $Identity ) {
-        Write-Error "Missing identity to apply the OOO message to."
-        return
-    }
-
-    ## Check that a UPN was passed
-    if ( -Not $UPN ) {
-        Write-Error "Missing an Exchange user UPN (i.e. user@domain.com)."
-        return
-    }
-
-    ## Set defaults for internal/external message file if not provided
-    if (-not $InternalMessageFile) {
-        $InternalMessageFile = Join-Path -Path $PSScriptRoot -ChildPath 'messages/internal-default.txt'
-    }
-    if (-not $ExternalMessageFile) {
-        $ExternalMessageFile = Join-Path -Path $PSScriptRoot -ChildPath 'messages/external-default.txt'
-    }
-
-    ## Ensure message file exists
-    if ( -Not ( Test-Path $InternalMessageFile ) ) {
-        Write-Error "Internal message file '$InternalMessageFile' does not exist."
-        return
-    }
-
-    ## Load message contents
-    $InternalMessageText = Get-Content $InternalMessageFile -Raw
-    $ExternalMessageText = Get-Content $ExternalMessageFile -Raw
-
-    ## Normalize line endings
-    $InternalMessageText = "<html><body>" + ($InternalMessageText -Replace "`r`n", "<br>") + "</body></html>"
-    $ExternalMessageText = "<html><body>" + ($ExternalMessageText -Replace "`r`n", "<br>") + "</body></html>"
-
-    ## Replace placeholder with provided values
-    $FormattedEndDate = $EndTime.ToString("MM/dd/yy")
-
-    if ($InternalMessageText -match '\[date of your return\]') {
-        $InternalMessageText = $InternalMessageText -replace '\[date of your return\]', $FormattedEndDate
-    }
-    else {
-        Write-Warning "Placeholder '[date of your return]' not found in message file."
-    }
-
-    if ($ExternalMessageText -match '\[date of your return\]') {
-        $ExternalMessageText = $ExternalMessageText -replace '\[date of your return\]', $FormattedEndDate
-    }
-    else {
-        Write-Warning "Placeholder '[date of your return]' not found in message file."
-    }
-
-    Write-Host "Scheduled internal message text:`n" -ForegroundColor Cyan -NoNewline; Write-Host "$($InternalMessageText)"
-    Write-Host "Scheduled external message text:`n" -ForegroundColor Cyan -NoNewline; Write-Host "$($ExternalMessageText)"
-
-    if ( $Apply ) {
-        ## Import ExchangeOnlineManagement module
-        try {
-            Import-Module ExchangeOnlineManagement
+    try {
+        if ([string]::IsNullOrWhiteSpace($UPN)) {
+            throw 'UPN cannot be empty or whitespace.'
         }
-        catch {
-            Write-Error "Error importing module ExchangeOnlineManagement. Details: $($_.Exception.Message)"
+
+        if (-not $PSBoundParameters.ContainsKey('Identity')) {
+            $Identity = $UPN
+        }
+
+        if ([string]::IsNullOrWhiteSpace($Identity)) {
+            throw 'Identity cannot be empty or whitespace.'
+        }
+
+        $hasStartTime = $PSBoundParameters.ContainsKey('StartTime')
+        $hasEndTime = $PSBoundParameters.ContainsKey('EndTime')
+
+        if ($AutoReplyState -eq 'Scheduled') {
+            if (-not $hasStartTime -or -not $hasEndTime) {
+                throw (
+                    'StartTime and EndTime are required when ' +
+                    'AutoReplyState is Scheduled.'
+                )
+            }
+
+            if ($EndTime -le $StartTime) {
+                throw 'EndTime must be later than StartTime.'
+            }
+        }
+
+        $mailboxParameters = @{
+            Identity       = $Identity
+            AutoReplyState = $AutoReplyState
+            ErrorAction    = 'Stop'
+        }
+
+        if ($AutoReplyState -eq 'Scheduled') {
+            $mailboxParameters.StartTime = $StartTime
+            $mailboxParameters.EndTime = $EndTime
+        }
+
+        if ($AutoReplyState -ne 'Disabled') {
+            if (-not $InternalMessageFile) {
+                $InternalMessageFile = Join-Path `
+                    -Path $PSScriptRoot `
+                    -ChildPath 'messages/internal-default.txt'
+            }
+
+            if (-not $ExternalMessageFile) {
+                $ExternalMessageFile = Join-Path `
+                    -Path $PSScriptRoot `
+                    -ChildPath 'messages/external-default.txt'
+            }
+
+            if (-not (
+                    Test-Path -LiteralPath $InternalMessageFile -PathType Leaf
+                )) {
+                throw (
+                    "Internal message file does not exist: " +
+                    $InternalMessageFile
+                )
+            }
+
+            if (-not (
+                    Test-Path -LiteralPath $ExternalMessageFile -PathType Leaf
+                )) {
+                throw (
+                    "External message file does not exist: " +
+                    $ExternalMessageFile
+                )
+            }
+
+            $messageDefinitions = @(
+                @{
+                    Label     = 'Internal'
+                    Path      = $InternalMessageFile
+                    Parameter = 'InternalMessage'
+                }
+                @{
+                    Label     = 'External'
+                    Path      = $ExternalMessageFile
+                    Parameter = 'ExternalMessage'
+                }
+            )
+
+            $placeholder = '[date of your return]'
+
+            foreach ($definition in $messageDefinitions) {
+                $text = Get-Content `
+                    -LiteralPath $definition.Path `
+                    -Raw `
+                    -Encoding UTF8 `
+                    -ErrorAction Stop
+
+                if ([string]::IsNullOrWhiteSpace($text)) {
+                    throw (
+                        "$($definition.Label) message file is empty: " +
+                        $definition.Path
+                    )
+                }
+
+                if ($text.Contains($placeholder)) {
+                    if (-not $hasEndTime) {
+                        throw (
+                            "$($definition.Label) message contains " +
+                            "'$placeholder', but EndTime was not supplied."
+                        )
+                    }
+
+                    $text = $text.Replace(
+                        $placeholder,
+                        $EndTime.ToString('MM/dd/yy')
+                    )
+                }
+                else {
+                    Write-Verbose (
+                        "$($definition.Label) message does not contain " +
+                        "'$placeholder'."
+                    )
+                }
+
+                Write-Host "`n$($definition.Label) message:" `
+                    -ForegroundColor Cyan
+
+                Write-Host $text
+
+                ## Encode plain text before adding HTML line breaks.
+                $encodedText = [System.Net.WebUtility]::HtmlEncode($text)
+
+                $htmlBody = [regex]::Replace(
+                    $encodedText,
+                    '\r\n|\r|\n',
+                    '<br>'
+                )
+
+                $mailboxParameters[$definition.Parameter] = (
+                    '<html><body>' +
+                    $htmlBody +
+                    '</body></html>'
+                )
+            }
+        }
+
+        Write-Host "`nAutomatic-reply configuration:" `
+            -ForegroundColor Cyan
+
+        Write-Host "  Sign-in user: $UPN"
+        Write-Host "  Mailbox: $Identity"
+        Write-Host "  State: $AutoReplyState"
+
+        if ($AutoReplyState -eq 'Scheduled') {
+            Write-Host "  Start: $($StartTime.ToString('yyyy-MM-dd HH:mm:ss'))"
+            Write-Host "  End:   $($EndTime.ToString('yyyy-MM-dd HH:mm:ss'))"
+        }
+
+        if (-not $Apply) {
+            Write-Warning (
+                'Preview only. Pass -Apply to apply this configuration.'
+            )
+
             return
         }
 
-        if ( -Not ( Get-Module ExchangeOnlineManagement ) ) {
-            Write-Error "Could not import ExchangeOnlineManagement module."
+        $target = "mailbox '$Identity'"
+        $action = "Set automatic replies to '$AutoReplyState'"
+
+        if (-not $PSCmdlet.ShouldProcess($target, $action)) {
             return
         }
 
-        ## Connect to Exchange
-        Write-Host "Connecting to Exchange..." -ForegroundColor Cyan
-        try {
-            Connect-ExchangeOnline -UserPrincipalName $UPN -ShowProgress $true
-        }
-        catch {
-            Write-Error "Error connecting to Exchange online. Details: $($_.Exception.Message)"
-            return
-        }
-
-        Write-Host "Setting Outlook OOO message"
-        try {
-            Set-MailboxAutoReplyConfiguration `
-                -Identity $Identity `
-                -AutoReplyState $AutoReplyState `
-                -StartTime $StartTime `
-                -EndTime $EndTime `
-                -InternalMessage $InternalMessageText `
-                -ExternalMessage $ExternalMessageText
-        }
-        catch {
-            Write-Error "Unable to set Outlook OOO message. Details: $($_.Exception.Message)"
-            return
+        if (-not (
+                Get-Module -ListAvailable -Name ExchangeOnlineManagement
+            )) {
+            throw (
+                'ExchangeOnlineManagement is not installed. Run: ' +
+                'Install-Module -Name ExchangeOnlineManagement ' +
+                '-Scope CurrentUser'
+            )
         }
 
-        Write-Host "Outlook OOO message set successfully."
-        return
+        Import-Module ExchangeOnlineManagement -ErrorAction Stop
+
+        Write-Host "`nConnecting to Exchange Online..." `
+            -ForegroundColor Cyan
+
+        Connect-ExchangeOnline `
+            -UserPrincipalName $UPN `
+            -ShowProgress $true `
+            -ErrorAction Stop
+
+        Write-Host 'Applying automatic-reply configuration...' `
+            -ForegroundColor Cyan
+
+        Set-MailboxAutoReplyConfiguration @mailboxParameters
+
+        Write-Host 'Automatic-reply configuration applied successfully.' `
+            -ForegroundColor Green
     }
-    else {
-        Write-Warning "-Apply = `$false, OOO message will not be applied"
-        return
+    catch {
+        ## Preserve the original error and let the caller decide whether
+        #  it should terminate their calling script.
+        $PSCmdlet.WriteError($_)
     }
 }
