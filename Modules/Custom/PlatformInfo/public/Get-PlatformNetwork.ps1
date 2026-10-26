@@ -1,20 +1,47 @@
 function Get-PlatformNetwork {
     <#
         .SYNOPSIS
-        Return network adapter information.
+        Returns IP-enabled network adapter configurations.
+
+        .DESCRIPTION
+        Queries Win32_NetworkAdapterConfiguration using Get-CimInstance
+        and returns configurations where IPEnabled is true.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformNetwork
+
+        .EXAMPLE
+        Get-PlatformNetwork | Format-List
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $NetworkInfo = Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled } | Select-Object -Property `
-            Description, `
-            MACAddress, `
-            IPAddress, `
-            DefaultIPGateway, `
-            DNSServerSearchOrder
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformNetwork is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Description'
+            'MACAddress'
+            'IPAddress'
+            'DefaultIPGateway'
+            'DNSServerSearchOrder'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_NetworkAdapterConfiguration `
+            -ErrorAction Stop |
+        Where-Object { $_.IPEnabled } |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform network info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $NetworkInfo
 }

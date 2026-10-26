@@ -1,28 +1,53 @@
 function Get-PlatformGPU {
     <#
         .SYNOPSIS
-        Return GPU (graphics card) information.
+        Returns graphics controller information for the local Windows computer.
+
+        .DESCRIPTION
+        Queries Win32_VideoController using Get-CimInstance.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformGPU
+
+        .EXAMPLE
+        Get-PlatformGPU | Format-List
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $GPUInfo = Get-WmiObject Win32_VideoController | Select-Object -Property `
-            Name, `
-            VideoProcessor, `
-            DriverVersion, `
-            AdapterRAM, `
-            CurrentRefreshRate, `
-            CurrentHorizontalResolution, `
-            CurrentVerticalResolution, `
-            CurrentBitsPerPixel, `
-            MaxRefreshRate, `
-            DeviceID, `
-            PNPDeviceID, `
-            Status, `
-            Description
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformGPU is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Name'
+            'VideoProcessor'
+            'DriverVersion'
+            'AdapterRAM'
+            'CurrentRefreshRate'
+            'CurrentHorizontalResolution'
+            'CurrentVerticalResolution'
+            'CurrentBitsPerPixel'
+            'MaxRefreshRate'
+            'DeviceID'
+            'PNPDeviceID'
+            'Status'
+            'Description'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_VideoController `
+            -ErrorAction Stop |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform GPU info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $GPUInfo
 }

@@ -1,24 +1,49 @@
 function Get-PlatformDisk {
     <#
         .SYNOPSIS
-        Return disk drive information.
+        Returns disk drive information for the local Windows computer.
+
+        .DESCRIPTION
+        Queries Win32_DiskDrive using Get-CimInstance.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformDisk
+
+        .EXAMPLE
+        Get-PlatformDisk | Format-List
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $DiskInfo = Get-WmiObject Win32_DiskDrive | Select-Object -Property `
-            Model, `
-            InterfaceType, `
-            MediaType, `
-            Size, `
-            Partitions, `
-            SerialNumber, `
-            DeviceID, `
-            Status, `
-            Name
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformDisk is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Model'
+            'InterfaceType'
+            'MediaType'
+            'Size'
+            'Partitions'
+            'SerialNumber'
+            'DeviceID'
+            'Status'
+            'Name'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_DiskDrive `
+            -ErrorAction Stop |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform disk info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $DiskInfo
 }

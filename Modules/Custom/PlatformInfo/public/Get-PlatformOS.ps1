@@ -1,31 +1,56 @@
 function Get-PlatformOS {
     <#
         .SYNOPSIS
-        Return operating system information.
+        Returns operating system information for the local Windows computer.
+
+        .DESCRIPTION
+        Queries Win32_OperatingSystem using Get-CimInstance.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformOS
+
+        .EXAMPLE
+        Get-PlatformOS | Format-List
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $OSInfo = Get-WmiObject Win32_OperatingSystem | Select-Object -Property `
-            Caption, `
-            Version, `
-            BuildNumber, `
-            OSArchitecture, `
-            SerialNumber, `
-            LastBootUpTime, `
-            InstallDate, `
-            RegisteredUser, `
-            SystemDrive, `
-            SystemDirectory, `
-            WindowsDirectory, `
-            TotalVisibleMemorySize, `
-            FreePhysicalMemory, `
-            SizeStoredInPagingFiles, `
-            FreeVirtualMemory, `
-            FreeSpaceInPagingFiles
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformOS is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Caption'
+            'Version'
+            'BuildNumber'
+            'OSArchitecture'
+            'SerialNumber'
+            'LastBootUpTime'
+            'InstallDate'
+            'RegisteredUser'
+            'SystemDrive'
+            'SystemDirectory'
+            'WindowsDirectory'
+            'TotalVisibleMemorySize'
+            'FreePhysicalMemory'
+            'SizeStoredInPagingFiles'
+            'FreeVirtualMemory'
+            'FreeSpaceInPagingFiles'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_OperatingSystem `
+            -ErrorAction Stop |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform OS info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $OSInfo
 }

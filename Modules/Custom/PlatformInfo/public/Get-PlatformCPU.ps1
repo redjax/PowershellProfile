@@ -1,23 +1,49 @@
 function Get-PlatformCPU {
     <#
         .SYNOPSIS
-        Return CPU information
+        Returns CPU information for the local Windows computer.
+
+        .DESCRIPTION
+        Queries Win32_Processor using Get-CimInstance.
+
+        Returns one object per processor instance.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformCPU
+
+        .EXAMPLE
+        Get-PlatformCPU | Format-List
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $CpuInfo = Get-WmiObject Win32_Processor | Select-Object -Property `
-            Name, `
-            NumberOfCores, `
-            NumberOfLogicalProcessors, `
-            MaxClockSpeed, `
-            CurrentClockSpeed, `
-            L1CacheSize, `
-            L2CacheSize, `
-            L3CacheSize
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformCPU is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Name'
+            'NumberOfCores'
+            'NumberOfLogicalProcessors'
+            'MaxClockSpeed'
+            'CurrentClockSpeed'
+            'L2CacheSize'
+            'L3CacheSize'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_Processor `
+            -ErrorAction Stop |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform CPU info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $CpuInfo
 }

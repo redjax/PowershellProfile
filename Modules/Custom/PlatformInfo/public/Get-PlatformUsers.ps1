@@ -1,28 +1,57 @@
 function Get-PlatformUsers {
     <#
         .SYNOPSIS
-        Return user account information.
+        Returns Windows user account information.
+
+        .DESCRIPTION
+        Queries Win32_UserAccount using Get-CimInstance.
+
+        Does not restrict the query to local accounts.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformUsers
+
+        .EXAMPLE
+        Get-PlatformUsers |
+            Where-Object { $_.LocalAccount } |
+            Select-Object Name, Disabled, SID
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $UserAccounts = Get-WmiObject Win32_UserAccount | Select-Object -Property `
-            Domain, `
-            Name, `
-            Description, `
-            LocalAccount, `
-            Status, `
-            Disabled, `
-            Lockout, `
-            PasswordRequired, `
-            PasswordExpires, `
-            PasswordChangeable, `
-            SID, `
-            SIDType, `
-            AccountType
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformUsers is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Domain'
+            'Name'
+            'Description'
+            'LocalAccount'
+            'Status'
+            'Disabled'
+            'Lockout'
+            'PasswordRequired'
+            'PasswordExpires'
+            'PasswordChangeable'
+            'SID'
+            'SIDType'
+            'AccountType'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_UserAccount `
+            -ErrorAction Stop |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform user info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $UserAccounts
 }

@@ -1,25 +1,50 @@
 function Get-PlatformMemory {
     <#
         .SYNOPSIS
-        Return memory (RAM) information.
+        Returns physical memory information for the local Windows computer.
+
+        .DESCRIPTION
+        Queries Win32_PhysicalMemory using Get-CimInstance.
+
+        Requires Windows.
+
+        .EXAMPLE
+        Get-PlatformMemory
+
+        .EXAMPLE
+        Get-PlatformMemory | Format-List
     #>
+
+    [CmdletBinding()]
+    param()
+
     try {
-        $MemoryInfo = Get-WmiObject Win32_PhysicalMemory | Select-Object -Property `
-            Capacity, `
-            Speed, `
-            Manufacturer, `
-            PartNumber, `
-            SerialNumber, `
-            DeviceLocator, `
-            FormFactor, `
-            MemoryType, `
-            ConfiguredClockSpeed, `
-            BankLabel
+        if (
+            [Environment]::OSVersion.Platform -ne
+            [PlatformID]::Win32NT
+        ) {
+            throw 'Get-PlatformMemory is supported only on Windows.'
+        }
+
+        $properties = @(
+            'Capacity'
+            'Speed'
+            'Manufacturer'
+            'PartNumber'
+            'SerialNumber'
+            'DeviceLocator'
+            'FormFactor'
+            'MemoryType'
+            'ConfiguredClockSpeed'
+            'BankLabel'
+        )
+
+        Get-CimInstance `
+            -ClassName Win32_PhysicalMemory `
+            -ErrorAction Stop |
+        Select-Object -Property $properties
     }
     catch {
-        Write-Error "Error getting platform memory info. Details: $($_.Exception.Message)"
-        exit(1)
+        $PSCmdlet.ThrowTerminatingError($_)
     }
-
-    $MemoryInfo
 }
