@@ -114,10 +114,12 @@ if ($CustomModules) {
     $CustomModulesSource = Join-Path $PSScriptRoot "Modules\Custom"
     
     if (Test-Path $CustomModulesSource) {
-        # Remove existing custom modules directory if it exists for clean installation
-        if (Test-Path $HostCustomPSModulesDir) {
+        # Remove existing custom modules only when explicitly requested.
+        if ($Clean -and (Test-Path -LiteralPath $HostCustomPSModulesDir)) {
             Write-Host "  Removing existing custom modules directory..." -ForegroundColor Yellow
-            Remove-Item -Path $HostCustomPSModulesDir -Recurse -Force
+
+            Remove-Item -LiteralPath $HostCustomPSModulesDir -Recurse -Force
+
             Write-Host "  Existing custom modules removed" -ForegroundColor Gray
         }
         
