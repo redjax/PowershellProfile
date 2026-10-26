@@ -15,7 +15,7 @@ Param(
 
 ## Vars
 [string]$SetupModuleFilename = "PowershellProfileSetup"
-[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/setup/$($SetupModuleFilename)"
+[string]$SetupModulePath = Join-Path -Path $RepoModulesDir -ChildPath "/Setup/$($SetupModuleFilename)"
 # $ModuleInstallScriptPath = Join-Path -Path "scripts" -Childpath "Install-CustomPSModules.ps1"
 [string]$HostProfileDir = Split-Path $PROFILE -Parent
 [string]$HostCustomPSModulesDir = Join-Path -Path $HostProfileDir -ChildPath "Modules\Custom"
