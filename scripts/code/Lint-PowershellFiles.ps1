@@ -55,7 +55,7 @@ param(
     [string[]] $Severity = @('Error', 'Warning'),
 
     # Keep this aligned with the version selected by CI.
-    # renovate: datasource=powershell depName=PSScriptAnalyzer
+    # renovate: datasource=nuget depName=PSScriptAnalyzer
     [string] $PSScriptAnalyzerVersion = '1.24.0'
 )
 
