@@ -1,127 +1,169 @@
 function Install-DotnetAspire {
     <#
-    .SYNOPSIS
-    Install the .NET Aspire CLI with customizable options.
+        .SYNOPSIS
+        Installs the Aspire CLI.
 
-    .DESCRIPTION
-    This script dynamically builds and executes the Aspire CLI installation command
-    based on the provided parameters. It supports custom installation paths, 
-    specific versions, and verbose output.
+        .DESCRIPTION
+        Downloads the Aspire PowerShell installer to a temporary directory and invokes it with the selected parameters.
 
-    .PARAMETER InstallPath
-    The path where the Aspire CLI binary will be installed. 
-    Default: $env:USERPROFILE\.aspire\bin
+        Supports -WhatIf and -Confirm.
 
-    .PARAMETER VerboseOutput
-    Enable verbose output during installation.
+        .PARAMETER InstallPath
+        Optional installation directory. When omitted, the Aspire installer selects its default directory.
 
-    .PARAMETER Version
-    Install a specific version of Aspire CLI (e.g., '9.4').
+        .PARAMETER VerboseOutput
+        Enables verbose output from the installer.
 
-    .PARAMETER Quality
-    Quality of the Aspire CLI build to install:
-    - 'release' = Latest stable release version (default)
-    - 'staging' = Latest staging/release candidate version
-    - 'dev' = Latest development build from main branch
+        .PARAMETER Version
+        Optional Aspire CLI version to install.
 
-    .EXAMPLE
-    .\install-aspirecli.ps1
-    Installs Aspire CLI to the default location using the latest release.
+        .PARAMETER Quality
+        Build quality to install: release, staging, or dev.
+        Defaults to release.
 
-    .EXAMPLE
-    .\install-aspirecli.ps1 -InstallPath "C:\Tools\Aspire" -VerboseOutput
-    Installs Aspire CLI to a custom path with verbose output.
+        .EXAMPLE
+        Install-DotnetAspire -WhatIf
 
-    .EXAMPLE
-    .\install-aspirecli.ps1 -Version "9.4"
-    Installs a specific version of Aspire CLI.
+        Shows the intended operation without downloading or running the installer.
 
-    .EXAMPLE
-    .\install-aspirecli.ps1 -Quality "dev"
-    Installs the latest development build of Aspire CLI.
+        .EXAMPLE
+        Install-DotnetAspire -InstallPath 'C:\Tools\Aspire' -VerboseOutput
 
-    .EXAMPLE
-    .\install-aspirecli.ps1 -Quality "staging"
-    Installs the latest staging/release candidate build of Aspire CLI.
-#>
+        Installs to a custom directory with verbose output.
 
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory = $false, HelpMessage = "The path where the Aspire CLI binary will be installed. Default: `$env:USERPROFILE\.aspire\bin")]
-        [string]$InstallPath,
-        [Parameter(Mandatory = $false, HelpMessage = "Enable verbose output during install.")]
-        [switch]$VerboseOutput,
-        [Parameter(Mandatory = $false, HelpMessage = "Install a specific version of Aspire CLI, i.e. '9.4'")]
-        [string]$Version,
-        [Parameter(Mandatory = $false, HelpMessage = "Quality of the Aspire CLI build to install. 'release' = latest release, 'staging' = latest staging/RC, 'dev' = latest development build")]
-        [ValidateSet("release", "staging", "dev")]
-        [string]$Quality
+        .EXAMPLE
+        Install-DotnetAspire -Quality staging -Confirm
+
+        Requests confirmation before running the staging installer.
+    #>
+
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'High'
+    )]
+    param(
+        [Parameter(
+            HelpMessage = 'Optional directory for the Aspire CLI installation.'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $InstallPath,
+
+        [Parameter(
+            HelpMessage = 'Enable verbose output during installation.'
+        )]
+        [switch] $VerboseOutput,
+
+        [Parameter(
+            HelpMessage = 'Install a specific Aspire CLI version.'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $Version,
+
+        [Parameter(
+            HelpMessage = 'Build quality: release, staging, or dev.'
+        )]
+        [ValidateSet('release', 'staging', 'dev')]
+        [string] $Quality = 'release'
     )
 
-    if ( Get-Command -Name "aspire" -ErrorAction SilentlyContinue ) {
-        Write-Host "Aspire CLI is already installed." -ForegroundColor Yellow
+    $installerUri = 'https://aspire.dev/install.ps1'
 
-        $Confirmation = Read-Host "Do you want to proceed with the installation anyway? (Y/N)"
-
-        if ( $Confirmation -match "^[Yy]" ) {
-            Write-Host "Aspire will be updated if a newer version is available." -ForegroundColor Green
-        }
-        else {
-            Write-Host "Installation cancelled by user." -ForegroundColor Yellow
-            return
-        }
+    $installerParameters = @{
+        Quality = $Quality
     }
 
-    ## Base command to download and execute the Aspire install script
-    $BaseCommand = "Invoke-Expression `"& { `$(Invoke-RestMethod https://aspire.dev/install.ps1) }"
+    if ($PSBoundParameters.ContainsKey('InstallPath')) {
+        $installerParameters.InstallPath = $InstallPath
+    }
 
-    ## Build parameter string based on provided arguments
-    $Parameters = @()
+    if ($PSBoundParameters.ContainsKey('Version')) {
+        $installerParameters.Version = $Version
+    }
+
+    if ($VerboseOutput -or $PSBoundParameters['Verbose']) {
+        $installerParameters.Verbose = $true
+    }
+
+    $target = 'Aspire CLI'
 
     if ($InstallPath) {
-        $Parameters += "-InstallPath '$InstallPath'"
+        $target += " at '$InstallPath'"
     }
 
-    if ($VerboseOutput) {
-        $Parameters += "-Verbose"
-    }
+    $action = "Download and run the Aspire installer; quality: $Quality"
 
     if ($Version) {
-        $Parameters += "-Version '$Version'"
+        $action += "; version: $Version"
     }
 
-    if ($Quality) {
-        $Parameters += "-Quality '$Quality'"
+    if (Get-Command -Name aspire -ErrorAction SilentlyContinue) {
+        Write-Warning (
+            'Aspire CLI is already available in PATH. ' +
+            'Continuing will run the installer again.'
+        )
     }
 
-    ## Combine base command with parameters
-    if ($Parameters.Count -gt 0) {
-        $FullCommand = $BaseCommand + " " + ($Parameters -join " ") + "`""
-    }
-    else {
-        $FullCommand = $BaseCommand + "`""
+    if (-not $PSCmdlet.ShouldProcess($target, $action)) {
+        return
     }
 
-    ## Display the command that will be executed
-    Write-Host "Executing Aspire CLI installation command:" -ForegroundColor Cyan
-    Write-Host $FullCommand -ForegroundColor Yellow
-    Write-Host ""
+    $temporaryDirectory = $null
 
-    ## Confirm before execution
-    $Confirmation = Read-Host "Do you want to proceed with the installation? (Y/N)"
-    if ( $Confirmation -match "^[Yy]" ) {
-        try {
-            Write-Host "Installing Aspire CLI..." -ForegroundColor Green
-            Invoke-Expression $FullCommand
-            Write-Host "Aspire CLI installation completed successfully!" -ForegroundColor Green
+    try {
+        $temporaryDirectory = Join-Path (
+            [IO.Path]::GetTempPath()
+        ) (
+            'aspire-install-' + [guid]::NewGuid().ToString('N')
+        )
+
+        $null = New-Item `
+            -Path $temporaryDirectory `
+            -ItemType Directory `
+            -ErrorAction Stop
+
+        $installerPath = Join-Path $temporaryDirectory `
+            'aspire-install.ps1'
+
+        Write-Host 'Downloading Aspire CLI installer' `
+            -ForegroundColor Cyan
+
+        Invoke-WebRequest `
+            -Uri $installerUri `
+            -OutFile $installerPath `
+            -ErrorAction Stop
+
+        Write-Host 'Running Aspire CLI installer' `
+            -ForegroundColor Cyan
+
+        ## Reset the native-command exit status so an unrelated earlier
+        #  command does not affect the result checked below.
+        $LASTEXITCODE = 0
+
+        & $installerPath @installerParameters -ErrorAction Stop
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Installer returned exit code $LASTEXITCODE."
         }
-        catch {
-            Write-Error "Failed to install Aspire CLI: $($_.Exception.Message)"
-            exit 1
-        }
+
+        Write-Host 'Aspire CLI installer completed.' `
+            -ForegroundColor Green
     }
-    else {
-        Write-Host "Installation cancelled by user." -ForegroundColor Yellow
-        exit 0
+    catch {
+        Write-Error (
+            'Failed to install Aspire CLI: ' +
+            $_.Exception.Message
+        )
+    }
+    finally {
+        if (
+            $temporaryDirectory -and
+            (Test-Path -LiteralPath $temporaryDirectory)
+        ) {
+            Remove-Item `
+                -LiteralPath $temporaryDirectory `
+                -Recurse `
+                -Force `
+                -ErrorAction SilentlyContinue
+        }
     }
 }
