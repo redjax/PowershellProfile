@@ -32,7 +32,7 @@ permissions:
 jobs:
   validate:
     name: Validate PowerShell profile
-    uses: redjax/PipelineTemplates/.github/workflows/validate-powershell.yml@main
+    uses: redjax/PipelineTemplates/.github/workflows/validate-powershell.yml@8b36a8dad04db805d6b1f93332b99364fa5114c4 # main
     with:
       ## Use the same branch for shared scripts and fallback settings.
       templates-ref: main
