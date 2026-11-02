@@ -9,9 +9,9 @@ function Start-WinGetUpdate {
         Write-Error ("{0} needs admin privileges, exiting now...." -f $MyInvocation.MyCommand)
         break
     }
-    #   # =================================
-    Static Variables   #
-    =================================
+    # =================================
+    # Static Variables                #
+    # =================================
     #
     #   # GitHub url for the latest release
     [string]$GitHubUrl = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
