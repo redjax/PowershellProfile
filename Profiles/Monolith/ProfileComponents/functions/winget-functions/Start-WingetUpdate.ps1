@@ -4,7 +4,7 @@ function Start-WinGetUpdate {
         [Parameter(Mandatory = $false, HelpMessage = "Decide if you want to skip the WinGet version check, default it set to false")]
         [switch]$SkipVersionCheck = $false
     )
-    Check if script was started as Administrator
+    # Check if script was started as Administrator
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")) {
         Write-Error ("{0} needs admin privileges, exiting now...." -f $MyInvocation.MyCommand)
         break
