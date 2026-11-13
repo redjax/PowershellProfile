@@ -25,7 +25,7 @@ permissions:
 jobs:
   format:
     name: Check or fix PowerShell profile formatting
-    uses: redjax/PipelineTemplates/.github/workflows/powershell-format.yml@main
+    uses: redjax/PipelineTemplates/.github/workflows/powershell-format.yml@c15a9da9d344adf5e7f5ae8627e0cc499abd8d6b # main
     with:
       templates-ref: main
 
