@@ -16,7 +16,7 @@ permissions:
 jobs:
   lint:
     name: Lint PowerShell profile
-    uses: redjax/PipelineTemplates/.github/workflows/powershell-lint.yml@main
+    uses: redjax/PipelineTemplates/.github/workflows/powershell-lint.yml@57bc0009877821ac04cf03d198b36fd403b4376d # main
     with:
       templates-ref: main
 
